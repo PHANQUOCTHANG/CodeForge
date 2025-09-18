@@ -1,14 +1,19 @@
-# Stage 1: build app
-FROM node:20 AS build
+# Frontend Dockerfile cho Development với Hot Reload
+FROM node:22-alpine
+
 WORKDIR /app
+
+# Install dependencies
 COPY package*.json ./
 RUN npm install
-COPY . .
-RUN npm run build
 
-# Stage 2: serve app
-FROM node:20
-WORKDIR /app
-RUN npm install -g serve
-COPY --from=build /app/dist ./dist
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Copy source code
+COPY . .
+
+EXPOSE 3000
+
+ENV NODE_ENV=development
+ENV CHOKIDAR_USEPOLLING=true
+ENV WATCHPACK_POLLING=true
+
+CMD ["npm", "run", "dev"]

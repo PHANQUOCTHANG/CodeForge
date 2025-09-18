@@ -1,5 +1,4 @@
 version: "3.9"
-
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -11,25 +10,67 @@ services:
       - "1433:1433"
     volumes:
       - sql_data:/var/opt/mssql
+    networks:
+      - codeforge_network
 
   backend:
-    build: ./CodeForge__BE
-    container_name: codeforge_backend
+    build:
+      context: ./CodeForge__BE
+      dockerfile: Dockerfile
+    container_name: codeforge_backend_dev
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionStrings__Default=Server=${DB_HOST},${DB_PORT};Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Default=Server=${DB_HOST:-db},${DB_PORT:-1433};Database=${DB_NAME};User Id=${DB_USER:-sa};Password=${DB_PASSWORD};TrustServerCertificate=True;
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
     ports:
-      - "5000:8080" # đổi 80 thành 8080
+      - "5000:8080"
+    volumes:
+      # Mount source code để hot reload
+      - ./CodeForge__BE:/app
+      - /app/bin
+      - /app/obj
+      # Mount packages để không cần restore mỗi lần
+      - backend_packages:/root/.nuget/packages
     depends_on:
       - db
+    networks:
+      - codeforge_network
+    # Tự động restart khi container crash
+    restart: unless-stopped
 
   frontend:
-    build: ./CodeForge__FE
-    container_name: codeforge_frontend
+    build:
+      context: ./CodeForge__FE
+      dockerfile: Dockerfile
+    container_name: codeforge_frontend_dev
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     ports:
       - "3000:3000"
+    volumes:
+      # Mount source code để hot reload
+      - ./CodeForge__FE:/app
+      # - /app/node_modules
+      # Cache node_modules
+      - frontend_node_modules:/app/node_modules
     depends_on:
       - backend
+    networks:
+      - codeforge_network
+    # Tự động restart khi container crash
+    restart: unless-stopped
+    # Stdin và tty để có thể interact với React dev server
+    stdin_open: true
+    tty: true
+
+networks:
+  codeforge_network:
+    driver: bridge
 
 volumes:
   sql_data:
+  backend_packages:
+  frontend_node_modules:
