@@ -1,0 +1,24 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+
+# Logs
+*.log
+
+# Generated files
+*.dll
+*.exe
+*.pdb
+
+# Dependency directories
+node_modules/
