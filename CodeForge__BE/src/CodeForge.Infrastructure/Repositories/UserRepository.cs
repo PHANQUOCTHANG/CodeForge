@@ -1,6 +1,5 @@
 
-
-using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Request.User;
 using CodeForge.Core.Entities;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Infrastructure.Data;
@@ -22,12 +21,13 @@ namespace CodeForge.Infrastructure.Repositories
             return await _context.Users.ToListAsync();
         }
 
-        public async Task<User> CreateUserAsync(UserDto userDto)
+        public async Task<User> CreateUserAsync(CreateUserDto userDto)
         {
             User user = new User(
                 userDto.Username, 
                 userDto.Email, 
-                userDto.PasswordHash
+                userDto.PasswordHash,
+                userDto.Role
             );
             _context.Users.Add(user);
             await _context.SaveChangesAsync();

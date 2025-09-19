@@ -1,4 +1,5 @@
 using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Request.User;
 using CodeForge.Core.Entities;
 using CodeForge.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -21,17 +22,17 @@ namespace CodeForge.Api.Controllers
         public async Task<IActionResult> GetUsersAsync()
         {
             var users = await _userService.GetUsersAsync();
-            var response = new ApiResponse<IEnumerable<User>>(200, "Users retrieved successfully", users);
+            var response = new ApiResponse<IEnumerable<UserDto>>(200, "Users retrieved successfully", users);
             return Ok(response);
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateUserAsync([FromBody] UserDto userDto)
+        public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto userDto)
         {
 
 
             var user = await _userService.CreateUserAsync(userDto);
-            var response = new ApiResponse<User>(201, "User created successfully", user);
+            var response = new ApiResponse<UserDto>(201, "User created successfully", user);
             return Ok(response);
         }
 

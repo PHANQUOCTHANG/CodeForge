@@ -1,28 +1,28 @@
-
-
-using CodeForge.Api.DTOs;
+using AutoMapper;
+using CodeForge.Api.DTOs.Request.User;
 using CodeForge.Core.Entities;
+using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Interfaces.Services;
-
-namespace CodeForge.Core.Interfaces.Repositories
+public class UserService : IUserService
 {
-    public class UserService : IUserService
+    private readonly IUserRepository _userRepository;
+    private readonly IMapper _mapper;
+
+    public UserService(IUserRepository userRepository, IMapper mapper)
     {
-        private readonly IUserRepository _userRepository;
+        _userRepository = userRepository;
+        _mapper = mapper;
+    }
 
-        public UserService(IUserRepository userRepository)
-        {
-            _userRepository = userRepository;
-        }
+    public async Task<IEnumerable<UserDto>> GetUsersAsync()
+    {
+        IEnumerable<User> users = await _userRepository.GetUsersAsync();
+        return _mapper.Map<IEnumerable<UserDto>>(users);
+    }
 
-        public async Task<IEnumerable<User>> GetUsersAsync()
-        {
-            return await _userRepository.GetUsersAsync();
-        }
-
-        public async Task<User> CreateUserAsync(UserDto userDto)
-        {
-            return await _userRepository.CreateUserAsync(userDto);
-        }
+    public async Task<UserDto> CreateUserAsync(CreateUserDto userDto)
+    {
+        User user = await _userRepository.CreateUserAsync(userDto);
+        return _mapper.Map<UserDto>(user);
     }
 }

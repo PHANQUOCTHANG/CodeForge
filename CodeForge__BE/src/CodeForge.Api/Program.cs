@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using CodeForge.Infrastructure;
 using CodeForge.Infrastructure.Data;
+using CodeForge.Core.Mappings;
+using AutoMapper;
 
 namespace CodeForge
 {
@@ -17,7 +19,11 @@ namespace CodeForge
 
 
             // Đăng ký DbContext
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+            builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+
+
+
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 
             // Register DI

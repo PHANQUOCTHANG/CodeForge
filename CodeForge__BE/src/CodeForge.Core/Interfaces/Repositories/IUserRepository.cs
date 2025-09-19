@@ -1,6 +1,6 @@
 
 
-using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Request.User;
 using CodeForge.Core.Entities;
 
 namespace CodeForge.Core.Interfaces.Repositories
@@ -9,6 +9,6 @@ namespace CodeForge.Core.Interfaces.Repositories
     {
         Task<IEnumerable<User>> GetUsersAsync();
 
-        Task<User> CreateUserAsync(UserDto userDto); 
+        Task<User> CreateUserAsync(CreateUserDto userDto); 
     }
 }
