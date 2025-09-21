@@ -1,7 +1,8 @@
-using Microsoft.Extensions.DependencyInjection;
+
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Infrastructure.Repositories;
 using CodeForge.Core.Interfaces.Services;
+using CodeForge.Core.Service;
 
 namespace CodeForge.Infrastructure
 {
@@ -9,8 +10,13 @@ namespace CodeForge.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
+            // user.
             services.AddScoped<IUserRepository , UserRepository>();
             services.AddScoped<IUserService , UserService>();
+
+            //auth.
+            services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<IAuthService, AuthService>();
             return services;
         }
     }
