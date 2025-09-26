@@ -23,6 +23,9 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__Default=Server=${DB_HOST:-db},${DB_PORT:-1433};Database=${DB_NAME};User Id=${DB_USER:-sa};Password=${DB_PASSWORD};TrustServerCertificate=True;
       - DOTNET_USE_POLLING_FILE_WATCHER=true
+      - Jwt__Key=ThisIsASecretKeyForJwtDemo123456
+      - Jwt__Issuer=MyApp
+      - Jwt__Audience=MyAppUsers
     ports:
       - "5000:8080"
     volumes:

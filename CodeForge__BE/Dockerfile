@@ -29,3 +29,5 @@ EXPOSE 8080
 
 # Chạy với dotnet watch để hot reload
 CMD ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:8080"]
+
+

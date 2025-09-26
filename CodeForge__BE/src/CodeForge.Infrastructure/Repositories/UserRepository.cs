@@ -23,10 +23,11 @@ namespace CodeForge.Infrastructure.Repositories
 
         public async Task<User> CreateUserAsync(CreateUserDto userDto)
         {
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(userDto.PasswordHash);
             User user = new User(
-                userDto.Username, 
-                userDto.Email, 
-                userDto.PasswordHash,
+                userDto.Username,
+                userDto.Email,
+                hashedPassword,
                 userDto.Role
             );
             _context.Users.Add(user);
