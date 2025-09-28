@@ -1,0 +1,190 @@
+// _variables.scss — nơi lưu design tokens (biến)
+
+// Mục tiêu: giữ màu, spacing, font, breakpoint… Tốt để thay đổi toàn bộ giao diện từ 1 nơi.
+// ==========================
+
+// ==========================
+// Spacing (margin, padding)
+// ==========================
+$spacing: (
+  0: 0,
+  1: 0.25rem,
+  // 4px
+  2: 0.5rem,
+  // 8px
+  3: 0.75rem,
+  // 12px
+  4: 1rem,
+  // 16px
+  5: 1.25rem,
+  // 20px
+  6: 1.5rem,
+  // 24px
+  8: 2rem,
+  // 32px
+  10: 2.5rem,
+  // 40px
+  12: 3rem,
+  // 48px
+  16: 4rem,
+  // 64px
+  20: 5rem // 80px,,,,,,,,,,,,,,,,
+);
+
+:root {
+  @each $key, $val in $spacing {
+    --space-#{$key}: #{$val};
+  }
+}
+
+// ==========================
+// Breakpoints (mobile first)
+// ==========================
+$breakpoints: (
+  sm: 640px,
+  md: 768px,
+  lg: 1024px,
+  xl: 1280px,
+  2xl: 1536px,
+);
+
+:root {
+  @each $name, $val in $breakpoints {
+    --break-#{$name}: #{$val};
+  }
+}
+
+// ==========================
+// Container Width
+// ==========================
+:root {
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1440px;
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+// ==========================
+// Colors Palette
+// ==========================
+// 🌐 Nền & text
+
+// Background chính (light mode): #F9FAFB (xám rất nhạt)
+
+// Text chính: #1F2937 (xám đậm dễ đọc)
+
+// Text phụ: #6B7280 (xám trung tính)
+
+// Border/line: #E5E7EB (xám nhạt phân tách khối)
+
+// 🎯 Màu thương hiệu
+
+// Primary (Xanh dương): #3B82F6 (xanh tươi, trẻ trung, tin cậy)
+
+// Primary đậm (hover, focus): #2563EB
+
+// 🔥 Màu nhấn
+
+// Accent (Cam): #F59E0B (cam vàng năng động, dùng cho nút đặc biệt hoặc highlight)
+
+// Success (Xanh lá): #10B981 (dùng cho thông báo thành công, badge, completed)
+
+// Error (Đỏ): #EF4444 (báo lỗi, warning)
+
+// Info (Xanh ngọc): #06B6D4
+
+// 📂 SCSS Variables
+$colors: (
+  // Base colors
+  background: #f9fafb,
+  foreground: #1f2937,
+  muted: #6b7280,
+  border: #e5e7eb,
+  // Brand colors
+  primary: #3b82f6,
+  primary-hover: #2563eb,
+  // Accent colors
+  accent: #f59e0b,
+  success: #10b981,
+  error: #ef4444,
+  info: #06b6d4
+);
+
+:root {
+  @each $name, $val in $colors {
+    --#{$name}: #{$val};
+  }
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --muted: #94a3b8;
+}
+
+// ==========================
+// Radius & Shadow
+// ==========================
+:root {
+  /* Font size scale */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+
+  /* Line-height */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+}
