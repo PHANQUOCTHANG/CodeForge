@@ -7,8 +7,10 @@ namespace CodeForge.Core.Interfaces.Repositories
 {
     public interface IUserRepository
     {
-        Task<IEnumerable<User>> GetUsersAsync();
+        Task<List<User>> GetUsersAsync();
 
-        Task<User> CreateUserAsync(CreateUserDto userDto); 
+        Task<User> CreateUserAsync(CreateUserDto createUserDto);
+
+        Task<bool> ExistsByEmail(CreateUserDto createUserDto);
     }
 }

@@ -18,21 +18,20 @@ namespace CodeForge.Api.Controllers
             _userService = userService;
         }
 
+
+        // get all user .
         [HttpGet]
         public async Task<IActionResult> GetUsersAsync()
         {
-            var users = await _userService.GetUsersAsync();
-            var response = new ApiResponse<IEnumerable<UserDto>>(200, "Users retrieved successfully", users);
+            var response = await _userService.GetUsersAsync();
             return Ok(response);
         }
 
+        // create user .
         [HttpPost("create")]
-        public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto userDto)
+        public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto createUserDto)
         {
-
-
-            var user = await _userService.CreateUserAsync(userDto);
-            var response = new ApiResponse<UserDto>(201, "User created successfully", user);
+            var response = await _userService.CreateUserAsync(createUserDto);
             return Ok(response);
         }
 

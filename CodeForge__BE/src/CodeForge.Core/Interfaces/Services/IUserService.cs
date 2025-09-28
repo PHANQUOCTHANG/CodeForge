@@ -8,7 +8,8 @@ namespace CodeForge.Core.Interfaces.Services
 {
     public interface IUserService
     {
-        Task<IEnumerable<UserDto>> GetUsersAsync();
-        Task<UserDto> CreateUserAsync(CreateUserDto userDto);
+        Task<ApiResponse<List<UserDto>>> GetUsersAsync();
+        Task<ApiResponse<UserDto>> CreateUserAsync(CreateUserDto createUserDto);
+        
     }
 }

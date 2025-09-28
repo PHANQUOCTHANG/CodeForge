@@ -12,8 +12,8 @@ namespace CodeForge.Infrastructure.Repositories
     {
 
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _config;
-        public AuthRepository(ApplicationDbContext context, IMapper mapper, IConfiguration config) { _context = context; _config = config; }
+        private readonly IMapper _mapper;
+        public AuthRepository(ApplicationDbContext context, IMapper mapper) { _context = context; _mapper = mapper; }
 
 
         public async Task<User?> Login(LoginDto loginDto)
@@ -21,7 +21,6 @@ namespace CodeForge.Infrastructure.Repositories
 
             User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
             if (user == null) return null;
-
             return user;
         }
 
@@ -29,13 +28,8 @@ namespace CodeForge.Infrastructure.Repositories
         {
             User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == registerDto.Email && u.Username == registerDto.Username);
             if (user != null) return null;
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(registerDto.PasswordHash);
-            User newUser = new User(
-                registerDto.Username,
-                registerDto.Email,
-                hashedPassword,
-                registerDto.Role
-            );
+            registerDto.PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.PasswordHash);
+            User newUser = _mapper.Map<User>(registerDto);
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
             return newUser;

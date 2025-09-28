@@ -17,9 +17,11 @@ namespace CodeForge.Api.Controllers
 
         public AuthController(IAuthService authService)
         {
-            _authService = authService;
+            _authService = authService;  
         }
 
+
+        // login .
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
@@ -42,6 +44,7 @@ namespace CodeForge.Api.Controllers
         }
 
 
+        // register .
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {

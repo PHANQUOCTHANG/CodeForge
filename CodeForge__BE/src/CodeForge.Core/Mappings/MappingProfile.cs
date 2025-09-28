@@ -1,5 +1,6 @@
 using AutoMapper;
-
+using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Request.Auth;
 using CodeForge.Api.DTOs.Request.User;
 using CodeForge.Core.Entities;
 
@@ -9,9 +10,14 @@ namespace CodeForge.Core.Mappings
     {
         public MappingProfile()
         {
-            // Entity -> DTO
+            // User .
             CreateMap<User, UserDto>();
-            CreateMap<UserDto, User>();
+            CreateMap<RegisterDto, User>();
+
+            // Problem 
+            CreateMap<Problem, ProblemDto>();
+            CreateMap<CreateProblemDto, Problem>();
+            CreateMap<UpdateProblemDto, Problem>();
         }
     }
 }

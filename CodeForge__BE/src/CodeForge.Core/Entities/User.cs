@@ -18,7 +18,6 @@ namespace CodeForge.Core.Entities
 
         public User() { }
 
-        // 🔹 Constructor copy
         public User(string username, string email, string passwordHash, string role = "student", DateTime? joinDate = null, string status = "active")
         {
             Username = username;

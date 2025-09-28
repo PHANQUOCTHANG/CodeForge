@@ -17,16 +17,38 @@ namespace CodeForge.Core.Service
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<UserDto>> GetUsersAsync()
+        public async Task<ApiResponse<List<UserDto>>> GetUsersAsync()
         {
-            IEnumerable<User> users = await _userRepository.GetUsersAsync();
-            return _mapper.Map<IEnumerable<UserDto>>(users);
+            try
+            {
+                List<User> users = await _userRepository.GetUsersAsync();
+                List<UserDto> userDtos = _mapper.Map<List<UserDto>>(users); // user -> userDto . 
+                return new ApiResponse<List<UserDto>>(200, "Get all users success", userDtos);
+            }
+            catch (Exception e)
+            {
+                return new ApiResponse<List<UserDto>>(500, e.Message);
+            }
         }
 
-        public async Task<UserDto> CreateUserAsync(CreateUserDto userDto)
+        public async Task<ApiResponse<UserDto>> CreateUserAsync(CreateUserDto createUserDto)
         {
-            User user = await _userRepository.CreateUserAsync(userDto);
-            return _mapper.Map<UserDto>(user);
+            try
+            {
+                bool isExistsByEmail = await _userRepository.ExistsByEmail(createUserDto);
+                if (isExistsByEmail)
+                {
+                    return new ApiResponse<UserDto>(404, "Email is exists");
+                }
+                User user = await _userRepository.CreateUserAsync(createUserDto);
+                UserDto userDto = _mapper.Map<UserDto>(user);
+
+                return new ApiResponse<UserDto>(200, "Create User success", userDto);
+            }
+            catch (Exception e)
+            {
+                return new ApiResponse<UserDto>(500, e.Message);
+            }
         }
     }
 }

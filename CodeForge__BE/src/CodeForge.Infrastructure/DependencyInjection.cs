@@ -17,6 +17,10 @@ namespace CodeForge.Infrastructure
             //auth.
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IAuthService, AuthService>();
+
+            // problem .
+            services.AddScoped<IProblemRepository, ProblemRepository>();
+            services.AddScoped<IProblemService, ProblemService>();
             return services;
         }
     }
