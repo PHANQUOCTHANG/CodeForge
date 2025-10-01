@@ -1,0 +1,195 @@
+@use "../../styles/variables" as vars;
+@use "../../styles/mixins" as *;
+
+.header {
+  a {
+    text-decoration: none;
+  }
+
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  padding: 0% var(--space-4);
+  background-color: vars.$white;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid vars.color("gray", 500);
+
+  // header container
+  &__container {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-2);
+  }
+
+  // logo + title
+  &__logo {
+    font-family: "Nunito", sans-serif;
+    margin-right: var(--space-4);
+    @include flex-center;
+
+    > div {
+      @include flex-center;
+      height: 40px;
+      width: 40px;
+      border-radius: 50%;
+      color: vars.$white;
+      background-color: vars.$black;
+      margin-right: var(--space-2);
+
+      span {
+        font-weight: bold;
+        font-size: var(--text-sm);
+
+        @include respond(md) {
+          font-size: var(--text-base);
+        }
+      }
+
+      @include respond(md) {
+        height: 50px;
+        width: 50px;
+      }
+    }
+
+    span {
+      font-weight: bold;
+      font-size: var(--text-sm);
+
+      @include respond(md) {
+        font-size: var(--text-xl);
+      }
+    }
+
+    color: vars.$black;
+    text-decoration: none;
+  }
+
+  &__nav {
+    display: none;
+
+    @include respond(md) {
+      display: flex;
+      align-items: center;
+      list-style: none;
+      gap: var(--space-6);
+    }
+  }
+
+  &__link {
+    position: relative;
+    display: inline-block;
+    padding: 4px 8px;
+    text-decoration: none;
+    color: vars.$black;
+
+    &--active {
+      color: vars.color("blue", 500);
+      font-weight: bold;
+    }
+  }
+
+  &__underline {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    background: vars.color("blue", 600);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+
+    .btn--avartar {
+      @include respond(md) {
+        display: none;
+      }
+    }
+
+    .btn--register,
+    .btn--login {
+      display: none;
+
+      @include respond(md) {
+        display: block;
+      }
+    }
+  }
+
+  &__menu-button {
+    > div {
+      @include flex-center;
+      font-size: var(--text-base);
+    }
+
+    @include respond(md) {
+      display: none;
+    }
+  }
+}
+
+/* 📱 Mobile Header */
+.header-mobile {
+  display: block;
+  position: sticky;
+  top: 4rem; // ~64px (header height)
+  z-index: 40;
+  background-color: vars.$white;
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid vars.color("gray", 500);
+
+  &__container {
+    height: 100vh;
+  }
+
+  &__nav {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  &__item {
+    // motion wrapper
+  }
+
+  &__link {
+    text-decoration: none;
+    font-size: var(--text-sm);
+    color: vars.$black;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s, color 0.2s;
+
+    &:hover {
+      background-color: var(--color-muted, rgba(0, 0, 0, 0.05));
+    }
+
+    &--active {
+      i {
+        color: vars.color("blue", 600);
+      }
+
+      color: vars.color("blue", 500);
+      font-weight: 600;
+    }
+  }
+
+  &__icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  &__label {
+    font-size: 1rem;
+  }
+
+  /* Ẩn trên desktop */
+  @media (min-width: 1025px) {
+    display: none;
+  }
+}

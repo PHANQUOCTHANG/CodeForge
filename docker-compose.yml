@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -29,17 +30,14 @@ services:
     ports:
       - "5000:8080"
     volumes:
-      # Mount source code để hot reload
       - ./CodeForge__BE:/app
       - /app/bin
       - /app/obj
-      # Mount packages để không cần restore mỗi lần
       - backend_packages:/root/.nuget/packages
     depends_on:
       - db
     networks:
       - codeforge_network
-    # Tự động restart khi container crash
     restart: unless-stopped
 
   frontend:
@@ -54,18 +52,13 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      # Mount source code để hot reload
-      - ./CodeForge__FE/src:/app/src
-      # - /app/node_modules
-      # Cache node_modules
-      - frontend_node_modules:/app/node_modules
+      - ./CodeForge__FE:/app # mount toàn bộ code FE
+      - /app/node_modules # giữ node_modules trong container
     depends_on:
       - backend
     networks:
       - codeforge_network
-    # Tự động restart khi container crash
     restart: unless-stopped
-    # Stdin và tty để có thể interact với React dev server
     stdin_open: true
     tty: true
 
@@ -76,4 +69,3 @@ networks:
 volumes:
   sql_data:
   backend_packages:
-  frontend_node_modules:

@@ -4,16 +4,16 @@
 /* Import order quan trọng: variables -> mixins -> base -> components */
 
 /* 1. fonts */
-@import "./fonts";
+@use "./fonts";
 
 /* 2. Variables */
-@import "./variables";
+@use "./variables";
 
 /* 3. Base (reset, global, typography, font-face) */
-@import "./base";
+@use "./base";
 
 /* 4. Mixins */
-@import "./mixins";
+@use "./mixins";
 
 /* 4. Components (button, card, form...) */
 // @import "./components";
