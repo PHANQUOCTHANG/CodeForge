@@ -1,5 +1,6 @@
 using AutoMapper;
 using CodeForge.Api.DTOs.Request.User;
+using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Entities;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Interfaces.Services;
@@ -21,7 +22,7 @@ namespace CodeForge.Core.Service
         {
             try
             {
-                List<User> users = await _userRepository.GetUsersAsync();
+                List<User> users = await _userRepository.GetAllAsync();
                 List<UserDto> userDtos = _mapper.Map<List<UserDto>>(users); // user -> userDto . 
                 return new ApiResponse<List<UserDto>>(200, "Get all users success", userDtos);
             }
@@ -40,7 +41,7 @@ namespace CodeForge.Core.Service
                 {
                     return new ApiResponse<UserDto>(404, "Email is exists");
                 }
-                User user = await _userRepository.CreateUserAsync(createUserDto);
+                User user = await _userRepository.CreateAsync(createUserDto);
                 UserDto userDto = _mapper.Map<UserDto>(user);
 
                 return new ApiResponse<UserDto>(200, "Create User success", userDto);

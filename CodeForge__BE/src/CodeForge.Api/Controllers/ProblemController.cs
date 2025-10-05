@@ -36,7 +36,7 @@ namespace CodeForge.Api.Controllers
         }
 
         // update problem .
-        [HttpPatch]
+        [HttpPatch("update")]
         public async Task<IActionResult> UpdateProblemAsync([FromBody] UpdateProblemDto updateProblemDto)
         {
             var response = await _problemService.UpdateProblemAsync(updateProblemDto);
@@ -54,7 +54,7 @@ namespace CodeForge.Api.Controllers
         }
 
         // delete problem 
-        [HttpDelete("{problemId}")]
+        [HttpDelete("delete/{problemId}")]
         public async Task<IActionResult> DeleteProblemAsync([FromRoute] Guid problemId)
         {
             var response = await _problemService.DeleteProblemAsync(problemId);

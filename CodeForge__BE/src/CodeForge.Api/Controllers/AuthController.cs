@@ -27,13 +27,13 @@ namespace CodeForge.Api.Controllers
         {
             try
             {
-                AuthDto authDto = await _authService.Login(loginDto);
-                return authDto.Code switch
+                ApiResponse<AuthDto> response = await _authService.Login(loginDto);
+                return response.Code switch
                 {
-                    200 => Ok(new { code = 200, message = authDto.Message, accessToken = authDto.AccessToken }),
-                    401 => Unauthorized(new {code = 401  , message = authDto.Message }),
-                    404 => Unauthorized(new {code = 404 , message = authDto.Message }),
-                    _ => StatusCode(500, new {code = 500 , message = "Unexpected error" })
+                    200 => Ok(response) ,
+                    401 => Unauthorized(response),
+                    404 => Unauthorized(response),
+                    _ => StatusCode(500,response)
                 };
             }
             catch (Exception ex)
@@ -50,13 +50,13 @@ namespace CodeForge.Api.Controllers
         {
             try
             {
-                AuthDto authDto = await _authService.Register(registerDto);
-                return authDto.Code switch
+                ApiResponse<AuthDto> response = await _authService.Register(registerDto);
+                return response.Code switch
                 {
-                    200 => Ok(new { code = 200, message = authDto.Message, accessToken = authDto.AccessToken }),
-                    401 => Unauthorized(new {code = 401 , message = authDto.Message }),
-                    404 => Unauthorized(new {code = 404 , message = authDto.Message }),
-                    _ => StatusCode(500, new {code = 500 , message = "Unexpected error" })
+                    200 => Ok(response) ,
+                    401 => Unauthorized(response),
+                    404 => Unauthorized(response),
+                    _ => StatusCode(500,response)
                 };
             }
             catch (Exception ex)

@@ -11,9 +11,17 @@
     "start": "vite"
   },
   "dependencies": {
+<<<<<<< HEAD
     "lucide-react": "^0.544.0",
+=======
+    "@reduxjs/toolkit": "^2.9.0",
+    "axios": "^1.12.2",
+>>>>>>> 84f5a79443e06993e13ab0d74183c89a07b1cd21
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.9.2",
+    "sass": "^1.93.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

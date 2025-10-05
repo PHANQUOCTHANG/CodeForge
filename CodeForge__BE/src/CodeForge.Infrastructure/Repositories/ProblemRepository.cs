@@ -38,7 +38,7 @@ namespace CodeForge.Infrastructure.Repositories
 
         public async Task<List<Problem>> GetAllAsync()
         {
-            return await _context.CodingProblems.ToListAsync();
+            return await _context.CodingProblems.Include(l => l.Lesson).ToListAsync();
         }
 
         public async Task<Problem?> GetByIdAsync(Guid problemId)
@@ -52,13 +52,12 @@ namespace CodeForge.Infrastructure.Repositories
 
             if (problem == null) return null;
 
-            Problem newProblem = _mapper.Map<Problem>(updateProblemDto);
-            _context.CodingProblems.Update(newProblem);
+            _mapper.Map(updateProblemDto, problem);
             await _context.SaveChangesAsync();
-            return newProblem;
+            return problem;
         }
 
-        public async Task<bool> ExistsProblemByTitle(string title)
+        public async Task<bool> ExistsByTitle(string title)
         {
             Problem? problem = await _context.CodingProblems.FirstOrDefaultAsync(p => p.Title == title);
             return problem != null;

@@ -5,7 +5,7 @@ namespace CodeForge.Core.Interfaces.Services
 {
     public interface IAuthService
     {
-        Task<AuthDto> Login(LoginDto loginDto);
-        Task<AuthDto> Register(RegisterDto registerDto);
+        Task<ApiResponse<AuthDto>> Login(LoginDto loginDto);
+        Task<ApiResponse<AuthDto>> Register(RegisterDto registerDto);
     }
 }

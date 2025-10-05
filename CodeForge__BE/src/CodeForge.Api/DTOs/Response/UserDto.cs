@@ -1,4 +1,4 @@
-namespace CodeForge.Api.DTOs.Request.User
+namespace CodeForge.Api.DTOs.Response
 {
     public class UserDto
     {

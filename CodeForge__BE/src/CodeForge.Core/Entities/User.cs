@@ -18,14 +18,5 @@ namespace CodeForge.Core.Entities
 
         public User() { }
 
-        public User(string username, string email, string passwordHash, string role = "student", DateTime? joinDate = null, string status = "active")
-        {
-            Username = username;
-            Email = email;
-            PasswordHash = passwordHash;
-            Role = role;
-            JoinDate = joinDate ?? DateTime.UtcNow;
-            Status = status;
-        }
     }
 }

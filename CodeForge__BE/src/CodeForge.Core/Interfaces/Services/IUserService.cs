@@ -1,8 +1,8 @@
 
 
-using CodeForge.Api.DTOs;
+
 using CodeForge.Api.DTOs.Request.User;
-using CodeForge.Core.Entities;
+using CodeForge.Api.DTOs.Response;
 
 namespace CodeForge.Core.Interfaces.Services
 {

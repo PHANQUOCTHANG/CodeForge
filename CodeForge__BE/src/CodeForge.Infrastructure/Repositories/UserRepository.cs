@@ -19,12 +19,12 @@ namespace CodeForge.Infrastructure.Repositories
             _mapper = mapper;
         }
 
-        public async Task<List<User>> GetUsersAsync()
+        public async Task<List<User>> GetAllAsync()
         {
             return await _context.Users.ToListAsync();
         }
 
-        public async Task<User> CreateUserAsync(CreateUserDto createUserDto)
+        public async Task<User> CreateAsync(CreateUserDto createUserDto)
         {
             createUserDto.PasswordHash = BCrypt.Net.BCrypt.HashPassword(createUserDto.PasswordHash);
             User user = _mapper.Map<User>(createUserDto);

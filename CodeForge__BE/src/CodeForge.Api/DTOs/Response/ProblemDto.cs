@@ -1,3 +1,5 @@
+using CodeForge.Core.Entities;
+
 namespace CodeForge.Api.DTOs
 {
     public class ProblemDto
@@ -11,5 +13,6 @@ namespace CodeForge.Api.DTOs
         public int TimeLimit { get; set; }
         public int MemoryLimit { get; set; }
         public bool IsDeleted { get; set; } = false;
+        public Lesson? Lesson { get; set; }
     }
 }

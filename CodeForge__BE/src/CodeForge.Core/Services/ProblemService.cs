@@ -22,7 +22,7 @@ namespace CodeForge.Core.Service
         {
             try
             {
-                bool isExistsByTitle = await _problemRepository.ExistsProblemByTitle(createProblemDto.Title);
+                bool isExistsByTitle = await _problemRepository.ExistsByTitle(createProblemDto.Title);
                 if (isExistsByTitle)
                 {
                     return new ApiResponse<ProblemDto>(404, "Title is exists");
@@ -94,7 +94,7 @@ namespace CodeForge.Core.Service
         {
             try
             {
-                bool isExistsByTitle = await _problemRepository.ExistsProblemByTitle(updateProblemDto.Title);
+                bool isExistsByTitle = await _problemRepository.ExistsByTitle(updateProblemDto.Title);
                 if (isExistsByTitle) return new ApiResponse<ProblemDto>(404, "Create problem failed");
 
                 Problem? problem = await _problemRepository.UpdateAsync(updateProblemDto);

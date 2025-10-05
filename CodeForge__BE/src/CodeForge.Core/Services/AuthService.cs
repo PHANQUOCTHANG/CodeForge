@@ -43,22 +43,21 @@ namespace CodeForge.Core.Service
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<AuthDto> Login(LoginDto loginDto)
+        public async Task<ApiResponse<AuthDto>> Login(LoginDto loginDto)
         {
             User? user = await _authRepository.Login(loginDto);
-            if (user == null) return new AuthDto { Code = (int)LoginResult.UserNotFound, Message = "Invalid" };
-            if (!BCrypt.Net.BCrypt.Verify(loginDto.PasswordHash, user.PasswordHash))
-                return new AuthDto { Code = (int)LoginResult.InvalidPassword, Message = "Invalid Password" }; // Sai mật khẩu
+            if (user == null) return new ApiResponse<AuthDto>(404, "Invalid User", new AuthDto { isSuccess = false});
+            if (!BCrypt.Net.BCrypt.Verify(loginDto.PasswordHash, user.PasswordHash))  return new ApiResponse<AuthDto>(404, "Invalid Password", new AuthDto { isSuccess = false});
             string token = GenerateJwtToken(loginDto.Email);
-            return new AuthDto { Code = (int)LoginResult.Success, AccessToken = token, Message = "Login success" };
+             return new ApiResponse<AuthDto>(200, "Login success", new AuthDto { isSuccess = true , AccessToken = token});
         }
 
-        public async Task<AuthDto> Register(RegisterDto registerDto)
+        public async Task<ApiResponse<AuthDto>> Register(RegisterDto registerDto)
         {
             User? user = await _authRepository.Register(registerDto);
-            if (user == null) return new AuthDto { Code = (int)LoginResult.UserNotFound, Message = "User is exists" };
+            if (user == null)  return new ApiResponse<AuthDto>(404, "Invalid User", new AuthDto { isSuccess = false});
             string token = GenerateJwtToken(registerDto.Email);
-            return new AuthDto { Code = (int)LoginResult.Success, AccessToken = token, Message = "Register success" };
+            return new ApiResponse<AuthDto>(200, "Register success", new AuthDto { isSuccess = true , AccessToken = token});
         }
     }
 }

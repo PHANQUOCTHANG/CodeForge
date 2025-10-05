@@ -1,31 +1,37 @@
-
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeForge.Core.Entities
 {
     public class Problem
     {
+        [Key]
         public Guid ProblemId { get; set; } = Guid.NewGuid();
-        public Guid LessonId { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Difficulty { get; set; }
-        public string Tags { get; set; }
-        public int TimeLimit { get; set; }
-        public int MemoryLimit { get; set; }
+
+        [Required]
+        public Guid LessonId { get; set; }   // Foreign key
+
+        [Required]
+        [MaxLength(200)]
+        public string Title { get; set; } = string.Empty;
+
+        public string Description { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(50)]
+        public string Difficulty { get; set; } = string.Empty; // easy, medium, hard
+
+        public string Tags { get; set; } = string.Empty; // "array, dp, graph"
+
+        public int TimeLimit { get; set; } = 1000; // ms
+        public int MemoryLimit { get; set; } = 256; // MB
+
         public bool IsDeleted { get; set; } = false;
 
-        public Problem() { }
+        // Navigation property
+        [ForeignKey(nameof(LessonId))]
+        public Lesson? Lesson { get; set; }
 
-        // public Problem(Guid problemId, Guid lessonId, string title, string description, string difficulty, string tags, int timeLimit, int memoryLimit)
-        // {
-        //     ProblemId = problemId;
-        //     LessonId = lessonId;
-        //     Title = title;
-        //     Description = description;
-        //     Difficulty = difficulty;
-        //     Tags = tags;
-        //     TimeLimit = timeLimit;
-        //     MemoryLimit = memoryLimit;
-        // }
+        public Problem() {}
     }
 }

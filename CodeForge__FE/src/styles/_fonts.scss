@@ -1,0 +1,125 @@
+// Fonts
+// ==========================
+// 2. Font cho text / UI
+
+// Inter → font mặc định trong nhiều UI hiện đại (Figma, Linear, Vercel)
+
+// Poppins → hiện đại, bo tròn nhẹ, dễ đọc cho headings
+
+// Roboto → thân thiện, phổ biến, dễ tích hợp
+
+// Nunito Sans → mềm mại, dễ đọc, phù hợp nội dung học tập
+
+// 1. Font cho code editor / đoạn code
+
+// Fira Code → hỗ trợ ligatures (=>, === hiển thị đẹp mắt)
+
+// JetBrains Mono → chuyên cho lập trình viên, cân bằng giữa đẹp và dễ đọc
+
+// Source Code Pro (A dobe) → font coding cổ điển, dễ dùng
+
+// Cascadia Code (Microsoft) → tích hợp tốt với Windows/VS Code
+
+// 👉 Nên chọn Fira Code hoặc JetBrains Mono cho trải nghiệm học code.
+/* Inter (UI chính) */
+@font-face {
+  font-family: "Inter";
+  src: url("../assets/fonts/Inter/Inter-VariableFont_opsz\,wght.ttf")
+    format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("../assets/fonts/Inter/Inter-Italic-VariableFont_opsz\,wght.ttf")
+    format("truetype");
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+/* Fira Code (code editor) */
+@font-face {
+  font-family: "Fira Code";
+  src: url("../assets/fonts/Fira_Code/FiraCode-VariableFont_wght.ttf")
+    format("truetype");
+  font-weight: 300 700;
+  font-style: normal;
+}
+
+/* Nunito Sans */
+@font-face {
+  font-family: "Nunito Sans";
+  src: url("../assets/fonts/Nunito_Sans/NunitoSans-Italic-VariableFont_YTLC\,opsz\,wdth\,wght.ttf")
+    format("truetype");
+  font-weight: 200 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Nunito Sans";
+  src: url("../assets/fonts/Nunito_Sans/NunitoSans-VariableFont_YTLC\,opsz\,wdth\,wght.ttf")
+    format("truetype");
+  font-weight: 200 900;
+  font-style: normal;
+}
+
+/* Poppins */
+@font-face {
+  font-family: "Poppins";
+  src: url("../assets/fonts/Poppins/Poppins-VariableFont_wght.ttf")
+    format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+/* Roboto */
+@font-face {
+  font-family: "Roboto";
+  src: url("../assets/fonts/Roboto/Roboto-Italic-VariableFont_wdth\,wght.ttf")
+    format("truetype");
+  font-weight: 100 900;
+  font-style: italic;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("../assets/fonts/Roboto/Roboto-VariableFont_wdth\,wght.ttf")
+    format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+/* Global usage */
+:root {
+  --font-sans: "Inter", "Nunito Sans", "Poppins", "Roboto", system-ui,
+    sans-serif;
+  --font-code: "Fira Code", monospace;
+}
+// ==========================
+// Font Sizes Scale (Mobile-first)
+// ==========================
+// base = 16px
+$font-sizes: (
+  xs: 0.75rem,
+  // 12px
+  sm: 0.875rem,
+  // 14px
+  base: 1rem,
+  // 16px
+  lg: 1.125rem,
+  // 18px
+  xl: 1.25rem,
+  // 20px
+  2xl: 1.5rem,
+  // 24px
+  3xl: 1.875rem,
+  // 30px
+  4xl: 2.25rem,
+  // 36px
+  5xl: 3rem // 48px,,,,,,,,,,,,,,,
+);
+
+:root {
+  @each $name, $size in $font-sizes {
+    --font-#{$name}: #{$size};
+  }
+}
