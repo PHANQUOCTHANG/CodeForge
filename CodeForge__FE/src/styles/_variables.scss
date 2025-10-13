@@ -603,16 +603,34 @@ $opacity: (
   @each $key, $val in $font-sizes {
     --text-#{$key}: #{$val};
   }
+  //font weights
   @each $key, $val in $font-weights {
     --font-#{$key}: #{$val};
   }
+  //line height
   @each $key, $val in $line-heights {
     --leading-#{$key}: #{$val};
   }
+  //letter space
   @each $key, $val in $letter-spacing {
     --tracking-#{$key}: #{$val};
   }
-
+  //border width
+  @each $key, $val in $border-widths {
+    --border-#{$key}: #{$val};
+  }
+  //opacity
+  @each $key, $val in $opacity {
+    --opacity-#{$key}: #{$val};
+  }
+  //transition-timing
+  @each $key, $val in $transition-timing {
+    --transition-time-#{$key}: #{$val};
+  }
+  //transition-duration
+  @each $key, $val in $transition-duration {
+    --transition-duration-#{$key}: #{$val};
+  }
   // Font families
   --font-sans: #{$font-family-sans};
   --font-serif: #{$font-family-serif};

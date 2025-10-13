@@ -208,16 +208,21 @@
 // ============================================
 // 4. CONTAINER & SPACING
 // ============================================
-@mixin container(
-  $max-width: map.get(vars.$container-max-widths, xl),
-  $padding: vars.space(4)
-) {
+@mixin container($padding-vertical: 1rem, $padding-horizone: 1rem) {
   width: 100%;
-  max-width: $max-width;
   margin-left: auto;
   margin-right: auto;
-  padding-left: $padding;
-  padding-right: $padding;
+  padding-left: $padding-horizone;
+  padding-right: $padding-horizone;
+  padding-top: $padding-vertical;
+  padding-bottom: $padding-vertical;
+
+  // vòng qua từng breakpoint để set max-width
+  @each $breakpoint, $container-width in vars.$container-max-widths {
+    @media (min-width: map.get(vars.$breakpoints, $breakpoint)) {
+      max-width: $container-width;
+    }
+  }
 }
 
 @mixin section-spacing($top: vars.space(16), $bottom: vars.space(16)) {

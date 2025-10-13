@@ -3,18 +3,30 @@ import "./Header.scss";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useState } from "react";
-import { X, Home, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { X, Home, Menu, User } from "lucide-react";
+import { Dropdown, type MenuProps } from "antd";
+import CustomButton from "@/components/Ui/Button/CustomButton";
 const navItems = [
-  { label: "Trang chủ", icon: Home, path: "/" },
-  { label: "Khóa học", icon: Home, path: "/courses" },
-  { label: "Thực hành", icon: Home, path: "/practice" },
-  { label: "Liên hệ", icon: Home, path: "/contact" },
+  { label: "Home", icon: Home, path: "/" },
+  { label: "Courses", icon: Home, path: "/courses" },
+  { label: "Practice", icon: Home, path: "/practice" },
+  { label: "Contact", icon: Home, path: "/contact" },
 ];
-
+const items: MenuProps["items"] = [
+  {
+    key: "1",
+    label: <Link to="/login">Login</Link>,
+  },
+  {
+    key: "2",
+    label: <Link to="/register">Register</Link>,
+  },
+];
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  // const navigate = useNavigate();
+  // const [action, setAction] = useState("");
   console.log(location.pathname);
   return (
     <>
@@ -22,12 +34,29 @@ const Header = () => {
         <div className="header__container">
           <Link className="header__logo" to="/">
             <motion.div
-              whileHover={{ scale: 1.1, rotate: 180 }}
+              whileHover={{ scale: 1.1, rotateY: 180 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <span>T²VP</span>
             </motion.div>
-            <span>CODELEARN</span>
+            <motion.span
+              className="header__logo--code"
+              whileTap={{ scale: 0.9 }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              CODE
+            </motion.span>
+            <motion.span
+              className="header__logo--learn"
+              whileTap={{ scale: 0.9 }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              LEARN
+            </motion.span>
           </Link>
           <nav className="header__nav">
             {navItems.map((item, index) => (
@@ -66,14 +95,23 @@ const Header = () => {
           </nav>
           <motion.div className="header__more">
             <div className="header__actions">
-              <Button className="btn--login">
-                <Link to="/login">Đăng nhập</Link>
-              </Button>
-              <Button>
-                <Link to="/register">Đăng ký</Link>
-              </Button>
-              <Button
-                className="header__menu-button"
+              <div className="header__actions--mobile">
+                <Dropdown menu={{ items }} placement="bottomRight">
+                  <CustomButton variant="menu">
+                    <User />
+                  </CustomButton>
+                </Dropdown>
+              </div>
+
+              <CustomButton className="btn--login" variant="login">
+                <Link to="/login">Login</Link>
+              </CustomButton>
+              <CustomButton className="btn--register" variant="register">
+                <Link to="/register">Register</Link>
+              </CustomButton>
+              <CustomButton
+                variant="menu"
+                className="btn--register"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 <motion.div
@@ -82,7 +120,7 @@ const Header = () => {
                 >
                   {isMobileMenuOpen ? <X /> : <Menu />}
                 </motion.div>
-              </Button>
+              </CustomButton>
             </div>
           </motion.div>
         </div>
@@ -92,43 +130,39 @@ const Header = () => {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
             className="header-mobile"
           >
-            <div className="header-mobile__container">
-              <nav className="header-mobile__nav">
-                {navItems.map((item, index) => {
-                  const Icon = item.icon;
-                  return (
-                    <motion.div
-                      key={item.label}
-                      className="header-mobile__item"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      whileHover={{ x: 5 }}
+            <nav className="header-mobile__nav">
+              {navItems.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <motion.div
+                    key={item.label}
+                    className="header-mobile__item"
+                    initial={{ opacity: 0, x: -15 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Link
+                      to={item.path}
+                      className={`header-mobile__link${
+                        location.pathname === item.path
+                          ? " header-mobile__link--active"
+                          : ""
+                      }`}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <Link
-                        to={item.path}
-                        className={`header-mobile__link${
-                          location.pathname === item.path
-                            ? " header-mobile__link--active"
-                            : ""
-                        }`}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Icon className="header-mobile__icon" />
-                        <span className="header-mobile__label">
-                          {item.label}
-                        </span>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </nav>
-            </div>
+                      <Icon className="header-mobile__icon" />
+                      <span className="header-mobile__label">{item.label}</span>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>

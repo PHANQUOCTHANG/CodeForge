@@ -4,7 +4,7 @@ import HomePage from "../pages/client/Home/HomePage";
 const AdminRouters = () => {
   const routers = useRoutes([
     {
-      path: "/",
+      path: "/admin",
       element: <HomePage />,
     },
   ]);
