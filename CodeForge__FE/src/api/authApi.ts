@@ -1,17 +1,19 @@
 import api from "./axios";
-interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
-}
 const authApi = {
-  login: async (email: string, password: string) => {
-    const res: LoginResponse = await api.post("/login", {
-      email,
-      password,
-    });
-    localStorage.setItem("access_token", res.access_token);
-    localStorage.setItem("refresh_token", res.refresh_token);
-    return res;
+  login: async (email: string, passwordHash: string) => {
+    try {
+      const res = await api.post("/login", {
+        email,
+        passwordHash,
+      });
+
+      const { access_token, refresh_token } = res.data;
+      if (access_token) localStorage.setItem("access_token", access_token);
+      if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
+      return res;
+    } catch (error: any) {
+      throw new Error(error.response?.data || error.message);
+    }
   },
 };
 

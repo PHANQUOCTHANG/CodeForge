@@ -12,23 +12,34 @@ import authApi from "@/api/authApi";
 
 interface LoginFormValues {
   email: string;
-  password: string;
+  passwordHash: string;
 }
 
 const LoginPage: React.FC = () => {
+
+  // Để lấy dữ liệu của form gán một khuôn có sẵn .
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", passwordHash: "" },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
     console.log(data);
-    const res = await authApi.login(data.email, data.password);
-    console.log(res);
-    message.success(`Đăng nhập thành công: ${data.email}`);
+    const { email, passwordHash } = data;
+
+    try {
+      const response = await authApi.login(email , passwordHash) ;
+
+      // Nếu server trả status 200–299 thì tự coi như thành công
+      alert("✅ Login success!");
+      console.log("Response:", response.data);
+    } catch (error: any) {
+      console.error("❌ Login failed:", error.response?.data || error.message);
+      alert("Đăng nhập thất bại!");
+    }
   };
 
   return (
@@ -66,11 +77,11 @@ const LoginPage: React.FC = () => {
 
           <Form.Item
             label="Mật khẩu*"
-            validateStatus={errors.password ? "error" : ""}
-            help={errors.password?.message}
+            validateStatus={errors.passwordHash ? "error" : ""}
+            help={errors.passwordHash?.message}
           >
             <Controller
-              name="password"
+              name="passwordHash"
               control={control}
               rules={{ required: "Vui lòng nhập mật khẩu" }}
               render={({ field }) => (
