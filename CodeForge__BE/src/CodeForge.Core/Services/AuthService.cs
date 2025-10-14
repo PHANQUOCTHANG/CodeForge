@@ -23,41 +23,62 @@ namespace CodeForge.Core.Service
 
         private string GenerateJwtToken(string email)
         {
-            var claims = new[]
+            try
+            {
+                var claims = new[]
             {
             new Claim(JwtRegisteredClaimNames.Sub, email),
             new Claim("role", "admin"),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
+            };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
+                var token = new JwtSecurityToken(
+                    issuer: _config["Jwt:Issuer"],
+                    audience: _config["Jwt:Audience"],
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(30),
+                    signingCredentials: creds);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                return new JwtSecurityTokenHandler().WriteToken(token);
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
         }
 
         public async Task<ApiResponse<AuthDto>> Login(LoginDto loginDto)
         {
-            User? user = await _authRepository.Login(loginDto);
-            if (user == null) return new ApiResponse<AuthDto>(404, "Invalid User", new AuthDto { isSuccess = false});
-            if (!BCrypt.Net.BCrypt.Verify(loginDto.PasswordHash, user.PasswordHash))  return new ApiResponse<AuthDto>(404, "Invalid Password", new AuthDto { isSuccess = false});
-            string token = GenerateJwtToken(loginDto.Email);
-             return new ApiResponse<AuthDto>(200, "Login success", new AuthDto { isSuccess = true , AccessToken = token});
+            try
+            {
+                User? user = await _authRepository.Login(loginDto);
+                if (user == null) return new ApiResponse<AuthDto>(404, "Invalid User", new AuthDto { isSuccess = false });
+                if (!BCrypt.Net.BCrypt.Verify(loginDto.PasswordHash, user.PasswordHash)) return new ApiResponse<AuthDto>(404, "Invalid Password", new AuthDto { isSuccess = false });
+                string token = GenerateJwtToken(loginDto.Email);
+                return new ApiResponse<AuthDto>(200, "Login success", new AuthDto { isSuccess = true, AccessToken = token });
+            }
+            catch (Exception e)
+            {
+                return new ApiResponse<AuthDto>(500, e.Message);
+            }
         }
 
-        public async Task<ApiResponse<AuthDto>> Register(RegisterDto registerDto)
+        public async Task<ApiResponse<AuthDto>> Register(RegisterDto registerDto)  
         {
-            User? user = await _authRepository.Register(registerDto);
-            if (user == null)  return new ApiResponse<AuthDto>(404, "Invalid User", new AuthDto { isSuccess = false});
-            string token = GenerateJwtToken(registerDto.Email);
-            return new ApiResponse<AuthDto>(200, "Register success", new AuthDto { isSuccess = true , AccessToken = token});
+            try
+            {
+                User? user = await _authRepository.Register(registerDto);
+                if (user == null) return new ApiResponse<AuthDto>(404, "Invalid User", new AuthDto { isSuccess = false });
+                string token = GenerateJwtToken(registerDto.Email);
+                return new ApiResponse<AuthDto>(200, "Register success", new AuthDto { isSuccess = true, AccessToken = token });
+            }
+            catch (Exception e)
+            {
+                return new ApiResponse<AuthDto>(500, e.Message);
+            }
         }
     }
 }

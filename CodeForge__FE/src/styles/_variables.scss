@@ -1,11 +1,70 @@
-// _variables.scss — nơi lưu design tokens (biến)
+//Cách dùng
+// 1. Import file biến
 
-// Mục tiêu: giữ màu, spacing, font, breakpoint… Tốt để thay đổi toàn bộ giao diện từ 1 nơi.
-// ==========================
+// Trong component SCSS, bạn cần @use file _variables.scss:
 
-// ==========================
-// Spacing (margin, padding)
-// ==========================
+// @use "../../styles/variables" as vars;
+
+// .header {
+//   border-bottom: 1px solid vars.color("gray", 500);
+//   background-color: vars.color("blue", 100);
+//   color: vars.color("red", 600);
+//   padding: vars.space(4); // dùng spacing system
+// }
+
+// 2. Ví dụ thực tế
+// .button {
+//   background: vars.color("blue", 600);
+//   color: vars.$white;
+//   padding: vars.space(3) vars.space(5);
+//   border-radius: vars.space(2);
+
+//   &:hover {
+//     background: vars.color("blue", 700);
+//   }
+// }
+
+// .card {
+//   background: vars.color("gray", 50);
+//   border: 1px solid vars.color("gray", 200);
+//   box-shadow: vars.map.get(vars.$shadows, md);
+// }
+
+// 3. Tại sao dùng được?
+
+// vars.color("gray", 500) → function color() tìm map $gray rồi trả về #6b7280.
+
+// vars.space(4) → function space() lấy ra 1rem.
+
+// vars.$white → lấy trực tiếp biến màu đặc biệt.
+
+// vars.map.get(vars.$shadows, md) → dùng map.get của Sass để lấy shadow.
+
+// 👉 Như vậy, cú pháp chuẩn khi bạn setup thế này là:
+
+// Gọi màu:
+
+// vars.color("gray", 500)
+// vars.color("blue", 700)
+
+// Gọi spacing:
+
+// vars.space(6)
+
+// Gọi shadow/border-radius… bằng map.get:
+
+// vars.map.get(vars.$border-radius, lg)
+// vars.map.get(vars.$shadows, xl)
+
+// ============================================
+// _variables.scss — Design Tokens & Variables
+// ============================================
+@use "sass:map";
+@use "sass:math";
+
+// ============================================
+// 1. SPACING SYSTEM (8px base grid)
+// ============================================
 $spacing: (
   0: 0,
   1: 0.25rem,
@@ -20,171 +79,721 @@ $spacing: (
   // 20px
   6: 1.5rem,
   // 24px
+  7: 1.75rem,
+  // 28px
   8: 2rem,
   // 32px
+  9: 2.25rem,
+  // 36px
   10: 2.5rem,
   // 40px
   12: 3rem,
   // 48px
+  14: 3.5rem,
+  // 56px
   16: 4rem,
   // 64px
-  20: 5rem // 80px,,,,,,,,,,,,,,,,
-);
+  20: 5rem,
+  // 80px
+  24: 6rem,
+  // 96px
+  28: 7rem,
+  // 112px
+  32: 8rem,
+  // 128px
+  36: 9rem,
+  // 144px
+  40: 10rem,
+  // 160px
+  44: 11rem,
+  // 176px
+  48: 12rem,
+  // 192px
+  52: 13rem,
+  // 208px
+  56: 14rem,
+  // 224px
+  60: 15rem,
+  // 240px
+  64: 16rem,
+  // 256px
+  72: 18rem,
+  // 288px
+  80: 20rem,
+  // 320px
+  96: 24rem,
+  // 384px
+) !default;
 
-:root {
-  @each $key, $val in $spacing {
-    --space-#{$key}: #{$val};
-  }
-}
-
-// ==========================
-// Breakpoints (mobile first)
-// ==========================
+// ============================================
+// 2. BREAKPOINTS (Mobile First)
+// ============================================
 $breakpoints: (
+  xs: 475px,
   sm: 640px,
   md: 768px,
   lg: 1024px,
   xl: 1280px,
-  2xl: 1536px,
-);
+  "2xl": 1536px,
+) !default;
 
+// ============================================
+// 3. CONTAINER WIDTHS
+// ============================================
+$container-max-widths: (
+  sm: 640px,
+  md: 768px,
+  lg: 1024px,
+  xl: 1280px,
+  "2xl": 1440px,
+) !default;
+
+// ============================================
+// 4. TYPOGRAPHY
+// ============================================
+$font-sizes: (
+  xs: 0.75rem,
+  // 12px
+  sm: 0.875rem,
+  // 14px
+  base: 1rem,
+  // 16px
+  lg: 1.125rem,
+  // 18px
+  xl: 1.25rem,
+  // 20px
+  "2xl": 1.5rem,
+  // 24px
+  "3xl": 1.875rem,
+  // 30px
+  "4xl": 2.25rem,
+  // 36px
+  "5xl": 3rem,
+  // 48px
+  "6xl": 3.75rem,
+  // 60px
+  "7xl": 4.5rem,
+  // 72px
+  "8xl": 6rem,
+  // 96px
+  "9xl": 8rem,
+  // 128px
+) !default;
+
+$font-weights: (
+  thin: 100,
+  extralight: 200,
+  light: 300,
+  normal: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+  extrabold: 800,
+  black: 900,
+) !default;
+
+$line-heights: (
+  none: 1,
+  tight: 1.25,
+  snug: 1.375,
+  normal: 1.5,
+  relaxed: 1.625,
+  loose: 2,
+) !default;
+
+$letter-spacing: (
+  tighter: -0.05em,
+  tight: -0.025em,
+  normal: 0,
+  wide: 0.025em,
+  wider: 0.05em,
+  widest: 0.1em,
+) !default;
+
+$font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  "Roboto", "Helvetica Neue", sans-serif !default;
+$font-family-serif: "Georgia", Cambria, "Times New Roman", Times, serif !default;
+$font-family-mono: "JetBrains Mono", ui-monospace, "Cascadia Code",
+  "Courier New", monospace !default;
+
+// ============================================
+// 5. COLOR SYSTEM - COMPLETE PALETTE
+// ============================================
+
+// Gray Scale
+$gray: (
+  50: #f9fafb,
+  100: #f3f4f6,
+  200: #e5e7eb,
+  300: #d1d5db,
+  400: #9ca3af,
+  500: #6b7280,
+  600: #4b5563,
+  700: #374151,
+  800: #1f2937,
+  900: #111827,
+  950: #030712,
+) !default;
+
+// Blue
+$blue: (
+  50: #eff6ff,
+  100: #dbeafe,
+  200: #bfdbfe,
+  300: #93c5fd,
+  400: #60a5fa,
+  500: #3b82f6,
+  600: #2563eb,
+  700: #1d4ed8,
+  800: #1e40af,
+  900: #1e3a8a,
+  950: #172554,
+) !default;
+
+// Purple/Violet
+$purple: (
+  50: #faf5ff,
+  100: #f3e8ff,
+  200: #e9d5ff,
+  300: #d8b4fe,
+  400: #c084fc,
+  500: #a855f7,
+  600: #9333ea,
+  700: #7e22ce,
+  800: #6b21a8,
+  900: #581c87,
+  950: #3b0764,
+) !default;
+
+// Pink
+$pink: (
+  50: #fdf2f8,
+  100: #fce7f3,
+  200: #fbcfe8,
+  300: #f9a8d4,
+  400: #f472b6,
+  500: #ec4899,
+  600: #db2777,
+  700: #be185d,
+  800: #9f1239,
+  900: #831843,
+  950: #500724,
+) !default;
+
+// Red
+$red: (
+  50: #fef2f2,
+  100: #fee2e2,
+  200: #fecaca,
+  300: #fca5a5,
+  400: #f87171,
+  500: #ef4444,
+  600: #dc2626,
+  700: #b91c1c,
+  800: #991b1b,
+  900: #7f1d1d,
+  950: #450a0a,
+) !default;
+
+// Orange
+$orange: (
+  50: #fff7ed,
+  100: #ffedd5,
+  200: #fed7aa,
+  300: #fdba74,
+  400: #fb923c,
+  500: #f97316,
+  600: #ea580c,
+  700: #c2410c,
+  800: #9a3412,
+  900: #7c2d12,
+  950: #431407,
+) !default;
+
+// Yellow
+$yellow: (
+  50: #fefce8,
+  100: #fef9c3,
+  200: #fef08a,
+  300: #fde047,
+  400: #facc15,
+  500: #eab308,
+  600: #ca8a04,
+  700: #a16207,
+  800: #854d0e,
+  900: #713f12,
+  950: #422006,
+) !default;
+
+// Green
+$green: (
+  50: #f0fdf4,
+  100: #dcfce7,
+  200: #bbf7d0,
+  300: #86efac,
+  400: #4ade80,
+  500: #22c55e,
+  600: #16a34a,
+  700: #15803d,
+  800: #166534,
+  900: #14532d,
+  950: #052e16,
+) !default;
+
+// Emerald
+$emerald: (
+  50: #ecfdf5,
+  100: #d1fae5,
+  200: #a7f3d0,
+  300: #6ee7b7,
+  400: #34d399,
+  500: #10b981,
+  600: #059669,
+  700: #047857,
+  800: #065f46,
+  900: #064e3b,
+  950: #022c22,
+) !default;
+
+// Teal
+$teal: (
+  50: #f0fdfa,
+  100: #ccfbf1,
+  200: #99f6e4,
+  300: #5eead4,
+  400: #2dd4bf,
+  500: #14b8a6,
+  600: #0d9488,
+  700: #0f766e,
+  800: #115e59,
+  900: #134e4a,
+  950: #042f2e,
+) !default;
+
+// Cyan
+$cyan: (
+  50: #ecfeff,
+  100: #cffafe,
+  200: #a5f3fc,
+  300: #67e8f9,
+  400: #22d3ee,
+  500: #06b6d4,
+  600: #0891b2,
+  700: #0e7490,
+  800: #155e75,
+  900: #164e63,
+  950: #083344,
+) !default;
+
+// Indigo
+$indigo: (
+  50: #eef2ff,
+  100: #e0e7ff,
+  200: #c7d2fe,
+  300: #a5b4fc,
+  400: #818cf8,
+  500: #6366f1,
+  600: #4f46e5,
+  700: #4338ca,
+  800: #3730a3,
+  900: #312e81,
+  950: #1e1b4b,
+) !default;
+
+// Amber
+$amber: (
+  50: #fffbeb,
+  100: #fef3c7,
+  200: #fde68a,
+  300: #fcd34d,
+  400: #fbbf24,
+  500: #f59e0b,
+  600: #d97706,
+  700: #b45309,
+  800: #92400e,
+  900: #78350f,
+  950: #451a03,
+) !default;
+
+// Lime
+$lime: (
+  50: #f7fee7,
+  100: #ecfccb,
+  200: #d9f99d,
+  300: #bef264,
+  400: #a3e635,
+  500: #84cc16,
+  600: #65a30d,
+  700: #4d7c0f,
+  800: #3f6212,
+  900: #365314,
+  950: #1a2e05,
+) !default;
+
+// Sky
+$sky: (
+  50: #f0f9ff,
+  100: #e0f2fe,
+  200: #bae6fd,
+  300: #7dd3fc,
+  400: #38bdf8,
+  500: #0ea5e9,
+  600: #0284c7,
+  700: #0369a1,
+  800: #075985,
+  900: #0c4a6e,
+  950: #082f49,
+) !default;
+
+// Rose
+$rose: (
+  50: #fff1f2,
+  100: #ffe4e6,
+  200: #fecdd3,
+  300: #fda4af,
+  400: #fb7185,
+  500: #f43f5e,
+  600: #e11d48,
+  700: #be123c,
+  800: #9f1239,
+  900: #881337,
+  950: #4c0519,
+) !default;
+
+// Special Colors
+$white: #ffffff !default;
+$black: #000000 !default;
+$transparent: transparent !default;
+
+// ============================================
+// 6. SEMANTIC COLORS
+// ============================================
+$color-primary: map.get($blue, 600) !default;
+$color-primary-dark: map.get($blue, 700) !default;
+$color-primary-light: map.get($blue, 500) !default;
+
+$color-secondary: map.get($purple, 600) !default;
+$color-secondary-dark: map.get($purple, 700) !default;
+$color-secondary-light: map.get($purple, 500) !default;
+
+$color-success: map.get($green, 600) !default;
+$color-success-dark: map.get($green, 700) !default;
+$color-success-light: map.get($green, 500) !default;
+
+$color-warning: map.get($amber, 500) !default;
+$color-warning-dark: map.get($amber, 600) !default;
+$color-warning-light: map.get($amber, 400) !default;
+
+$color-error: map.get($red, 600) !default;
+$color-error-dark: map.get($red, 700) !default;
+$color-error-light: map.get($red, 500) !default;
+
+$color-info: map.get($cyan, 500) !default;
+$color-info-dark: map.get($cyan, 600) !default;
+$color-info-light: map.get($cyan, 400) !default;
+
+// ============================================
+// 7. BORDER & RADIUS
+// ============================================
+$border-widths: (
+  0: 0,
+  1: 1px,
+  2: 2px,
+  4: 4px,
+  8: 8px,
+) !default;
+
+$border-radius: (
+  none: 0,
+  sm: 0.125rem,
+  // 2px
+  md: 0.375rem,
+  // 6px
+  lg: 0.5rem,
+  // 8px
+  xl: 0.75rem,
+  // 12px
+  "2xl": 1rem,
+  // 16px
+  "3xl": 1.5rem,
+  // 24px
+  full: 9999px,
+) !default;
+
+// ============================================
+// 8. SHADOWS
+// ============================================
+$shadows: (
+  none: none,
+  xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05),
+  sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+  sm-alt: 0 1px 2px -1px rgba(0, 0, 0, 0.1),
+  md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+  md-alt: 0 2px 4px -2px rgba(0, 0, 0, 0.1),
+  lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+  lg-alt: 0 4px 6px -4px rgba(0, 0, 0, 0.1),
+  xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+  xl-alt: 0 8px 10px -6px rgba(0, 0, 0, 0.1),
+  "2xl": 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+  inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05),
+) !default;
+
+// ============================================
+// 9. TRANSITIONS
+// ============================================
+$transition-duration: (
+  fast: 150ms,
+  base: 250ms,
+  slow: 350ms,
+  slower: 500ms,
+) !default;
+
+$transition-timing: (
+  linear: linear,
+  ease: ease,
+  "ease-in": ease-in,
+  "ease-out": ease-out,
+  "ease-in-out": ease-in-out,
+) !default;
+
+// ============================================
+// 10. Z-INDEX SCALE
+// ============================================
+$z-index: (
+  dropdown: 1000,
+  sticky: 1020,
+  fixed: 1030,
+  modal-backdrop: 1040,
+  modal: 1050,
+  popover: 1060,
+  tooltip: 1070,
+) !default;
+
+// ============================================
+// 11. OPACITY SCALE
+// ============================================
+$opacity: (
+  0: 0,
+  5: 0.05,
+  10: 0.1,
+  20: 0.2,
+  25: 0.25,
+  30: 0.3,
+  40: 0.4,
+  50: 0.5,
+  60: 0.6,
+  70: 0.7,
+  75: 0.75,
+  80: 0.8,
+  90: 0.9,
+  95: 0.95,
+  100: 1,
+) !default;
+
+// ============================================
+// 12. CSS VARIABLES EXPORT
+// ============================================
 :root {
-  @each $name, $val in $breakpoints {
-    --break-#{$name}: #{$val};
+  // Spacing
+  @each $key, $val in $spacing {
+    --space-#{$key}: #{$val};
+  }
+
+  // Typography
+  @each $key, $val in $font-sizes {
+    --text-#{$key}: #{$val};
+  }
+  @each $key, $val in $font-weights {
+    --font-#{$key}: #{$val};
+  }
+  @each $key, $val in $line-heights {
+    --leading-#{$key}: #{$val};
+  }
+  @each $key, $val in $letter-spacing {
+    --tracking-#{$key}: #{$val};
+  }
+
+  // Font families
+  --font-sans: #{$font-family-sans};
+  --font-serif: #{$font-family-serif};
+  --font-mono: #{$font-family-mono};
+
+  // Gray colors
+  @each $key, $val in $gray {
+    --gray-#{$key}: #{$val};
+  }
+
+  // Blue colors
+  @each $key, $val in $blue {
+    --blue-#{$key}: #{$val};
+  }
+
+  // Purple colors
+  @each $key, $val in $purple {
+    --purple-#{$key}: #{$val};
+  }
+
+  // Pink colors
+  @each $key, $val in $pink {
+    --pink-#{$key}: #{$val};
+  }
+
+  // Red colors
+  @each $key, $val in $red {
+    --red-#{$key}: #{$val};
+  }
+
+  // Orange colors
+  @each $key, $val in $orange {
+    --orange-#{$key}: #{$val};
+  }
+
+  // Yellow colors
+  @each $key, $val in $yellow {
+    --yellow-#{$key}: #{$val};
+  }
+
+  // Green colors
+  @each $key, $val in $green {
+    --green-#{$key}: #{$val};
+  }
+
+  // Emerald colors
+  @each $key, $val in $emerald {
+    --emerald-#{$key}: #{$val};
+  }
+
+  // Teal colors
+  @each $key, $val in $teal {
+    --teal-#{$key}: #{$val};
+  }
+
+  // Cyan colors
+  @each $key, $val in $cyan {
+    --cyan-#{$key}: #{$val};
+  }
+
+  // Indigo colors
+  @each $key, $val in $indigo {
+    --indigo-#{$key}: #{$val};
+  }
+
+  // Amber colors
+  @each $key, $val in $amber {
+    --amber-#{$key}: #{$val};
+  }
+
+  // Lime colors
+  @each $key, $val in $lime {
+    --lime-#{$key}: #{$val};
+  }
+
+  // Sky colors
+  @each $key, $val in $sky {
+    --sky-#{$key}: #{$val};
+  }
+
+  // Rose colors
+  @each $key, $val in $rose {
+    --rose-#{$key}: #{$val};
+  }
+
+  // Special colors
+  --white: #{$white};
+  --black: #{$black};
+
+  // Semantic colors
+  --color-primary: #{$color-primary};
+  --color-primary-dark: #{$color-primary-dark};
+  --color-primary-light: #{$color-primary-light};
+
+  --color-secondary: #{$color-secondary};
+  --color-secondary-dark: #{$color-secondary-dark};
+  --color-secondary-light: #{$color-secondary-light};
+
+  --color-success: #{$color-success};
+  --color-success-dark: #{$color-success-dark};
+  --color-success-light: #{$color-success-light};
+
+  --color-warning: #{$color-warning};
+  --color-warning-dark: #{$color-warning-dark};
+  --color-warning-light: #{$color-warning-light};
+
+  --color-error: #{$color-error};
+  --color-error-dark: #{$color-error-dark};
+  --color-error-light: #{$color-error-light};
+
+  --color-info: #{$color-info};
+  --color-info-dark: #{$color-info-dark};
+  --color-info-light: #{$color-info-light};
+
+  // Border radius
+  @each $key, $val in $border-radius {
+    --radius-#{$key}: #{$val};
+  }
+
+  // Shadows
+  @each $key, $val in $shadows {
+    --shadow-#{$key}: #{$val};
+  }
+
+  // Z-index
+  @each $key, $val in $z-index {
+    --z-#{$key}: #{$val};
   }
 }
 
-// ==========================
-// Container Width
-// ==========================
-:root {
-  --container-sm: 640px;
-  --container-md: 768px;
-  --container-lg: 1024px;
-  --container-xl: 1280px;
-  --container-2xl: 1440px;
-  --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+// ============================================
+// 13. UTILITY FUNCTIONS
+// ============================================
+
+// Get spacing value
+@function space($key) {
+  @return map.get($spacing, $key);
 }
 
-// ==========================
-// Colors Palette
-// ==========================
-// 🌐 Nền & text
+// Get color from palette
+@function color($palette, $shade: 500) {
+  $color-map: null;
 
-// Background chính (light mode): #F9FAFB (xám rất nhạt)
-
-// Text chính: #1F2937 (xám đậm dễ đọc)
-
-// Text phụ: #6B7280 (xám trung tính)
-
-// Border/line: #E5E7EB (xám nhạt phân tách khối)
-
-// 🎯 Màu thương hiệu
-
-// Primary (Xanh dương): #3B82F6 (xanh tươi, trẻ trung, tin cậy)
-
-// Primary đậm (hover, focus): #2563EB
-
-// 🔥 Màu nhấn
-
-// Accent (Cam): #F59E0B (cam vàng năng động, dùng cho nút đặc biệt hoặc highlight)
-
-// Success (Xanh lá): #10B981 (dùng cho thông báo thành công, badge, completed)
-
-// Error (Đỏ): #EF4444 (báo lỗi, warning)
-
-// Info (Xanh ngọc): #06B6D4
-
-// 📂 SCSS Variables
-$colors: (
-  // Base colors
-  background: #f9fafb,
-  foreground: #1f2937,
-  muted: #6b7280,
-  border: #e5e7eb,
-  // Brand colors
-  primary: #3b82f6,
-  primary-hover: #2563eb,
-  // Accent colors
-  accent: #f59e0b,
-  success: #10b981,
-  error: #ef4444,
-  info: #06b6d4
-);
-
-:root {
-  @each $name, $val in $colors {
-    --#{$name}: #{$val};
+  @if $palette == "gray" {
+    $color-map: $gray;
+  } @else if $palette == "blue" {
+    $color-map: $blue;
+  } @else if $palette == "purple" {
+    $color-map: $purple;
+  } @else if $palette == "pink" {
+    $color-map: $pink;
+  } @else if $palette == "red" {
+    $color-map: $red;
+  } @else if $palette == "orange" {
+    $color-map: $orange;
+  } @else if $palette == "yellow" {
+    $color-map: $yellow;
+  } @else if $palette == "green" {
+    $color-map: $green;
+  } @else if $palette == "emerald" {
+    $color-map: $emerald;
+  } @else if $palette == "teal" {
+    $color-map: $teal;
+  } @else if $palette == "cyan" {
+    $color-map: $cyan;
+  } @else if $palette == "indigo" {
+    $color-map: $indigo;
+  } @else if $palette == "amber" {
+    $color-map: $amber;
+  } @else if $palette == "lime" {
+    $color-map: $lime;
+  } @else if $palette == "sky" {
+    $color-map: $sky;
+  } @else if $palette == "rose" {
+    $color-map: $rose;
   }
-}
 
-.dark {
-  --background: #0f172a;
-  --foreground: #e2e8f0;
-  --muted: #94a3b8;
-}
-
-// ==========================
-// Radius & Shadow
-// ==========================
-:root {
-  /* Font size scale */
-  --text-xs: 0.75rem; /* 12px */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.125rem; /* 18px */
-  --text-xl: 1.25rem; /* 20px */
-  --text-2xl: 1.5rem; /* 24px */
-  --text-3xl: 1.875rem; /* 30px */
-  --text-4xl: 2.25rem; /* 36px */
-
-  /* Line-height */
-  --leading-tight: 1.25;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.75;
-
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 1rem;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+  @if $color-map != null and type-of($color-map) == "map" {
+    @return map.get($color-map, $shade);
+  } @else {
+    @warn "Palette `#{$palette}` not found in color() function.";
+    @return null;
+  }
 }

@@ -1,10 +1,11 @@
 using AutoMapper;
 using CodeForge.Api.DTOs;
 using CodeForge.Api.DTOs.Request.Auth;
+using CodeForge.Api.DTOs.Request.Course;
 using CodeForge.Api.DTOs.Request.User;
 using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Entities;
-using CodeForge__BE.src.CodeForge.Api.DTOs.Request.Course;
+using CodeForge.Api.DTOs.Request.Course;
 
 
 namespace CodeForge.Core.Mappings
