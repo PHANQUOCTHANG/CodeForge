@@ -1,5 +1,5 @@
 import Hero from "@/components/Hero/Hero";
-import "./Home.scss";
+import "./HomePage.scss";
 import { Features } from "@/components/Feature/Feature";
 import { CodeEditor } from "@/components/CodeEditorRun/CodeEditorRun";
 import ReasonSection from "@/components/ReasonSection/ReasonSection";

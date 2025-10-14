@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: codeforge_sql
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      ACCEPT_EULA: ${ACCEPT_EULA}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    networks:
+      - codeforge_network
+
+  backend:
+    build:
+      context: ./CodeForge__BE
+      dockerfile: Dockerfile
+    container_name: codeforge_backend
+    environment:
+      ConnectionStrings__Default: "Server=${DB_HOST},${DB_PORT};Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;"
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+    ports:
+      - "5000:8080"
+    depends_on:
+      - db
+    networks:
+      - codeforge_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./CodeForge__FE
+      dockerfile: Dockerfile
+    container_name: codeforge_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - codeforge_network
+    restart: unless-stopped
+
+volumes:
+  sql_data:
+
+networks:
+  codeforge_network:
+    driver: bridge

@@ -4,9 +4,9 @@ interface LoginResponse {
   refresh_token: string;
 }
 const authApi = {
-  login: async (username: string, password: string) => {
-    const res: LoginResponse = await api.post("/auth/login", {
-      username,
+  login: async (email: string, password: string) => {
+    const res: LoginResponse = await api.post("/login", {
+      email,
       password,
     });
     localStorage.setItem("access_token", res.access_token);
