@@ -3,6 +3,9 @@ import HomePage from "../pages/client/Home/HomePage";
 import DefaultLayout from "../layouts/client/defaultLayout";
 import PracticePage from "../pages/client/Practice/PracticePage";
 import NotFoundPage from "../pages/NotFound/NotFound";
+import LoginPage from "@/pages/client/Login/LoginPage";
+import RegisterPage from "@/pages/client/Register/RegisterPage";
+import ForgotPasswordPage from "@/pages/client/ForgetPassword/ForgetPasswordPage";
 
 const ClientRouters = () => {
   const routers = useRoutes([
@@ -16,7 +19,18 @@ const ClientRouters = () => {
         { path: "contact", element: <HomePage /> },
       ],
     },
-
+    {
+      path: "/login",
+      element: <LoginPage />,
+    },
+    {
+      path: "/register",
+      element: <RegisterPage />,
+    },
+    {
+      path: "/forgot-password",
+      element: <ForgotPasswordPage />,
+    },
     {
       path: "*",
       element: <NotFoundPage />,

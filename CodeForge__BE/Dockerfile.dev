@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dev
+WORKDIR /app
+
+# Copy csproj và restore
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copy toàn bộ source code
+COPY . .
+
+# Cài đặt dotnet watch để hot reload
+RUN dotnet tool install --global dotnet-watch
+ENV PATH="$PATH:/root/.dotnet/tools"
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+EXPOSE 8080
+
+CMD ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:8080"]

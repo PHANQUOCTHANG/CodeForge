@@ -3,69 +3,65 @@ version: "3.9"
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: codeforge_sql
+    container_name: codeforge_sql_dev
     environment:
       SA_PASSWORD: ${SA_PASSWORD}
       ACCEPT_EULA: ${ACCEPT_EULA}
     ports:
       - "1433:1433"
     volumes:
-      - sql_data:/var/opt/mssql
+      - sql_data_dev:/var/opt/mssql
     networks:
       - codeforge_network
 
   backend:
     build:
       context: ./CodeForge__BE
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: codeforge_backend_dev
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__Default=Server=${DB_HOST:-db},${DB_PORT:-1433};Database=${DB_NAME};User Id=${DB_USER:-sa};Password=${DB_PASSWORD};TrustServerCertificate=True;
-      - DOTNET_USE_POLLING_FILE_WATCHER=true
-      - Jwt__Key=ThisIsASecretKeyForJwtDemo123456
-      - Jwt__Issuer=MyApp
-      - Jwt__Audience=MyAppUsers
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Server=${DB_HOST},${DB_PORT};Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;"
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      FrontendUrl: ${FrontendUrl}
     ports:
       - "5000:8080"
     volumes:
       - ./CodeForge__BE:/app
       - /app/bin
       - /app/obj
-      - backend_packages:/root/.nuget/packages
     depends_on:
       - db
     networks:
       - codeforge_network
-    restart: unless-stopped
 
   frontend:
     build:
       context: ./CodeForge__FE
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: codeforge_frontend_dev
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
+      - VITE_API_URL=${VITE_API_URL}
     ports:
       - "3000:3000"
     volumes:
-      - ./CodeForge__FE:/app # mount toàn bộ code FE
-      - /app/node_modules # giữ node_modules trong container
+      - ./CodeForge__FE:/app
+      - /app/node_modules
     depends_on:
       - backend
     networks:
       - codeforge_network
-    restart: unless-stopped
     stdin_open: true
     tty: true
+    # Thêm command override nếu cần
+
+volumes:
+  sql_data_dev:
 
 networks:
   codeforge_network:
     driver: bridge
-
-volumes:
-  sql_data:
-  backend_packages:
