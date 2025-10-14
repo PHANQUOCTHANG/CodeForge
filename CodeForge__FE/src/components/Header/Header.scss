@@ -8,9 +8,8 @@
 
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: var(--z-sticky);
   width: 100%;
-  padding: 0% var(--space-4);
   background-color: vars.$white;
   backdrop-filter: blur(10px);
   border-bottom: 1px solid vars.color("gray", 500);
@@ -18,9 +17,10 @@
   // header container
   &__container {
     align-items: center;
+    @include container(1rem, 1rem);
     display: flex;
     justify-content: space-between;
-    padding: var(--space-2);
+    padding: var(--space-2) var(--space-4);
   }
 
   // logo + title
@@ -53,6 +53,20 @@
       }
     }
 
+    &--code {
+      color: vars.color("blue", 600);
+      text-decoration: overline;
+      &:hover {
+        color: vars.color("gray", 900);
+      }
+    }
+    &--learn {
+      color: vars.color("gray", 900);
+      text-decoration: underline;
+      &:hover {
+        color: vars.color("blue", 600);
+      }
+    }
     span {
       font-weight: bold;
       font-size: var(--text-sm);
@@ -65,7 +79,6 @@
     color: vars.$black;
     text-decoration: none;
   }
-
   &__nav {
     display: none;
 
@@ -101,95 +114,132 @@
   &__actions {
     display: flex;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-1);
 
     .btn--avartar {
       @include respond(md) {
+        gap: var(--space-4);
         display: none;
       }
     }
-
-    .btn--register,
-    .btn--login {
+    &--mobile {
+      @include flex-center;
+      button {
+        padding: var(--space-2) var(--space-2);
+        color: vars.color("gray", 900);
+      }
+      @include respond(xs) {
+        display: none;
+      }
+    }
+    .btn--register {
       display: none;
-
-      @include respond(md) {
+      @include respond(xs) {
         display: block;
       }
     }
-  }
-
-  &__menu-button {
-    > div {
-      @include flex-center;
-      font-size: var(--text-base);
-    }
-
-    @include respond(md) {
+    .btn--login {
       display: none;
+      @include respond(xs) {
+        display: block;
+      }
+    }
+    .btn--menu {
+      display: block;
+      @include respond(md) {
+        display: none;
+      }
     }
   }
 }
 
 /* 📱 Mobile Header */
 .header-mobile {
-  display: block;
-  position: sticky;
-  top: 4rem; // ~64px (header height)
-  z-index: 40;
+  position: fixed;
+  top: 60px; /* tránh đè header chính */
+  left: 0;
+  width: 100vw;
+  height: calc(100vh);
   background-color: vars.$white;
   backdrop-filter: blur(6px);
-  border-bottom: 1px solid vars.color("gray", 500);
+  border-top: 1px solid vars.color("gray", 300);
+  z-index: var(--z-sticky);
+  overflow-y: auto;
+  overflow-x: hidden;
 
-  &__container {
-    height: 100vh;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: var(--space-4) var(--space-4);
 
+  /* Navigation */
   &__nav {
-    display: grid;
-    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: 100%;
   }
 
   &__item {
-    // motion wrapper
+    list-style: none;
   }
 
   &__link {
-    text-decoration: none;
-    font-size: var(--text-sm);
-    color: vars.$black;
     display: flex;
     align-items: center;
-    gap: var(--space-4);
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    transition: background-color 0.2s, color 0.2s;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    color: vars.$black;
+    text-decoration: none;
+    font-size: var(--text-base);
+    font-weight: 500;
+    transition: all 0.25s ease;
 
     &:hover {
-      background-color: var(--color-muted, rgba(0, 0, 0, 0.05));
+      background-color: vars.color("gray", 100);
+      color: vars.color("blue", 600);
+      transform: translateX(4px);
     }
 
     &--active {
-      i {
-        color: vars.color("blue", 600);
-      }
-
-      color: vars.color("blue", 500);
+      background-color: vars.color("blue", 100);
+      color: vars.color("blue", 700);
       font-weight: 600;
+
+      svg {
+        color: vars.color("blue", 700);
+      }
     }
   }
 
   &__icon {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
   }
 
   &__label {
-    font-size: 1rem;
+    flex: 1;
+    text-align: left;
   }
 
   /* Ẩn trên desktop */
   @media (min-width: 1025px) {
     display: none;
+  }
+
+  /* Animation mở mượt */
+  animation: slideDown 0.3s ease forwards;
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }

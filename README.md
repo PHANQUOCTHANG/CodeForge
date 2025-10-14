@@ -64,108 +64,218 @@ Password: giá trị trong .env -> SA_PASSWORD
 
 Chạy SSMS của SQL sever rồi đăng nhập vào
 
--> Các câu lệnh hay dùng
-docker compose up # Chạy containers
-docker compose up -d # Chạy background
-docker compose down # Dừng containers
-docker compose build # Build lại images
-docker compose logs -f # Xem log realtime
-🔹 Các bước chạy Docker lần đầu sau khi clone code
+🚀 2️⃣ Chạy ở môi trường DEV (khi bạn đang code)
+🔹 Câu lệnh
+docker-compose -f docker-compose.dev.yml up --build
 
-Clone repo
+🔹 Giải thích:
 
-git clone https://github.com/ten-ban/code-frontend.git
-cd code-frontend
+-f docker-compose.dev.yml → chỉ định file compose dev.
 
-Tạo file môi trường (nếu có)
-Nhiều dự án có .env.example. Bạn copy ra .env:
+--build → build lại image nếu code hoặc Dockerfile thay đổi.
 
-cp .env.example .env
+Không thêm -d để bạn xem log realtime (nếu cần chạy nền thì thêm -d).
 
-→ Sau đó chỉnh sửa biến môi trường phù hợp.
+🔹 Môi trường dev hoạt động thế nào:
 
-Build Docker image (tạo container image lần đầu)
+Frontend (frontend)
 
-docker-compose build
+Mount code local (./CodeForge\_\_FE:/app) → mọi thay đổi lưu trực tiếp vào container.
 
-Lệnh này đọc docker-compose.yml + Dockerfile, build image mới.
+Có hot reload nhờ Vite (port 5173).
 
-Nếu code có nhiều service (frontend, backend, db), tất cả sẽ build.
+Chạy npm run dev.
 
-Chạy container
+Backend (backend)
 
-docker-compose up -d
+Mount code local (./CodeForge\_\_BE:/app).
 
--d = chạy background.
+Chạy bằng dotnet watch run → hot reload khi bạn chỉnh code.
 
-Lần đầu có thể hơi lâu vì phải cài node_modules hoặc build project.
+Mọi package thêm (npm install, dotnet add package) sẽ ghi vào code local.
 
-Check logs (đảm bảo không lỗi)
+Database (db)
 
-docker-compose logs -f
+Container chạy SQL Server.
 
-→ Nếu thấy lỗi liên quan đến missing module, có thể phải xóa cache rồi build lại:
+Dữ liệu lưu vào volume (sql_data_dev), không bị mất khi container restart.
 
-docker-compose build --no-cache
-docker-compose up -d
+| Tác vụ                       | Lệnh                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| Chạy container (dev mode)    | `docker-compose -f docker-compose.dev.yml up --build`                                             |
+| Dừng toàn bộ                 | `docker-compose -f docker-compose.dev.yml down`                                                   |
+| Dừng & xóa volume (reset DB) | `docker-compose -f docker-compose.dev.yml down -v`                                                |
+| Xem log của 1 service        | `docker-compose -f docker-compose.dev.yml logs -f backend`                                        |
+| Mở shell trong container     | `docker-compose -f docker-compose.dev.yml exec frontend sh`                                       |
+| Thêm package Node.js         | `docker-compose -f docker-compose.dev.yml exec frontend npm install axios`                        |
+| Thêm package .NET            | `docker-compose -f docker-compose.dev.yml exec backend dotnet add package Swashbuckle.AspNetCore` |
 
-Mở ứng dụng trên browser
+🌐 4️⃣ Chạy ở môi trường PROD (khi deploy)
+🔹 Câu lệnh
+docker-compose -f docker-compose.prod.yml up --build -d
 
-Thường frontend React/Vite chạy ở: http://localhost:5173
-(hoặc port bạn map trong docker-compose.yml).
+🔹 Giải thích:
 
-Backend: http://localhost:3000
-hay http://localhost:8080
-tùy config.
+-f docker-compose.prod.yml → file cấu hình production.
 
-🔹 Tips khi mới clone về
+--build → build image production.
 
-Nếu volume mount code (./src:/app/src), container sẽ dùng code local → hot reload.
+-d → chạy ở chế độ detached (background).
 
-Nếu chỉ copy code vào image (COPY . .), thì mỗi lần đổi code hoặc đổi branch phải rebuild.
+🔹 Môi trường prod hoạt động thế nào:
 
-Nếu repo có nhiều branch với Docker khác nhau → nên chạy:
+Frontend build xong thành static HTML/JS/CSS → serve bằng nginx.
 
+Backend build .dll và chạy ASP.NET trên base image aspnet:8.0.
+
+DB dùng volume riêng sql_data (không trùng với dev volume).
+
+Không mount code local → code trong container là build version (an toàn, nhanh, gọn).
+
+🧹 5️⃣ Reset môi trường (nếu cần dọn sạch)
+
+Khi bạn thấy Docker hơi lộn xộn, có thể dọn toàn bộ bằng:
+
+docker-compose -f docker-compose.dev.yml down -v --remove-orphans
+docker-compose -f docker-compose.prod.yml down -v --remove-orphans
 docker system prune -af
+docker volume prune -f
 
-để xoá cache, tránh conflict.
+Quy trình làm việc chuẩn cho team
+| Bước | Người dev cần làm | Ghi chú |
+| ---- | --------------------------------------------- | ----------------------------------------- |
+| 1️⃣ | Pull code mới từ Git | đảm bảo sync với team |
+| 2️⃣ | Chạy `docker-compose.dev.yml` | backend + frontend auto hot reload |
+| 3️⃣ | Dev bình thường | chỉnh code, save → reload tự động |
+| 4️⃣ | Thêm package (npm/dotnet) trong container | để đảm bảo dependency đồng nhất |
+| 5️⃣ | Commit & push | code + package.json + csproj luôn đồng bộ |
+| 6️⃣ | Build & deploy bằng `docker-compose.prod.yml` | tạo image production để đưa lên server |
 
-👉 Bạn có muốn mình viết luôn một checklist 5 bước auto (kiểu makefile hoặc script sh) để chỉ cần ./run.sh là tự động build + run sau khi clone repo không?
-//cách cài package docker
-🔹 2. Nếu bạn đang chạy bằng Docker
+⚙️ I. Khi bạn đang ở môi trường DEV (hot reload đang bật)
 
-Khi chạy bằng Docker, bạn không cài package trực tiếp trên máy, mà phải cập nhật trong container. Có 2 cách:
+Giả sử bạn đang chạy bằng lệnh:
 
-Cách A: Cài từ trong container
+docker-compose -f docker-compose.dev.yml up --build
 
-Vào container frontend:
+🧠 1️⃣ Trường hợp bạn chỉ sửa code (JS/TS hoặc C#):
 
-docker exec -it <ten-container-frontend> sh
+➡ Không cần làm gì cả
 
-(hoặc bash nếu có)
+Frontend (Vite) → tự động reload trình duyệt.
 
-Trong container, chạy:
+Backend (.NET Watch) → tự build lại và restart server.
 
-npm install ten-package
+✅ Chỉ cần save file là thấy thay đổi ngay.
 
-→ Nó sẽ cài vào node_modules trong container.
+🔁 2️⃣ Trường hợp bạn thay đổi dependency:
 
-Quan trọng: Nếu container không mount node_modules ra ngoài, khi bạn rebuild container thì sẽ mất package. Vì vậy thường phải chạy lại:
+Ví dụ:
 
-docker-compose build frontend
-docker-compose up -d frontend
+Thêm package npm (axios, react-router-dom, v.v.)
 
-Cách B: Chỉnh package.json rồi rebuild
+Thêm NuGet package (Swashbuckle, EntityFramework, v.v.)
 
-Mở file frontend/package.json, thêm package bằng lệnh:
+🔹 Frontend:
+docker-compose -f docker-compose.dev.yml exec frontend npm install axios
 
-npm install ten-package --save
+→ Tự động ghi vào package.json trong local.
+→ Không cần rebuild container.
 
-hoặc chỉnh thủ công trong dependencies.
+🔹 Backend:
+docker-compose -f docker-compose.dev.yml exec backend dotnet add package Swashbuckle.AspNetCore
 
-Sau đó rebuild image:
-docker-compose build --no-cache frontend
-docker-compose up frontend
+→ Ghi vào .csproj
+→ Sau đó container tự rebuild code nhờ dotnet watch.
 
-docker-compose build frontend
-docker-compose up -d frontend
+♻️ 3️⃣ Trường hợp bạn sửa Dockerfile hoặc docker-compose.dev.yml
+
+Ví dụ: đổi port, thêm volume, thêm ENV mới,...
+
+👉 Lúc này cần rebuild lại container:
+
+docker-compose -f docker-compose.dev.yml down
+docker-compose -f docker-compose.dev.yml up --build
+
+⚠️ Nếu có thay đổi database, muốn xóa data test:
+
+docker-compose -f docker-compose.dev.yml down -v
+
+🌐 II. Khi bạn ở môi trường PRODUCTION
+
+Chạy lệnh build & deploy như sau:
+
+docker-compose -f docker-compose.prod.yml up --build -d
+
+🔁 Khi bạn sửa code xong (FE hoặc BE):
+
+Vì production không mount code local, nên bạn phải rebuild image:
+
+docker-compose -f docker-compose.prod.yml up --build -d
+
+Docker sẽ:
+
+Build lại image backend (chạy dotnet publish)
+
+Build lại image frontend (chạy npm run build)
+
+Restart container mới (BE, FE, DB vẫn giữ nguyên data volume)
+
+🧹 Nếu muốn dọn sạch trước khi build lại
+docker-compose -f docker-compose.prod.yml down -v --remove-orphans
+docker-compose -f docker-compose.prod.yml up --build -d
+
+| Mục đích                    | Lệnh                                                         |
+| --------------------------- | ------------------------------------------------------------ |
+| 🟢 Chạy dev mode            | `docker-compose -f docker-compose.dev.yml up --build`        |
+| 🔵 Dừng dev mode            | `docker-compose -f docker-compose.dev.yml down`              |
+| 🟠 Xóa toàn bộ (bao gồm DB) | `docker-compose -f docker-compose.dev.yml down -v`           |
+| 🔵 Mở shell FE              | `docker-compose -f docker-compose.dev.yml exec frontend sh`  |
+| 🔵 Mở shell BE              | `docker-compose -f docker-compose.dev.yml exec backend bash` |
+| 🟣 Chạy production          | `docker-compose -f docker-compose.prod.yml up --build -d`    |
+| 🔴 Dừng production          | `docker-compose -f docker-compose.prod.yml down`             |
+
+💡 IV. Mẹo thực tế cho teamwork
+
+Mỗi dev chỉ cần:
+
+Pull code về
+
+Chạy docker-compose -f docker-compose.dev.yml up --build
+
+Code & Save → Tự reload.
+
+Khi commit:
+
+Bao gồm package.json, .csproj, .env
+
+Không commit file build (dist/, bin/, obj/)
+
+✅ Bước 2 — Yêu cầu dev khác đồng bộ lại node_modules
+
+Khi họ pull code mới, họ phải xóa node_modules cũ để tránh còn lib cũ.
+
+Trong dự án Docker (hoặc local), các dev khác chạy:
+
+docker-compose -f docker-compose.dev.yml down -v
+
+và trong thư mục CodeForge\_\_FE:
+
+Remove-Item -Recurse -Force node_modules, package-lock.json
+
+(hoặc Linux: rm -rf node_modules package-lock.json)
+
+Sau đó:
+
+docker-compose -f docker-compose.dev.yml up --build
+
+👉 Docker sẽ rebuild image frontend, cài lại dependency mới không còn Tailwind nữa.
+
+💬 Ghi nhớ cho team:
+
+Khi bạn hoặc ai đó cài mới package trên Windows:
+
+Chạy npm install --include=optional --ignore-scripts
+
+Commit cả package-lock.json
+
+Các dev khác chỉ cần npm ci hoặc docker-compose up --build → sẽ ổn định cho mọi hệ điều hành.

@@ -102,13 +102,9 @@ p {
 
 // Links
 a {
-  color: var(--color-primary);
+  color: vars.color("gray", 900);
   text-decoration: none;
-  @include transition(color);
-
-  &:hover {
-    color: var(--color-primary-dark);
-  }
+  // @include transition(color);
 
   &:focus-visible {
     outline: 2px solid var(--color-primary);
