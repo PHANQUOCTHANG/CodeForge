@@ -1,17 +1,23 @@
 
 using CodeForge.Api.DTOs.Response;
 using CodeForge.Api.DTOs.Request.Course;
+using CodeForge.Core.Models;
+using CodeForge.Application.DTOs.Courses;
+using CodeForge.Api.DTOs;
 
 
 namespace CodeForge__BE.src.CodeForge.Core.Interfaces.Services
 {
     public interface ICourseService
     {
-        Task<ApiResponse<List<CourseDto>>> GetAllCourseAsync(QueryParameters query);
-        Task<ApiResponse<CourseDto>> GetCourseByIdAsync(Guid courseId);
+        Task<PaginationResult<object>> GetPagedCoursesAsync(
+            int page, int pageSize, string? search);
+        Task<List<CourseDto>> GetAllCourseAsync(QueryParameters query);
+        Task<CourseDto> GetCourseByIdAsync(Guid courseId);
+        Task<CourseDetailDto?> GetCourseDetailBySlugAsync(string slug);
 
-        Task<ApiResponse<CourseDto>> UpdateCourseAsync(UpdateCourseDto updateCourseDto);
-        Task<ApiResponse<CourseDto>> CreateCourseAsync(CreateCourseDto createCourseDto);
-        Task<ApiResponse<bool>> DeleteCourseAsync(Guid courseId);
+        Task<CourseDto> UpdateCourseAsync(UpdateCourseDto updateCourseDto);
+        Task<CourseDto> CreateCourseAsync(CreateCourseDto createCourseDto);
+        Task<bool> DeleteCourseAsync(Guid courseId);
     }
 }

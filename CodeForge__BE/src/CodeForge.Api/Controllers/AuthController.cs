@@ -1,69 +1,136 @@
-using Azure.Core;
 using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Auth;
 using CodeForge.Api.DTOs.Request.Auth;
+using CodeForge.Core.Exceptions;
 using CodeForge.Core.Interfaces.Services;
-using CodeForge.Core.Service;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeForge.Api.Controllers
 {
-
     [ApiController]
-    [Route("")]
+    [Route("api/[Controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
 
         public AuthController(IAuthService authService)
         {
-            _authService = authService;  
+            _authService = authService;
         }
 
-
-        // login .
+        // ============================
+        // LOGIN
+        // ============================
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            try
-            {
-                ApiResponse<AuthDto> response = await _authService.Login(loginDto);
-                return response.Code switch
-                {
-                    200 => Ok(response) ,
-                    401 => Unauthorized(response),
-                    404 => Unauthorized(response),
-                    _ => StatusCode(500,response)
-                };
-            }
-            catch (Exception ex)
-            {
-                // Log lỗi ở đây (Serilog, NLog, v.v.)
-                return StatusCode(500, new { message = "Server error", detail = ex.Message });
-            }
+            // KHÔNG CẦN try-catch. Global Middleware sẽ bắt các UnauthorizedException/ConflictException
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var result = await _authService.LoginAsync(loginDto, ip);
+
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+                SetRefreshCookie(result.RefreshToken);
+
+            return Ok(ApiResponse<AuthDto>.Success(result, "Đăng nhập thành công"));
         }
 
-
-        // register .
+        // ============================
+        // REGISTER
+        // ============================
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            try
+            // KHÔNG CẦN try-catch. Logic thành công được giữ lại.
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var result = await _authService.RegisterAsync(registerDto, ip);
+
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+                SetRefreshCookie(result.RefreshToken);
+
+            // Thường sử dụng Created (201) cho đăng ký thành công
+            return CreatedAtAction(nameof(Login), new { email = registerDto.Email },
+                ApiResponse<AuthDto>.Created(result, "Đăng ký thành công"));
+        }
+
+        // ============================
+        // REFRESH TOKEN
+        // ============================
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+
+            // Đây là kiểm tra cơ bản, không phải lỗi nghiệp vụ từ Service
+            if (string.IsNullOrEmpty(refreshToken))
+                return Unauthorized(ApiResponse<string>.Fail("Refresh token missing"));
+
+            // KHÔNG CẦN try-catch. Nếu token không hợp lệ (Invalid token/Expired), 
+            // AuthService sẽ ném UnauthorizedException và Middleware sẽ bắt.
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var result = await _authService.RefreshTokenAsync(refreshToken, ip);
+
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+                SetRefreshCookie(result.RefreshToken);
+
+            return Ok(ApiResponse<AuthDto>.Success(result, "Làm mới token thành công"));
+        }
+
+        // ============================
+        // LOGOUT
+        // ============================
+        // Trong AuthController.cs
+
+        // ============================
+        // LOGOUT
+        // ============================
+        [Authorize]
+        [HttpPost("log-out")]
+        public async Task<IActionResult> Logout()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+
+            // 1. Chỉ thực hiện Revoke nếu Refresh Token tồn tại trong Cookie
+            if (!string.IsNullOrEmpty(refreshToken))
             {
-                ApiResponse<AuthDto> response = await _authService.Register(registerDto);
-                return response.Code switch
+                var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+                // Bắt lỗi khi token đã bị vô hiệu hóa
+                try
                 {
-                    200 => Ok(response) ,
-                    401 => Unauthorized(response),
-                    404 => Unauthorized(response),
-                    _ => StatusCode(500,response)
-                };
+                    // Cố gắng thu hồi token trong DB.
+                    await _authService.RevokeTokenAsync(refreshToken, ip);
+                }
+                catch (UnauthorizedException)
+                {
+                    // ✅ XỬ LÝ LỖI IM LẶNG: Nếu AuthService ném UnauthorizedException 
+                    // (vì token không hợp lệ, hết hạn, hoặc đã bị thu hồi), 
+                    // chúng ta bỏ qua lỗi này và tiếp tục xóa cookie.
+                    // Mục tiêu của Logout đã đạt được: phiên người dùng kết thúc.
+                }
+                // Các lỗi khác (như lỗi DB, Exception chung) vẫn sẽ được Global Handler bắt
             }
-            catch (Exception ex)
+
+            // 2. Luôn xóa cookie khỏi trình duyệt (Bước quan trọng nhất)
+            Response.Cookies.Delete("refreshToken");
+
+            // ✅ Trả về 200 OK
+            return Ok(ApiResponse<string>.Success("Đăng xuất thành công"));
+        }
+
+        // ============================
+        // Helper: Set Refresh Cookie (Giữ nguyên)
+        // ============================
+        private void SetRefreshCookie(string refreshToken)
+        {
+            var cookieOptions = new CookieOptions
             {
-                // Log lỗi ở đây (Serilog, NLog, v.v.)
-                return StatusCode(500, new { message = "Server error", detail = ex.Message });
-            }
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax, // 👈 đổi None → Lax
+                Secure = false, // tạm thời cho localhost, production thì phải true
+                Expires = DateTime.UtcNow.AddDays(30)
+            };
+            Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
     }
 }

@@ -4,6 +4,7 @@ using Humanizer;
 
 namespace CodeForge.Core.Entities
 {
+    [Table("Modules")]
     public class Module
     {
 
@@ -21,5 +22,7 @@ namespace CodeForge.Core.Entities
 
         [ForeignKey(nameof(CourseId))]
         public Course? Course { get; set; }
+        // Module.cs
+        public ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
     }
 }

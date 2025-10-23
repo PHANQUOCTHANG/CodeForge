@@ -1,66 +1,96 @@
 using CodeForge.Api.DTOs;
-using CodeForge.Core.Interfaces.Repositories;
+using CodeForge.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using CodeForge.Core.Interfaces.Repositories;
+using Microsoft.AspNetCore.Authorization; // Giả định Module DTOs nằm ở đây
 
 namespace CodeForge.Api.Controllers
 {
+    // ✅ Đổi tên class sang PascalCase (ModuleController) theo chuẩn C#
     [ApiController]
-    [Route("api/[controller]")]
-    public class moduleController : ControllerBase
+    [Route("api/[Controller]")]
+    public class ModuleController : ControllerBase
     {
         private readonly IModuleService _moduleService;
 
-        public moduleController(IModuleService moduleService)
+        public ModuleController(IModuleService moduleService)
         {
             _moduleService = moduleService;
         }
 
-
-        // get all module .
+        // ============================
+        // GET ALL MODULES (GET /api/module)
+        // ============================
         [HttpGet]
         public async Task<IActionResult> GetAllModuleAsync()
         {
-            var response = await _moduleService.GetAllModuleAsync();
+            // Service trả về List<ModuleDto>
+            var result = await _moduleService.GetAllModuleAsync();
 
-            return Ok(response);
+            // ✅ Bọc dữ liệu và trả về 200 OK
+            return Ok(ApiResponse<List<ModuleDto>>.Success(result, "Modules retrieved successfully."));
         }
 
-        // get module by id .
+        // ============================
+        // GET MODULE BY ID (GET /api/module/{moduleId})
+        // ============================
         [HttpGet("{moduleId}")]
         public async Task<IActionResult> GetModuleByIdAsync([FromRoute] Guid moduleId)
         {
-            var response = await _moduleService.GetModuleByIdAsync(moduleId);
+            // Service sẽ ném NotFoundException nếu không tìm thấy
+            var result = await _moduleService.GetModuleByIdAsync(moduleId);
 
-            return Ok(response);
+            // ✅ Bọc dữ liệu và trả về 200 OK
+            return Ok(ApiResponse<ModuleDto>.Success(result, "Module retrieved successfully."));
         }
 
-        // update module .
+        // ============================
+        // UPDATE MODULE (PATCH /api/module/update)
+        // ============================
+        [Authorize]
         [HttpPatch("update")]
         public async Task<IActionResult> UpdateModuleAsync([FromBody] UpdateModuleDto updateModuleDto)
         {
-            var response = await _moduleService.UpdateModuleAsync(updateModuleDto);
+            // Service sẽ ném NotFoundException hoặc ConflictException
+            var result = await _moduleService.UpdateModuleAsync(updateModuleDto);
 
-            return Ok(response);
+            // ✅ Thao tác cập nhật trả về 200 OK
+            return Ok(ApiResponse<ModuleDto>.Success(result, "Module updated successfully."));
         }
 
-        // create module .
+        // ============================
+        // CREATE MODULE (POST /api/module/create)
+        // ============================
+        [Authorize]
         [HttpPost("create")]
         public async Task<IActionResult> CreateModuleAsync([FromBody] CreateModuleDto createModuleDto)
         {
-            var response = await _moduleService.CreateModuleAsync(createModuleDto);
+            // Service sẽ ném ConflictException nếu tên bị trùng
+            var result = await _moduleService.CreateModuleAsync(createModuleDto);
 
-            return Ok(response);
+            // ✅ Chuẩn RESTful: Dùng CreatedAtAction để trả về 201 Created
+            return CreatedAtAction(
+                nameof(GetModuleByIdAsync),
+                new { moduleId = result.ModuleId }, // Giả định ModuleDto có thuộc tính Id
+                ApiResponse<ModuleDto>.Created(result, "Module created successfully.")
+            );
         }
 
-        // delete module 
-        [HttpDelete("delete/{moduleId}")]
+        // ============================
+        // DELETE MODULE (DELETE /api/module/{moduleId})
+        // ============================
+        [Authorize]
+        [HttpDelete("{moduleId}")] // ✅ Đã sửa endpoint cho phù hợp với /api/module/{moduleId}
         public async Task<IActionResult> DeleteModuleAsync([FromRoute] Guid moduleId)
         {
-            var response = await _moduleService.DeleteModuleAsync(moduleId);
+            // Service sẽ ném NotFoundException nếu không tìm thấy
+            await _moduleService.DeleteModuleAsync(moduleId);
 
-            return Ok(response);
+            // ✅ Chuẩn RESTful: Dùng NoContent để trả về 204 No Content
+            return NoContent();
         }
-
-
     }
 }

@@ -3,13 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeForge.Core.Entities
 {
+    [Table("CodingProblems")]
     public class Problem
     {
         [Key]
-        public Guid ProblemId { get; set; } = Guid.NewGuid();
+        [Column("ProblemID")]
+        public Guid ProblemId { get; set; }
 
-        [Required]
-        public Guid LessonId { get; set; }   // Foreign key
+        [Column("LessonID")]
+        public Guid LessonId { get; set; }
 
         [Required]
         [MaxLength(200)]
@@ -32,6 +34,6 @@ namespace CodeForge.Core.Entities
         [ForeignKey(nameof(LessonId))]
         public Lesson? Lesson { get; set; }
 
-        public Problem() {}
+        public Problem() { }
     }
 }

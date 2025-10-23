@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Input, Button, Divider, message } from "antd";
+import { Form, Input, Button, Divider } from "antd";
 import {
   GoogleOutlined,
   GithubOutlined,
@@ -7,6 +7,12 @@ import {
 } from "@ant-design/icons";
 import { useForm, Controller } from "react-hook-form";
 import "./RegisterPage.scss";
+import authApi from "@/api/authApi";
+import { openNotification } from "@/helper/notification";
+import { setGlobalAccessToken, setGlobalDispatch } from "@/api/axios";
+import { login } from "@/features/auth/authSlice";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "@/store/store";
 
 interface RegisterFormValues {
   username: string;
@@ -30,8 +36,44 @@ const RegisterPage: React.FC = () => {
     },
   });
 
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const onSubmit = async (data: RegisterFormValues) => {
-    message.success(`Tạo tài khoản thành công cho: ${data.username}`);
+    const { username, email, password } = data;
+    try {
+      // 🔹 1. Gọi API đăng ký
+      const response = await authApi.register(username, email, password);
+      openNotification("success", "Thành công", "Đăng ký thành công!");
+      if (response.isSuccess) {
+        setTimeout(() => {
+          const { accessToken, userInfo } = response.data;
+          setGlobalAccessToken(accessToken);
+          setGlobalDispatch(dispatch);
+          dispatch(login({ accessToken: accessToken, userInfor: userInfo }));
+
+          openNotification(
+            "success",
+            "Thành công",
+            "Tự động đăng nhập thành công!"
+          );
+
+          // ✅ 6. Chuyển hướng đến trang chủ
+          navigate("/");
+        }, 1200);
+      }
+
+      // ✅ 5. Thông báo thành công
+    } catch (error: any) {
+      console.error(
+        "❌ Register failed:",
+        error.response?.data || error.message
+      );
+      openNotification(
+        "error",
+        "Thất bại",
+        error.response?.data?.message || "Đăng ký thất bại!"
+      );
+    }
   };
 
   return (
@@ -54,7 +96,16 @@ const RegisterPage: React.FC = () => {
             <Controller
               name="username"
               control={control}
-              rules={{ required: "Vui lòng nhập tên tài khoản" }}
+              rules={{
+                required: "Vui lòng nhập tên tài khoản",
+                validate: (value) =>
+                  value.trim() !== "" ||
+                  "Tên tài khoản không được toàn khoảng trắng",
+                minLength: {
+                  value: 6,
+                  message: "Tên tài khoản phải có ít nhất 6 ký tự",
+                },
+              }}
               render={({ field }) => (
                 <Input {...field} placeholder="Tên tài khoản" />
               )}
@@ -71,6 +122,8 @@ const RegisterPage: React.FC = () => {
               control={control}
               rules={{
                 required: "Vui lòng nhập email",
+                validate: (value) =>
+                  value.trim() !== "" || "Email không được toàn khoảng trắng",
                 pattern: {
                   value: /^\S+@\S+$/i,
                   message: "Email không hợp lệ",
@@ -90,6 +143,9 @@ const RegisterPage: React.FC = () => {
               control={control}
               rules={{
                 required: "Vui lòng nhập mật khẩu",
+                validate: (value) =>
+                  value.trim() !== "" ||
+                  "Mật khẩu không được toàn khoảng trắng",
                 minLength: {
                   value: 6,
                   message: "Mật khẩu phải có ít nhất 6 ký tự",

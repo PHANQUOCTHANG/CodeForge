@@ -3,9 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeForge.Core.Entities
 {
+    [Table("Lessons")]
     public class Lesson
     {
-      
+
         [Key]
         public Guid LessonId { get; set; } = Guid.NewGuid();
 
@@ -25,9 +26,10 @@ namespace CodeForge.Core.Entities
         public int OrderIndex { get; set; }
 
         public bool IsDeleted { get; set; } = false;
-
+        public string? VideoUrl { get; set; }
         // Navigation property
         [ForeignKey(nameof(ModuleId))]
         public Module? Module { get; set; }
+        public ICollection<Problem> CodingProblems { get; set; } = new List<Problem>();
     }
 }

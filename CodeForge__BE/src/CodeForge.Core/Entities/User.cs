@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeForge.Core.Entities
 {
+    [Table("Users")]
     public class User
     {
         public Guid UserId { get; set; } = Guid.NewGuid();   // PK, sinh bằng Guid.NewGuid() hoặc NEWID() trong SQL
@@ -15,7 +17,8 @@ namespace CodeForge.Core.Entities
 
         // 🔹 Trường soft delete
         public bool IsDeleted { get; set; } = false;
-
+        public ICollection<CourseReview> CourseReviews { get; set; } = new List<CourseReview>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
         public User() { }
 
     }

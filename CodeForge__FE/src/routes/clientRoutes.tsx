@@ -6,6 +6,12 @@ import NotFoundPage from "../pages/NotFound/NotFound";
 import LoginPage from "@/pages/client/Login/LoginPage";
 import RegisterPage from "@/pages/client/Register/RegisterPage";
 import ForgotPasswordPage from "@/pages/client/ForgetPassword/ForgetPasswordPage";
+import {
+  CoursePage,
+  CoursePageDetail,
+  StudyCoursePage,
+} from "@/pages/client/Courses";
+import Logout from "@/pages/client/Logout/Logout";
 
 const ClientRouters = () => {
   const routers = useRoutes([
@@ -14,11 +20,17 @@ const ClientRouters = () => {
       element: <DefaultLayout />,
       children: [
         { index: true, element: <HomePage /> },
-        { path: "courses", element: <HomePage /> },
+        {
+          path: "courses",
+          element: <CoursePage />,
+        },
+        { path: "courses/:slug", element: <CoursePageDetail /> },
         { path: "practice", element: <PracticePage /> },
-        { path: "contact", element: <HomePage /> },
+        { path: "contact", element: <StudyCoursePage /> },
       ],
     },
+    { path: "courses/:slug/lesson/:id", element: <CoursePageDetail /> },
+
     {
       path: "/login",
       element: <LoginPage />,
@@ -26,6 +38,10 @@ const ClientRouters = () => {
     {
       path: "/register",
       element: <RegisterPage />,
+    },
+    {
+      path: "/log-out",
+      element: <Logout />,
     },
     {
       path: "/forgot-password",

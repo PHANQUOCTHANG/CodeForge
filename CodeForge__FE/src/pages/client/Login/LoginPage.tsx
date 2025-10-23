@@ -1,21 +1,22 @@
 import React from "react";
-import { Form, Input, Button, Divider, message } from "antd";
-import {
-  GoogleOutlined,
-  GithubOutlined,
-  WindowsOutlined,
-} from "@ant-design/icons";
+import { Form, Input, Button, Divider } from "antd";
 import { useForm, Controller } from "react-hook-form";
 import "./LoginPage.scss";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import authApi from "@/api/authApi";
+import { login } from "@/features/auth/authSlice";
+import { openNotification } from "@/helper/notification";
+import { setGlobalAccessToken, setGlobalDispatch } from "@/api/axios";
+import { useAppDispatch } from "@/store/store";
 
 interface LoginFormValues {
   email: string;
-  passwordHash: string;
+  password: string;
 }
 
 const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   // Để lấy dữ liệu của form gán một khuôn có sẵn .
   const {
@@ -23,22 +24,35 @@ const LoginPage: React.FC = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
-    defaultValues: { email: "", passwordHash: "" },
+    defaultValues: { email: "", password: "" },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    console.log(data);
-    const { email, passwordHash } = data;
+    const { email, password } = data;
 
     try {
-      const response = await authApi.login(email , passwordHash) ;
+      const res = await authApi.login(email, password);
 
-      // Nếu server trả status 200–299 thì tự coi như thành công
-      alert("✅ Login success!");
-      console.log("Response:", response.data);
+      // ⚙️ Giả định response từ backend:
+      // { data: { accessToken: "...", userInfo: {...} } }
+      console.log(res);
+      const { accessToken, userInfo } = res.data;
+
+      // ✅ 1. Gán token vào bộ nhớ toàn cục (in-memory)
+      setGlobalAccessToken(accessToken);
+
+      // ✅ 2. Lưu dispatch vào biến toàn cục cho axios interceptor dùng
+      setGlobalDispatch(dispatch);
+
+      // ✅ 3. Cập nhật Redux store
+      dispatch(login({ accessToken: accessToken, userInfor: userInfo }));
+
+      // ✅ 4. Thông báo & chuyển hướng
+      openNotification("success", "Thành công", "Đăng nhập thành công!");
+      navigate("/");
     } catch (error: any) {
       console.error("❌ Login failed:", error.response?.data || error.message);
-      alert("Đăng nhập thất bại!");
+      openNotification("error", "Thất bại", "Đăng nhập thất bại!");
     }
   };
 
@@ -77,11 +91,11 @@ const LoginPage: React.FC = () => {
 
           <Form.Item
             label="Mật khẩu*"
-            validateStatus={errors.passwordHash ? "error" : ""}
-            help={errors.passwordHash?.message}
+            validateStatus={errors.password ? "error" : ""}
+            help={errors.password?.message}
           >
             <Controller
-              name="passwordHash"
+              name="password"
               control={control}
               rules={{ required: "Vui lòng nhập mật khẩu" }}
               render={({ field }) => (
@@ -110,9 +124,9 @@ const LoginPage: React.FC = () => {
         <Divider plain>Hoặc tiếp tục với</Divider>
 
         <div className="login-social">
-          <Button icon={<WindowsOutlined />} />
+          {/* <Button icon={<WindowsOutlined />} />
           <Button icon={<GoogleOutlined />} />
-          <Button icon={<GithubOutlined />} />
+          <Button icon={<GithubOutlined />} /> */}
         </div>
 
         <div className="login-footer">

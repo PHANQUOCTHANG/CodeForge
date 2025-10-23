@@ -14,25 +14,40 @@ namespace CodeForge.Infrastructure.Repositories
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         public AuthRepository(ApplicationDbContext context, IMapper mapper) { _context = context; _mapper = mapper; }
+        public async Task<User?> GetUserByEmailAsync(string email) => await _context.Users.Include(u => u.RefreshTokens).AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
+        public async Task<User?> GetTrackedUserByEmailAsync(string email) =>
+            await _context.Users
+            .Include(u => u.RefreshTokens)
+            .FirstOrDefaultAsync(u => u.Email == email);
 
-
-        public async Task<User?> Login(LoginDto loginDto)
+        public async Task AddUserAsync(User user)
         {
-
-            User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
-            if (user == null) return null;
-            return user;
+            await _context.Users.AddAsync(user);
         }
 
-        public async Task<User?> Register(RegisterDto registerDto)
+        public async Task AddRefreshTokenAsync(RefreshToken token)
         {
-            User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == registerDto.Email && u.Username == registerDto.Username);
-            if (user != null) return null;
-            registerDto.PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.PasswordHash);
-            User newUser = _mapper.Map<User>(registerDto);
-            _context.Users.Add(newUser);
-            await _context.SaveChangesAsync();
-            return newUser;
+            await _context.RefreshTokens.AddAsync(token);
         }
+
+        public async Task<RefreshToken?> GetRefreshTokenAsync(string tokenHash)
+        {
+
+            return await _context.RefreshTokens.Include(r => r.User).FirstOrDefaultAsync(r => r.TokenHash == tokenHash);
+        }
+        public async Task ClearExpireToken()
+        {
+            _context.RefreshTokens.RemoveRange(
+                 _context.RefreshTokens.Where(r => r.ExpiresAt < DateTime.UtcNow.AddDays(-30))
+             );
+        }
+        public async Task UpdateRefreshTokenAsync(RefreshToken token)
+        {
+            _context.RefreshTokens.Update(token);
+        }
+
+        public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
+
+
     }
 }

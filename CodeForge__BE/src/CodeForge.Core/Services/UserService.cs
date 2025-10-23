@@ -1,7 +1,9 @@
 using AutoMapper;
+using CodeForge.Api.DTOs;
 using CodeForge.Api.DTOs.Request.User;
 using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Entities;
+using CodeForge.Core.Exceptions;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Interfaces.Services;
 
@@ -18,38 +20,31 @@ namespace CodeForge.Core.Service
             _mapper = mapper;
         }
 
-        public async Task<ApiResponse<List<UserDto>>> GetUsersAsync()
+        // --- GET All Users ---
+        // ✅ Kiểu trả về mới: Task<List<UserDto>>
+        public async Task<List<UserDto>> GetUsersAsync()
         {
-            try
-            {
-                List<User> users = await _userRepository.GetAllAsync();
-                List<UserDto> userDtos = _mapper.Map<List<UserDto>>(users); // user -> userDto . 
-                return new ApiResponse<List<UserDto>>(200, "Get all users success", userDtos);
-            }
-            catch (Exception e)
-            {
-                return new ApiResponse<List<UserDto>>(500, e.Message);
-            }
+            // Bỏ khối try-catch
+            List<User> users = await _userRepository.GetAllAsync();
+            return _mapper.Map<List<UserDto>>(users);
         }
 
-        public async Task<ApiResponse<UserDto>> CreateUserAsync(CreateUserDto createUserDto)
+        // ✅ Kiểu trả về mới: Task<UserDto>
+        public async Task<UserDto> CreateUserAsync(CreateUserDto createUserDto)
         {
-            try
-            {
-                bool isExistsByEmail = await _userRepository.ExistsByEmail(createUserDto);
-                if (isExistsByEmail)
-                {
-                    return new ApiResponse<UserDto>(404, "Email is exists");
-                }
-                User user = await _userRepository.CreateAsync(createUserDto);
-                UserDto userDto = _mapper.Map<UserDto>(user);
+            // Bỏ khối try-catch
+            bool isExistsByEmail = await _userRepository.ExistsByEmail(createUserDto);
 
-                return new ApiResponse<UserDto>(200, "Create User success", userDto);
-            }
-            catch (Exception e)
+            // ✅ SỬA: Thay thế return new ApiResponse<UserDto>(404, ...) bằng ConflictException (409)
+            if (isExistsByEmail)
             {
-                return new ApiResponse<UserDto>(500, e.Message);
+                throw new ConflictException($"Email '{createUserDto.Email}' already exists.");
             }
+
+            // Logic tạo User và mapping DTO
+            User user = await _userRepository.CreateAsync(createUserDto);
+
+            return _mapper.Map<UserDto>(user);
         }
     }
 }

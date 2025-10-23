@@ -17,11 +17,13 @@ namespace CodeForge.Infrastructure
             // user.
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
+            //refresh toke
+            services.AddScoped<ITokenService, TokenService>();
 
             //course.
             services.AddScoped<ICourseRepository, CourseRepository>();
             services.AddScoped<ICourseService, CourseService>();
-            
+
             //auth.
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IAuthService, AuthService>();

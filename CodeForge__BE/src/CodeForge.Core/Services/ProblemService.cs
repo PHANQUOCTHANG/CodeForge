@@ -3,12 +3,16 @@ using CodeForge.Api.DTOs;
 using CodeForge.Core.Entities;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Interfaces.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+// ✅ Import Custom Exceptions
+using CodeForge.Core.Exceptions;
 
 namespace CodeForge.Core.Service
 {
-    public class ProblemService : IProblemService
+    public class ProblemService : IProblemService // IProblemService phải được cập nhật
     {
-
         private readonly IProblemRepository _problemRepository;
         private readonly IMapper _mapper;
 
@@ -18,104 +22,87 @@ namespace CodeForge.Core.Service
             _mapper = mapper;
         }
 
-        public async Task<ApiResponse<ProblemDto>> CreateProblemAsync(CreateProblemDto createProblemDto)
+        // --- CREATE Problem ---
+        // ✅ Kiểu trả về mới: Task<ProblemDto>
+        public async Task<ProblemDto> CreateProblemAsync(CreateProblemDto createProblemDto)
         {
-            try
-            {
-                bool isExistsByTitle = await _problemRepository.ExistsByTitle(createProblemDto.Title);
-                if (isExistsByTitle)
-                {
-                    return new ApiResponse<ProblemDto>(404, "Title is exists");
-                }
-                Problem problem = await _problemRepository.CreateAsync(createProblemDto);
-                ProblemDto problemDto = _mapper.Map<ProblemDto>(problem);
+            // Bỏ khối try-catch
+            bool isExistsByTitle = await _problemRepository.ExistsByTitle(createProblemDto.Title);
 
-                return new ApiResponse<ProblemDto>(201, "Create problem success", problemDto);
-            }
-            catch (Exception e)
+            // ✅ SỬA: Thay thế return new ApiResponse<ProblemDto>(404, ...) bằng ConflictException (409)
+            if (isExistsByTitle)
             {
-                return new ApiResponse<ProblemDto>(500, e.Message);
+                throw new ConflictException($"Problem with title '{createProblemDto.Title}' already exists.");
             }
+
+            // Mapping DTO sang Entity và tạo
+            Problem problem = await _problemRepository.CreateAsync(createProblemDto);
+
+            return _mapper.Map<ProblemDto>(problem);
         }
 
-        public async Task<ApiResponse<bool>> DeleteProblemAsync(Guid problemId)
+        // --- DELETE Problem ---
+        // ✅ Kiểu trả về mới: Task<bool>
+        public async Task<bool> DeleteProblemAsync(Guid problemId)
         {
-            try
+            // Bỏ khối try-catch
+            bool result = await _problemRepository.DeleteAsync(problemId);
+
+            // ✅ SỬA: Thay thế return new ApiResponse<bool>(404, ...) bằng NotFoundException
+            if (!result)
             {
-                bool result = await _problemRepository.DeleteAsync(problemId);
-                if (!result)
-                {
-                    return new ApiResponse<bool>(404, "Invalid");
-                }
-                return new ApiResponse<bool>(200, "Delete problem success");
+                throw new NotFoundException($"Problem with ID {problemId} not found.");
             }
-            catch (Exception e)
-            {
-                return new ApiResponse<bool>(500, e.Message);
-            }
+
+            return true;
         }
 
-        public async Task<ApiResponse<List<ProblemDto>>> GetAllProblemAsync()
+        // --- GET All Problem ---
+        // ✅ Kiểu trả về mới: Task<List<ProblemDto>>
+        public async Task<List<ProblemDto>> GetAllProblemAsync()
         {
-            try
-            {
-                List<Problem> problems = await _problemRepository.GetAllAsync();
-                List<ProblemDto> problemDtos = _mapper.Map<List<ProblemDto>>(problems);
-
-                return new ApiResponse<List<ProblemDto>>(200, "Get all problem success", problemDtos);
-            }
-            catch (Exception e)
-            {
-                return new ApiResponse<List<ProblemDto>>(500, e.Message);
-            }
+            // Bỏ khối try-catch
+            List<Problem> problems = await _problemRepository.GetAllAsync();
+            return _mapper.Map<List<ProblemDto>>(problems);
         }
 
-        public async Task<ApiResponse<ProblemDto>> GetProblemByIdAsync(Guid problemId)
+        // --- GET Problem by ID ---
+        // ✅ Kiểu trả về mới: Task<ProblemDto>
+        public async Task<ProblemDto> GetProblemByIdAsync(Guid problemId)
         {
-            try
-            {
-                Problem? problem = await _problemRepository.GetByIdAsync(problemId);
+            // Bỏ khối try-catch
+            Problem? problem = await _problemRepository.GetByIdAsync(problemId);
 
-                if (problem == null)
-                {
-                    return new ApiResponse<ProblemDto>(404, "Invalid");
-                }
-
-                ProblemDto problemDto = _mapper.Map<ProblemDto>(problem);
-                return new ApiResponse<ProblemDto>(200, "Get all problem success", problemDto);
-            }
-            catch (Exception e)
+            // ✅ SỬA: Thay thế return new ApiResponse<ProblemDto>(404, ...) bằng NotFoundException
+            if (problem == null)
             {
-                return new ApiResponse<ProblemDto>(500, e.Message);
+                throw new NotFoundException($"Problem with ID {problemId} not found.");
             }
+
+            return _mapper.Map<ProblemDto>(problem);
         }
 
-        public async Task<ApiResponse<ProblemDto>> UpdateProblemAsync(UpdateProblemDto updateProblemDto)
+        // --- UPDATE Problem ---
+        // ✅ Kiểu trả về mới: Task<ProblemDto>
+        public async Task<ProblemDto> UpdateProblemAsync(UpdateProblemDto updateProblemDto)
         {
-            try
+            // Bỏ khối try-catch
+
+            bool isExistsByTitle = await _problemRepository.ExistsByTitle(updateProblemDto.Title);
+
+            // ✅ SỬA: Thay thế return new ApiResponse<ProblemDto>(404, ...) bằng ConflictException (409)
+            if (isExistsByTitle)
+                throw new ConflictException($"Problem with title '{updateProblemDto.Title}' already exists.");
+
+            Problem? problem = await _problemRepository.UpdateAsync(updateProblemDto);
+
+            // ✅ SỬA: Thay thế return new ApiResponse<ProblemDto>(404, ...) bằng NotFoundException
+            if (problem == null)
             {
-                bool isExistsByTitle = await _problemRepository.ExistsByTitle(updateProblemDto.Title);
-                if (isExistsByTitle) return new ApiResponse<ProblemDto>(404, "Create problem failed");
-
-                Problem? problem = await _problemRepository.UpdateAsync(updateProblemDto);
-
-                if (problem == null)
-                {
-                    return new ApiResponse<ProblemDto>(404, "Invalid problem need update");
-                }
-
-                ProblemDto problemDto = _mapper.Map<ProblemDto>(problem);
-
-                return new ApiResponse<ProblemDto>(201, "Create problem success", problemDto);
+                throw new NotFoundException($"Problem with ID {updateProblemDto.LessonId} not found for update.");
             }
-            catch (Exception e)
-            {
-                return new ApiResponse<ProblemDto>(500, e.Message);
-            }
+
+            return _mapper.Map<ProblemDto>(problem);
         }
-
-        
-
-
     }
 }

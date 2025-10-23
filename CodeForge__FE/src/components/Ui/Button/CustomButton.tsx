@@ -21,27 +21,39 @@ interface CustomButtonProps extends ButtonProps {
   className?: string;
 }
 
-export const CustomButton: React.FC<CustomButtonProps> = ({
-  variant = "primary",
-  sizeType = "md",
-  fullWidth = false,
-  className,
-  children,
-  ...rest
-}) => {
-  const classes = classNames(
-    "btn",
-    `btn--${variant}`,
-    `btn--${sizeType}`,
-    { "btn--full": fullWidth },
-    className
-  );
+/**
+ * ✅ CustomButton có hỗ trợ ref để tránh warning findDOMNode
+ * ✅ Tương thích tốt với Ant Design Dropdown / Tooltip / Modal
+ */
+const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
+  (
+    {
+      variant = "primary",
+      sizeType = "md",
+      fullWidth = false,
+      className,
+      children,
+      ...rest
+    },
+    ref
+  ) => {
+    const classes = classNames(
+      "btn",
+      `btn--${variant}`,
+      `btn--${sizeType}`,
+      { "btn--full": fullWidth },
+      className
+    );
 
-  return (
-    <button {...rest} className={classes}>
-      {children}
-    </button>
-  );
-};
+    return (
+      <button ref={ref} {...rest} className={classes}>
+        {children}
+      </button>
+    );
+  }
+);
+
+// ⚠️ Tên hiển thị phục vụ debug React DevTools
+CustomButton.displayName = "CustomButton";
 
 export default CustomButton;

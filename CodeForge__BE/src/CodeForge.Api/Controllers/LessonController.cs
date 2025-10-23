@@ -1,12 +1,15 @@
 using CodeForge.Api.DTOs;
 using CodeForge.Core.Interfaces.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CodeForge.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[Controller]")]
     public class LessonController : ControllerBase
     {
         private readonly ILessonService _lessonService;
@@ -16,52 +19,78 @@ namespace CodeForge.Api.Controllers
             _lessonService = lessonService;
         }
 
-
-        // get all lesson .
+        // ============================
+        // GET ALL LESSONS (GET /api/lesson)
+        // ============================
         [HttpGet]
+        // ✅ Kiểu trả về mới: Task<ActionResult<ApiResponse<List<LessonDto>>>> 
         public async Task<IActionResult> GetAllLessonAsync()
         {
-            var response = await _lessonService.GetAllLessonAsync();
+            var result = await _lessonService.GetAllLessonAsync();
 
-            return Ok(response);
+            // Dữ liệu được bọc trong ApiResponse<T>
+            return Ok(ApiResponse<List<LessonDto>>.Success(result, "Lessons retrieved successfully."));
         }
 
-        // get lesson by id .
+        // ============================
+        // GET LESSON BY ID (GET /api/lesson/{lessonId})
+        // ============================
         [HttpGet("{lessonId}")]
+        // ✅ Kiểu trả về mới: Task<ActionResult<ApiResponse<LessonDto>>>
         public async Task<IActionResult> GetLessonByIdAsync([FromRoute] Guid lessonId)
         {
-            var response = await _lessonService.GetLessonByIdAsync(lessonId);
+            // Nếu LessonService ném NotFoundException, Global Handler sẽ trả về 404
+            var result = await _lessonService.GetLessonByIdAsync(lessonId);
 
-            return Ok(response);
+            return Ok(ApiResponse<LessonDto>.Success(result, "Lesson retrieved successfully."));
         }
 
-        // update lesson .
+        // ============================
+        // UPDATE LESSON (PATCH /api/lesson/update)
+        // ============================
+        [Authorize]
         [HttpPatch("update")]
+        // ✅ Kiểu trả về mới: Task<ActionResult<ApiResponse<LessonDto>>>
         public async Task<IActionResult> UpdateLessonAsync([FromBody] UpdateLessonDto updateLessonDto)
         {
-            var response = await _lessonService.UpdateLessonAsync(updateLessonDto);
+            // Service sẽ ném NotFoundException hoặc ConflictException nếu cần
+            var result = await _lessonService.UpdateLessonAsync(updateLessonDto);
 
-            return Ok(response);
+            // Thao tác cập nhật thường trả về 200 OK
+            return Ok(ApiResponse<LessonDto>.Success(result, "Lesson updated successfully."));
         }
 
-        // create lesson .
+        // ============================
+        // CREATE LESSON (POST /api/lesson/create)
+        // ============================
+        [Authorize]
         [HttpPost("create")]
+        // ✅ Kiểu trả về mới: Task<ActionResult<ApiResponse<LessonDto>>>
         public async Task<IActionResult> CreateLessonAsync([FromBody] CreateLessonDto createLessonDto)
         {
-            var response = await _lessonService.CreateLessonAsync(createLessonDto);
+            // Service sẽ ném ConflictException nếu cần
+            var result = await _lessonService.CreateLessonAsync(createLessonDto);
 
-            return Ok(response);
+            // ✅ Chuẩn RESTful: Dùng CreatedAtAction để trả về 201 Created
+            return CreatedAtAction(
+                nameof(GetLessonByIdAsync),
+                new { lessonId = result.LessonId },
+                ApiResponse<LessonDto>.Created(result, "Lesson created successfully.")
+            );
         }
 
-        // delete lesson 
-        [HttpDelete("delete/{lessonId}")]
+        // ============================
+        // DELETE LESSON (DELETE /api/lesson/delete/{lessonId})
+        // ============================
+        [Authorize]
+        [HttpDelete("{lessonId}")] // ✅ Đã sửa endpoint cho phù hợp với /api/lesson/{lessonId}
         public async Task<IActionResult> DeleteLessonAsync([FromRoute] Guid lessonId)
         {
-            var response = await _lessonService.DeleteLessonAsync(lessonId);
+            // Service sẽ ném NotFoundException nếu không tìm thấy
+            await _lessonService.DeleteLessonAsync(lessonId);
 
-            return Ok(response);
+            // ✅ Chuẩn RESTful: Dùng NoContent để trả về 204 No Content
+            return NoContent();
         }
-
-
     }
 }

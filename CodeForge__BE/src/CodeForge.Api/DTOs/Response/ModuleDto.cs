@@ -6,10 +6,9 @@ namespace CodeForge.Api.DTOs
     {
         public Guid ModuleId { get; set; }
         public Guid CourseId { get; set; }
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         public int OrderIndex { get; set; }
         public bool IsDeleted { get; set; }
-        public Course? Course { get; set; }
-
+        public List<LessonDto> Lessons { get; set; } = new();
     }
 }
