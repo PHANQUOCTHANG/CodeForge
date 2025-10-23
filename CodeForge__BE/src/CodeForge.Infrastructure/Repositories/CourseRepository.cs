@@ -40,7 +40,7 @@ namespace CodeForge.Infrastructure.Repositories
         public async Task<List<Course>> GetAllAsync(QueryParameters query) 
         {
             int limit = query.Limit, page = query.Page;
-            return await _context.Courses.Include(c => c.User).Skip(limit * (page - 1)).Take(limit).ToListAsync();
+            return await _context.Courses.Include(u => u.Creator).Skip(limit * (page - 1)).Take(limit).ToListAsync();
         }
 
         public async Task<Course?> GetByIdAsync(Guid courseId)

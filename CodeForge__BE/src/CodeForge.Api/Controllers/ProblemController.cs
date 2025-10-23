@@ -1,6 +1,6 @@
 using CodeForge.Api.DTOs;
 using CodeForge.Core.Interfaces.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
+using CodeForge.Core.Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeForge.Api.Controllers
@@ -10,10 +10,12 @@ namespace CodeForge.Api.Controllers
     public class ProblemController : ControllerBase
     {
         private readonly IProblemService _problemService;
+        private readonly IJudge0Service _judge0Service;
 
-        public ProblemController(IProblemService problemService)
+        public ProblemController(IProblemService problemService , IJudge0Service judge0Service )
         {
             _problemService = problemService;
+            _judge0Service = judge0Service;
         }
 
 
@@ -27,10 +29,19 @@ namespace CodeForge.Api.Controllers
         }
 
         // get problem by id .
-        [HttpGet("{problemId}")]
-        public async Task<IActionResult> GetProblemByIdAsync([FromRoute] Guid problemId)
+        // [HttpGet("{problemId}")]
+        // public async Task<IActionResult> GetProblemByIdAsync([FromRoute] Guid problemId)
+        // {
+        //     var response = await _problemService.GetProblemByIdAsync(problemId);
+
+        //     return Ok(response);
+        // }
+
+        // get problem by id .
+        [HttpGet("{slug}")]
+        public async Task<IActionResult> GetProblemBySlugAsync([FromRoute] string slug)
         {
-            var response = await _problemService.GetProblemByIdAsync(problemId);
+            var response = await _problemService.GetProblemBySlugAsync(slug);
 
             return Ok(response);
         }
@@ -62,6 +73,12 @@ namespace CodeForge.Api.Controllers
             return Ok(response);
         }
 
-
+        // run code 
+        [HttpPost("run-problem")]
+        public async Task<IActionResult> RunProblemAsync ([FromBody] RunProblemDto runProblemDto)
+        {
+            var response = await _judge0Service.RunAllTestCasesAsync(runProblemDto.Language, runProblemDto.Code, runProblemDto.FunctionName, runProblemDto.TestCases);
+            return Ok(response);
+        }
     }
 }

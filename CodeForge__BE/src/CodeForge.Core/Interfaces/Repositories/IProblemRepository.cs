@@ -8,6 +8,8 @@ namespace CodeForge.Core.Interfaces.Repositories
         Task<List<Problem>> GetAllAsync();
         Task<Problem?> GetByIdAsync(Guid problemId);
 
+        Task<Problem?> GetBySlugAsync(string slug);
+
         Task<Problem?> UpdateAsync(UpdateProblemDto updateProblemDto);
         Task<Problem> CreateAsync(CreateProblemDto createProblemDto);
 

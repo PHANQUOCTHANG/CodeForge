@@ -38,6 +38,12 @@ namespace CodeForge.Infrastructure
             services.AddScoped<ILessonRepository, LessonRepository>();
             services.AddScoped<ILessonService, LessonService>();
 
+            // testcase .
+            services.AddScoped<ITestCaseRepository,TestCaseRepository>();
+            services.AddScoped<ITestCaseService, TestCaseService>();
+            
+            // judge0 .
+            services.AddHttpClient<IJudge0Service, Judge0Service>();
             return services;
         }
     }

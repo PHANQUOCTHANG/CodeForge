@@ -21,6 +21,7 @@ namespace CodeForge.Infrastructure.Repositories
 
         public async Task<Problem> CreateAsync(CreateProblemDto createProblemDto)
         {
+            createProblemDto.Slug = SlugGenerator.ConvertTitleToSlug(createProblemDto.Title);
             Problem newProblem = _mapper.Map<Problem>(createProblemDto);
             _context.CodingProblems.Add(newProblem);
             await _context.SaveChangesAsync();
@@ -38,12 +39,21 @@ namespace CodeForge.Infrastructure.Repositories
 
         public async Task<List<Problem>> GetAllAsync()
         {
-            return await _context.CodingProblems.Include(l => l.Lesson).ToListAsync();
+            return await _context.CodingProblems
+                .Include(l => l.Lesson)
+                .Take(10)
+                .ToListAsync();
         }
 
         public async Task<Problem?> GetByIdAsync(Guid problemId)
         {
             return await _context.CodingProblems.FindAsync(problemId);
+        }
+
+
+        public async Task<Problem?> GetBySlugAsync(string slug)
+        {
+            return await _context.CodingProblems.FirstOrDefaultAsync(p => p.Slug == slug);
         }
 
         public async Task<Problem?> UpdateAsync(UpdateProblemDto updateProblemDto)
@@ -52,7 +62,10 @@ namespace CodeForge.Infrastructure.Repositories
 
             if (problem == null) return null;
 
+            updateProblemDto.Slug = SlugGenerator.ConvertTitleToSlug(updateProblemDto.Title);
+
             _mapper.Map(updateProblemDto, problem);
+            
             await _context.SaveChangesAsync();
             return problem;
         }

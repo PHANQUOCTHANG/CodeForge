@@ -29,5 +29,7 @@ namespace CodeForge.Core.Entities
         // Navigation property
         [ForeignKey(nameof(ModuleId))]
         public Module? Module { get; set; }
+
+        public Lesson() {}
     }
 }

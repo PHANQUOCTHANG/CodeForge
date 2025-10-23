@@ -8,16 +8,12 @@ namespace CodeForge.Api.DTOs.Request.Course
 {
     public class CreateCourseDto
     {
-
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         public string? Description { get; set; }
-        public string Status { get; set; }
+        public string Level { get; set; } = "beginner"; // beginner, intermediate, advanced
 
-        public string Level { get; set; }
-
-        public string Language { get; set; }
-
+        public string? Language { get; set; } = string.Empty;
         public Guid CreatedBy { get; set; }
     }
 }

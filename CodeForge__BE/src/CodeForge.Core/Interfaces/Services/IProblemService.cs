@@ -8,6 +8,8 @@ namespace CodeForge.Core.Interfaces.Services
         Task<ApiResponse<List<ProblemDto>>> GetAllProblemAsync();
         Task<ApiResponse<ProblemDto>> GetProblemByIdAsync(Guid problemId);
 
+        Task<ApiResponse<ProblemDto>> GetProblemBySlugAsync(string slug);
+
         Task<ApiResponse<ProblemDto>> UpdateProblemAsync(UpdateProblemDto updateProblemDto);
         Task<ApiResponse<ProblemDto>> CreateProblemAsync(CreateProblemDto createProblemDto);
         Task<ApiResponse<bool>> DeleteProblemAsync(Guid problemId);

@@ -70,6 +70,8 @@ namespace CodeForge.Core.Service
             }
         }
 
+
+        // get by id .
         public async Task<ApiResponse<ProblemDto>> GetProblemByIdAsync(Guid problemId)
         {
             try
@@ -90,6 +92,27 @@ namespace CodeForge.Core.Service
             }
         }
 
+        // get by slug .
+        public async Task<ApiResponse<ProblemDto>> GetProblemBySlugAsync(string slug)
+        {
+            try
+            {
+                Problem? problem = await _problemRepository.GetBySlugAsync(slug);
+
+                if (problem == null)
+                {
+                    return new ApiResponse<ProblemDto>(404, "Invalid");
+                }
+
+                ProblemDto problemDto = _mapper.Map<ProblemDto>(problem);
+                return new ApiResponse<ProblemDto>(200, "Get all problem success", problemDto);
+            }
+            catch (Exception e)
+            {
+                return new ApiResponse<ProblemDto>(500, e.Message);
+            }
+        }
+        
         public async Task<ApiResponse<ProblemDto>> UpdateProblemAsync(UpdateProblemDto updateProblemDto)
         {
             try
@@ -114,7 +137,7 @@ namespace CodeForge.Core.Service
             }
         }
 
-        
+
 
 
     }
