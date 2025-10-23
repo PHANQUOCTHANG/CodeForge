@@ -4,7 +4,8 @@ import App from "./App.tsx";
 import { store } from "./store/store.ts";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
-import "./styles/main.scss";
+import "antd/dist/reset.css"; // Ant Design v5 trở lên
+// import "./styles/main.scss";
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <Provider store={store}>

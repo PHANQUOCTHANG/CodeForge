@@ -21,5 +21,7 @@ namespace CodeForge.Core.Entities
 
         [ForeignKey(nameof(CourseId))]
         public Course? Course { get; set; }
+
+        public Module () {}
     }
 }

@@ -6,11 +6,11 @@ namespace CodeForge.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class moduleController : ControllerBase
+    public class ModuleController : ControllerBase
     {
         private readonly IModuleService _moduleService;
 
-        public moduleController(IModuleService moduleService)
+        public ModuleController(IModuleService moduleService)
         {
             _moduleService = moduleService;
         }

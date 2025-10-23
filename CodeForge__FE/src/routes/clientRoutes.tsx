@@ -6,6 +6,7 @@ import NotFoundPage from "../pages/NotFound/NotFound";
 import LoginPage from "@/pages/client/Login/LoginPage";
 import RegisterPage from "@/pages/client/Register/RegisterPage";
 import ForgotPasswordPage from "@/pages/client/ForgetPassword/ForgetPasswordPage";
+import PracticeRoutes from "./practiceRoutes";
 
 const ClientRouters = () => {
   const routers = useRoutes([
@@ -35,6 +36,7 @@ const ClientRouters = () => {
       path: "*",
       element: <NotFoundPage />,
     },
+    ...PracticeRoutes ,
   ]);
 
   return routers;
