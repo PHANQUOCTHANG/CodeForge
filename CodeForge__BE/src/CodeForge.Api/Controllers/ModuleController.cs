@@ -12,11 +12,11 @@ namespace CodeForge.Api.Controllers
     // ✅ Đổi tên class sang PascalCase (ModuleController) theo chuẩn C#
     [ApiController]
     [Route("api/[Controller]")]
-    public class ModuleController : ControllerBase
+    public class ModulesController : ControllerBase
     {
         private readonly IModuleService _moduleService;
 
-        public ModuleController(IModuleService moduleService)
+        public ModulesController(IModuleService moduleService)
         {
             _moduleService = moduleService;
         }
@@ -37,7 +37,7 @@ namespace CodeForge.Api.Controllers
         // ============================
         // GET MODULE BY ID (GET /api/module/{moduleId})
         // ============================
-        [HttpGet("{moduleId}")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetModuleByIdAsync([FromRoute] Guid moduleId)
         {
             // Service sẽ ném NotFoundException nếu không tìm thấy
@@ -83,7 +83,7 @@ namespace CodeForge.Api.Controllers
         // DELETE MODULE (DELETE /api/module/{moduleId})
         // ============================
         [Authorize]
-        [HttpDelete("{moduleId}")] // ✅ Đã sửa endpoint cho phù hợp với /api/module/{moduleId}
+        [HttpDelete("{id:guid}")] // ✅ Đã sửa endpoint cho phù hợp với /api/module/{moduleId}
         public async Task<IActionResult> DeleteModuleAsync([FromRoute] Guid moduleId)
         {
             // Service sẽ ném NotFoundException nếu không tìm thấy

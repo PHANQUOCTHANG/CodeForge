@@ -38,8 +38,8 @@ namespace CodeForge.Infrastructure.Repositories
         public async Task ClearExpireToken()
         {
             _context.RefreshTokens.RemoveRange(
-                 _context.RefreshTokens.Where(r => r.ExpiresAt < DateTime.UtcNow.AddDays(-30))
-             );
+                    _context.RefreshTokens.Where(r => r.ExpiresAt < DateTime.UtcNow.AddDays(-30))
+                );
         }
         public async Task UpdateRefreshTokenAsync(RefreshToken token)
         {

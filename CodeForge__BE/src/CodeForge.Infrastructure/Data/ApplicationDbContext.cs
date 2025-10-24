@@ -19,5 +19,8 @@ namespace CodeForge.Infrastructure.Data
 
         public DbSet<Lesson> Lessons { get; set; }
 
+        public DbSet<TestCase> TestCases { get; set; }
+
+
     }
 }

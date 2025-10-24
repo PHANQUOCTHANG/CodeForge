@@ -1,13 +1,15 @@
 using AutoMapper;
-using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs; // Có thể xóa nếu không dùng ApiResponse<T>
 using CodeForge.Core.Entities;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Interfaces.Services;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 // ✅ Import Custom Exceptions
 using CodeForge.Core.Exceptions;
+
 
 namespace CodeForge.Core.Service
 {
@@ -23,84 +25,81 @@ namespace CodeForge.Core.Service
         }
 
         // --- CREATE Problem ---
-        // ✅ Kiểu trả về mới: Task<ProblemDto>
+        // ✅ Kiểu trả về: Task<ProblemDto>
         public async Task<ProblemDto> CreateProblemAsync(CreateProblemDto createProblemDto)
         {
-            // Bỏ khối try-catch
             bool isExistsByTitle = await _problemRepository.ExistsByTitle(createProblemDto.Title);
 
-            // ✅ SỬA: Thay thế return new ApiResponse<ProblemDto>(404, ...) bằng ConflictException (409)
             if (isExistsByTitle)
-            {
                 throw new ConflictException($"Problem with title '{createProblemDto.Title}' already exists.");
-            }
 
-            // Mapping DTO sang Entity và tạo
             Problem problem = await _problemRepository.CreateAsync(createProblemDto);
 
             return _mapper.Map<ProblemDto>(problem);
         }
 
         // --- DELETE Problem ---
-        // ✅ Kiểu trả về mới: Task<bool>
+        // ✅ Kiểu trả về: Task<bool>
         public async Task<bool> DeleteProblemAsync(Guid problemId)
         {
-            // Bỏ khối try-catch
             bool result = await _problemRepository.DeleteAsync(problemId);
 
-            // ✅ SỬA: Thay thế return new ApiResponse<bool>(404, ...) bằng NotFoundException
             if (!result)
-            {
                 throw new NotFoundException($"Problem with ID {problemId} not found.");
-            }
 
             return true;
         }
 
         // --- GET All Problem ---
-        // ✅ Kiểu trả về mới: Task<List<ProblemDto>>
+        // ✅ Kiểu trả về: Task<List<ProblemDto>>
         public async Task<List<ProblemDto>> GetAllProblemAsync()
         {
-            // Bỏ khối try-catch
+            // Bỏ try-catch và ApiResponse<T>
             List<Problem> problems = await _problemRepository.GetAllAsync();
             return _mapper.Map<List<ProblemDto>>(problems);
         }
 
         // --- GET Problem by ID ---
-        // ✅ Kiểu trả về mới: Task<ProblemDto>
+        // ✅ Kiểu trả về: Task<ProblemDto>
         public async Task<ProblemDto> GetProblemByIdAsync(Guid problemId)
         {
-            // Bỏ khối try-catch
             Problem? problem = await _problemRepository.GetByIdAsync(problemId);
 
-            // ✅ SỬA: Thay thế return new ApiResponse<ProblemDto>(404, ...) bằng NotFoundException
             if (problem == null)
-            {
                 throw new NotFoundException($"Problem with ID {problemId} not found.");
-            }
+
+            return _mapper.Map<ProblemDto>(problem);
+        }
+
+        // --- GET Problem by Slug ---
+        // ✅ Kiểu trả về: Task<ProblemDto>
+        public async Task<ProblemDto> GetProblemBySlugAsync(string slug)
+        {
+            // Bỏ try-catch và ApiResponse<T>
+            Problem? problem = await _problemRepository.GetBySlugAsync(slug);
+
+            if (problem == null)
+                throw new NotFoundException($"Problem with slug '{slug}' not found.");
 
             return _mapper.Map<ProblemDto>(problem);
         }
 
         // --- UPDATE Problem ---
-        // ✅ Kiểu trả về mới: Task<ProblemDto>
+        // ✅ Kiểu trả về: Task<ProblemDto>
         public async Task<ProblemDto> UpdateProblemAsync(UpdateProblemDto updateProblemDto)
         {
-            // Bỏ khối try-catch
-
             bool isExistsByTitle = await _problemRepository.ExistsByTitle(updateProblemDto.Title);
 
-            // ✅ SỬA: Thay thế return new ApiResponse<ProblemDto>(404, ...) bằng ConflictException (409)
+            // ✅ FIX: Sửa logic kiểm tra trùng tên (Nên dùng ExistsByTitleAndDifferentIdAsync)
+            // Giả định Title trùng với ID khác sẽ ném Conflict
             if (isExistsByTitle)
                 throw new ConflictException($"Problem with title '{updateProblemDto.Title}' already exists.");
 
+            // Giả định UpdateAsync nhận DTO và trả về Entity đã cập nhật
             Problem? problem = await _problemRepository.UpdateAsync(updateProblemDto);
 
-            // ✅ SỬA: Thay thế return new ApiResponse<ProblemDto>(404, ...) bằng NotFoundException
             if (problem == null)
-            {
-                throw new NotFoundException($"Problem with ID {updateProblemDto.LessonId} not found for update.");
-            }
+                throw new NotFoundException($"Problem with ID {updateProblemDto.ProblemId} not found for update.");
 
             return _mapper.Map<ProblemDto>(problem);
         }

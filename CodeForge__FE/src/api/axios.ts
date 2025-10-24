@@ -1,8 +1,11 @@
 import axios from "axios";
 // import { store } from '../app/store'; // Tuyệt đối KHÔNG import store ở đây
 import API_URL from "./config";
-import { login, logout, refreshSuccess } from "@/features/auth/authSlice";
-import { openNotification } from "@/helper/notification";
+import {
+  logout,
+  refreshSuccess,
+} from "@/features/auth/slices/authSlice";
+import { openNotification } from "@/common/helper/notification";
 // --- START: TypeScript Definitions and Helpers ---
 interface RetryQueueItem {
   resolve: (value: string | PromiseLike<string>) => void;

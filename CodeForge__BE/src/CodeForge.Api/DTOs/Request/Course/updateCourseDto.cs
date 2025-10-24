@@ -15,5 +15,7 @@ namespace CodeForge.Api.DTOs.Request.Course
         public string Level { get; set; }
 
         public string Language { get; set; } 
+
+        public Guid CreatedBy { get; set; }
     }
 }

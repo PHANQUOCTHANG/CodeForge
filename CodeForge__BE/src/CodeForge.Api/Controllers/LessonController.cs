@@ -10,11 +10,11 @@ namespace CodeForge.Api.Controllers
 {
     [ApiController]
     [Route("api/[Controller]")]
-    public class LessonController : ControllerBase
+    public class LessonsController : ControllerBase
     {
         private readonly ILessonService _lessonService;
 
-        public LessonController(ILessonService lessonService)
+        public LessonsController(ILessonService lessonService)
         {
             _lessonService = lessonService;
         }
@@ -35,7 +35,7 @@ namespace CodeForge.Api.Controllers
         // ============================
         // GET LESSON BY ID (GET /api/lesson/{lessonId})
         // ============================
-        [HttpGet("{lessonId}")]
+        [HttpGet("{id:guid}")]
         // ✅ Kiểu trả về mới: Task<ActionResult<ApiResponse<LessonDto>>>
         public async Task<IActionResult> GetLessonByIdAsync([FromRoute] Guid lessonId)
         {
@@ -83,7 +83,7 @@ namespace CodeForge.Api.Controllers
         // DELETE LESSON (DELETE /api/lesson/delete/{lessonId})
         // ============================
         [Authorize]
-        [HttpDelete("{lessonId}")] // ✅ Đã sửa endpoint cho phù hợp với /api/lesson/{lessonId}
+        [HttpDelete("{id:guid}")] // ✅ Đã sửa endpoint cho phù hợp với /api/lesson/{lessonId}
         public async Task<IActionResult> DeleteLessonAsync([FromRoute] Guid lessonId)
         {
             // Service sẽ ném NotFoundException nếu không tìm thấy

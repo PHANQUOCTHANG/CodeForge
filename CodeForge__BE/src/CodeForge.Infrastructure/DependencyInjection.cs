@@ -2,8 +2,6 @@
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Infrastructure.Repositories;
 using CodeForge.Core.Interfaces.Services;
-using CodeForge.Core.Interfaces.Repositories;
-using CodeForge.Infrastructure.Repositories;
 using CodeForge__BE.src.CodeForge.Core.Interfaces.Services;
 using CodeForge__BE.src.CodeForge.Core.Services;
 using CodeForge.Core.Service;
@@ -40,6 +38,12 @@ namespace CodeForge.Infrastructure
             services.AddScoped<ILessonRepository, LessonRepository>();
             services.AddScoped<ILessonService, LessonService>();
 
+            // testcase .
+            services.AddScoped<ITestCaseRepository, TestCaseRepository>();
+            services.AddScoped<ITestCaseService, TestCaseService>();
+
+            // judge0 .
+            services.AddHttpClient<IJudge0Service, Judge0Service>();
             return services;
         }
     }

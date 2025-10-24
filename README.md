@@ -279,3 +279,11 @@ Chạy npm install --include=optional --ignore-scripts
 Commit cả package-lock.json
 
 Các dev khác chỉ cần npm ci hoặc docker-compose up --build → sẽ ổn định cho mọi hệ điều hành.
+
+# Tóm gọn quy tắc vàng
+
+📁 folder: lowercase-with-dash => Tránh lỗi import trên Linux/Mac
+📄 component/page/layout: PascalCase =>Vì React component là class/JSX element
+⚙️ service/hook/store: camelCase =>Thể hiện vai trò “logic function”
+🧠 type/constant: PascalCase or descriptive =>Rõ ràng, dễ tìm
+🔁 index.ts: chỉ để export

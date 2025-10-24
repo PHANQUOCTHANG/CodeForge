@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using CodeForge.Infrastructure;
 using CodeForge.Infrastructure.Data;
 using CodeForge.Core.Mappings;
-using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -34,6 +33,7 @@ namespace CodeForge
 
             // AutoMapper
             builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 
             // Register DI
             builder.Services.AddInfrastructure();

@@ -14,11 +14,11 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
 {
     [ApiController]
     [Route("api/[Controller]")]
-    public class CourseController : ControllerBase
+    public class CoursesController : ControllerBase
     {
         private readonly ICourseService _courseService;
 
-        public CourseController(ICourseService courseService)
+        public CoursesController(ICourseService courseService)
         {
             _courseService = courseService;
         }
@@ -59,7 +59,7 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
         }
 
         // --- GET COURSE BY ID (GET /api/course/{courseId}) ---
-        [HttpGet("{courseId:guid}")]
+        [HttpGet("{id:guid}")]
         // ✅ Public endpoint - No Authorize attribute needed (Assuming course view is public)
         public async Task<IActionResult> GetCourseByIdAsync([FromRoute] Guid courseId)
         {
@@ -100,7 +100,7 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
 
         // --- DELETE COURSE (DELETE /api/course/delete/{courseId}) ---
         [Authorize] // 🛡️ Requires Access Token
-        [HttpDelete("{courseId:guid}")] // ✅ Use route constraint and clean up route
+        [HttpDelete("{id:guid}")] // ✅ Use route constraint and clean up route
         public async Task<IActionResult> DeleteCourseAsync([FromRoute] Guid courseId)
         {
             // Service throws NotFoundException if not found.

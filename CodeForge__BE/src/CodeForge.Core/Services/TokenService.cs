@@ -13,7 +13,7 @@ public class TokenService : ITokenService
 
     public string GenerateAccessToken(User user)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_cfg["Jwt:Key"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_cfg["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var claims = new[]
         {
@@ -25,7 +25,7 @@ public class TokenService : ITokenService
             issuer: _cfg["Jwt:Issuer"],
             audience: _cfg["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(int.Parse(_cfg["Jwt:AccessMinutes"])),
+            expires: DateTime.UtcNow.AddMinutes(int.Parse(_cfg["Jwt:AccessMinutes"]!)),
             signingCredentials: creds
         );
         return new JwtSecurityTokenHandler().WriteToken(token);

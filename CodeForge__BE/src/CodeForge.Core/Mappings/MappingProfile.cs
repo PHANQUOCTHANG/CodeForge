@@ -20,7 +20,10 @@ namespace CodeForge.Core.Mappings
 
             // Problem 
             CreateMap<Problem, ProblemDto>();
-            CreateMap<CreateProblemDto, Problem>();
+            CreateMap<CreateProblemDto, Problem>()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false));
             CreateMap<UpdateProblemDto, Problem>();
 
             //Course
@@ -52,6 +55,11 @@ namespace CodeForge.Core.Mappings
 
             //problem
             CreateMap<Problem, ProblemDto>();
+            //TestCase
+            //Module 
+            CreateMap<TestCase, TestCaseDto>();
+            CreateMap<CreateTestCaseDto, TestCase>();
+            CreateMap<UpdateTestCaseDto, TestCase>();
         }
     }
 }

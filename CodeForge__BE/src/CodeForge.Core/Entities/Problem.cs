@@ -3,37 +3,56 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeForge.Core.Entities
 {
-    [Table("CodingProblems")]
-    public class Problem
-    {
-        [Key]
-        [Column("ProblemID")]
-        public Guid ProblemId { get; set; }
+        [Table("CodingProblems")]
+        public class Problem
+        {
+                [Key]
+                [Column("ProblemID")]
+                public Guid ProblemId { get; set; }
 
-        [Column("LessonID")]
-        public Guid LessonId { get; set; }
+                public Guid? LessonId { get; set; }
 
-        [Required]
-        [MaxLength(200)]
-        public string Title { get; set; } = string.Empty;
+                [Required, MaxLength(200)]
+                public string? Title { get; set; }
 
-        public string Description { get; set; } = string.Empty;
+                [Required, MaxLength(200)]
+                public string? Slug { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string Difficulty { get; set; } = string.Empty; // easy, medium, hard
+                public string? Description { get; set; }
 
-        public string Tags { get; set; } = string.Empty; // "array, dp, graph"
+                [Required, MaxLength(20)]
+                public string? Difficulty { get; set; } = "Easy";
 
-        public int TimeLimit { get; set; } = 1000; // ms
-        public int MemoryLimit { get; set; } = 256; // MB
+                [MaxLength(255)]
+                public string? Tags { get; set; }
 
-        public bool IsDeleted { get; set; } = false;
+                [MaxLength(100)]
+                public string? FunctionName { get; set; }
 
-        // Navigation property
-        [ForeignKey(nameof(LessonId))]
-        public Lesson? Lesson { get; set; }
+                [MaxLength(500)]
+                public string? Parameters { get; set; }
 
-        public Problem() { }
-    }
+                [MaxLength(100)]
+                public string? ReturnType { get; set; }
+
+                public int TimeLimit { get; set; } = 1000;
+
+                public int MemoryLimit { get; set; } = 256;
+
+                public string? Notes { get; set; }
+
+                public string? Constraints { get; set; }
+
+                public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+                public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
+                public bool IsDeleted { get; set; } = false;
+
+                // ---------------- 🔗 Navigation Property ----------------
+                [ForeignKey("LessonId")]
+                public Lesson? Lesson { get; set; }
+
+                public Problem() { }
+        }
 }
