@@ -1,15 +1,65 @@
 import axios from "axios";
+// import { store } from '../app/store'; // Tuyệt đối KHÔNG import store ở đây
 import API_URL from "./config";
+import {
+  logout,
+  refreshSuccess,
+} from "@/features/auth/slices/authSlice";
+import { openNotification } from "@/common/helper/notification";
+// --- START: TypeScript Definitions and Helpers ---
+interface RetryQueueItem {
+  resolve: (value: string | PromiseLike<string>) => void;
+  reject: (reason?: any) => void;
+}
+
+// 1. Biến toàn cục và Setter cho Access Token
+let currentAccessToken: string | null = null;
+export const setGlobalAccessToken = (token: string | null) => {
+  currentAccessToken = token;
+};
+
+// 2. State và Setter cho Redux Dispatch
+let dispatchFunction: any = () => {};
+export const setGlobalDispatch = (dispatch: any) => {
+  dispatchFunction = dispatch;
+};
+
+// 3. Logic Retry Queue
+let isRefreshing: boolean = false;
+let failedQueue: RetryQueueItem[] = [];
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token as string);
+    }
+  });
+  failedQueue = [];
+};
+
+// Các URL công khai mà lỗi 401 không được kích hoạt refresh token
+const EXCLUDED_URLS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/refresh-token",
+  "/auth/log-out",
+];
+const isExcludedUrl = (url: string) =>
+  EXCLUDED_URLS.some((excluded) => url.includes(excluded));
+// --- END: TypeScript Definitions and Helpers ---
+
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_URL, // Thay thế bằng API_URL thực tế
   timeout: 10000,
+  withCredentials: true, // Gửi cookie Refresh Token
   headers: { "Content-Type": "application/json" },
 });
 
-// Gắn access token vào request
+// GẮN ACCESS TOKEN
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token");
+    const token = currentAccessToken;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -18,42 +68,67 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// // INTERCEPTOR PHẢN HỒI (Xử lý 401)
+api.interceptors.response.use(
+  (response) => response,
+  async (error: any) => {
+    const originalRequest = error.config;
 
-// Xử lý response (refresh token nếu 401)
-// api.interceptors.response.use(
-//   (response) => response.data,
-//   async (error) => {
-//     const originalRequest = error.config;
+    // Chỉ xử lý lỗi 401 và chưa thử lại
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // ✅ FIX: LOẠI TRỪ LOGIN/REGISTER
+      if (isExcludedUrl(originalRequest.url as string)) {
+        return Promise.reject(error.response?.data || error);
+      }
 
-//     // Nếu token hết hạn và chưa retry → gọi refresh
-//     if (error.response?.status === 401 && !originalRequest._retry) {
-//       originalRequest._retry = true;
-//       try {
-//         const refreshToken = localStorage.getItem("refresh_token") || null;
-//         if (refreshToken) {
-//           const res = await axios.post("https://api.example.com/auth/refresh", {
-//             refresh_token: refreshToken,
-//           });
-//           const newAccessToken = res.data.access_token;
+      originalRequest._retry = true;
 
-//           // Lưu lại token mới
-//           localStorage.setItem("access_token", newAccessToken);
+      // 2. Chặn các request khác trong khi đang refresh
+      if (isRefreshing) {
+        return new Promise<string>(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
 
-//           // Update header và gọi lại request cũ
-//           api.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
-//           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-//           return api(originalRequest);
-//         }
-//       } catch (err) {
-//         console.error("Refresh token thất bại, logout..." + err);
-//         localStorage.removeItem("access_token");
-//         localStorage.removeItem("refresh_token");
-//         window.location.href = "/login"; // chuyển về trang login
-//       }
-//     }
+      isRefreshing = true;
 
-//     return Promise.reject(error);
-//   }
-// );
+      try {
+        // 3. GỌI API REFRESH
+        const res = await api.post("/auth/refresh-token");
+        const newAccessToken = res.data.accessToken;
+        // 4. ✅ FIX: CẬP NHẬT TRẠNG THÁI REDUX (chỉ cập nhật token)
+        dispatchFunction(refreshSuccess({ accessToken: newAccessToken }));
+        setGlobalAccessToken(newAccessToken);
+        // 5. Thử lại request gốc và xử lý hàng đợi
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        processQueue(null, newAccessToken);
+
+        return api(originalRequest);
+      } catch (err) {
+        // 6. Refresh token thất bại -> Bắt buộc Logout
+        processQueue(err, null);
+
+        dispatchFunction(logout()); // Xóa token khỏi Redux
+        openNotification(
+          "error",
+          "Thất bại",
+          "Refresh token failed, logging out..."
+        );
+        console.error("Refresh token failed, logging out...", err);
+        window.location.href = "/login";
+
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+    return Promise.reject(error.response?.data || error);
+  }
+);
 
 export default api;

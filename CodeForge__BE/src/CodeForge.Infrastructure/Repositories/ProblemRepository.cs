@@ -65,7 +65,7 @@ namespace CodeForge.Infrastructure.Repositories
             updateProblemDto.Slug = SlugGenerator.ConvertTitleToSlug(updateProblemDto.Title);
 
             _mapper.Map(updateProblemDto, problem);
-            
+
             await _context.SaveChangesAsync();
             return problem;
         }

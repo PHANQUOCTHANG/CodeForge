@@ -6,14 +6,17 @@ using System.Threading.Tasks;
 
 namespace CodeForge.Api.DTOs.Request.Course
 {
-    public class CreateCourseDto
-    {
-        public string Title { get; set; } = string.Empty;
+        public class CreateCourseDto
+        {
+                public string Title { get; set; } = string.Empty;
 
-        public string? Description { get; set; }
-        public string Level { get; set; } = "beginner"; // beginner, intermediate, advanced
+                public string? Description { get; set; }
+                public string Level { get; set; } = "beginner"; // beginner, intermediate, advanced
 
-        public string? Language { get; set; } = string.Empty;
-        public Guid CreatedBy { get; set; }
-    }
+                public string? Language { get; set; }
+                public string? Slug { get; set; }
+
+                public Guid CreatedBy { get; set; }
+
+        }
 }

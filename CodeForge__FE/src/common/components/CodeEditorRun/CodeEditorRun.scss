@@ -1,0 +1,224 @@
+.code-editor {
+  background-color: vars.color("gray", 300);
+  &__container {
+    @include container(1rem, 1rem);
+    @include respond(md) {
+      @include container(4rem, 1rem);
+    }
+  }
+  &__header {
+    margin-bottom: var(--space-4);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    @include respond(md) {
+      margin-bottom: var(--space-16);
+    }
+  }
+
+  &__title {
+    text-align: center;
+    color: vars.$black;
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+
+    @include respond(md) {
+      margin-bottom: var(--space-4);
+      font-size: var(--text-4xl);
+    }
+  }
+
+  &__subtitle {
+    font-size: var(--text-sm);
+    text-align: center;
+    color: vars.$black;
+
+    max-width: 600px;
+    margin: 0 auto;
+    @include respond(md) {
+      font-size: var(--text-base);
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+
+    @include respond(md) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  &__card {
+    font-family: "Fira Code";
+
+    background: #fff;
+    border-radius: 0.75rem;
+    padding: var(--space-4);
+    @include respond(lg) {
+      padding: var(--space-8);
+    }
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    min-width: 0; // fix nội dung tràn grid
+  }
+
+  &__badge {
+    color: vars.color("green", 500);
+    background-color: vars.color("gray", 200);
+    font-size: var(--text-base);
+    padding: var(--space-1) var(--space-2);
+    @include respond(lg) {
+      padding: var(--space-2) var(--space-4);
+    }
+    border-radius: var(--radius-lg);
+  }
+  &__card-title {
+    font-size: var(--text-lg);
+    @include respond(lg) {
+      font-size: var(--text-xl);
+    }
+  }
+  &__instructions,
+  &__example,
+  &__hints {
+    margin-top: var(--space-4);
+    h4 {
+      font-size: var(--text-base);
+      @include respond(md) {
+        gap: var(--space-8);
+      }
+    }
+    p {
+      font-size: var(--text-sm);
+      @include respond(md) {
+        font-size: var(--text-base);
+      }
+    }
+    pre {
+      color: vars.$black;
+      background-color: vars.color("gray", 200);
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+
+    ul {
+      padding-left: 1rem;
+      list-style: none;
+
+      li {
+        font-size: var(--text-sm);
+        @include respond(lg) {
+          font-size: var(--text-base);
+        }
+        margin-bottom: 0.25rem;
+        color: #6b7280;
+      }
+    }
+  }
+
+  &__actions {
+    flex-wrap: wrap;
+    font-family: var(--font-sans);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    @include respond(md) {
+      font-size: var(--text-base);
+      padding: var(--space-2) var(--space-4);
+    }
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+
+    .btn {
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      border: 1px solid transparent;
+      @include respond(md) {
+        font-size: var(--text-base);
+        padding: var(--space-2) var(--space-4);
+      }
+
+      &--theme {
+        background: #fff;
+        color: #374151;
+        border-color: #d1d5db;
+
+        &:hover {
+          background: #f9fafb;
+        }
+      }
+
+      &__icon {
+        font-size: var(--text-base);
+        width: 1rem;
+        height: 1rem;
+        @include respond(md) {
+        }
+      }
+    }
+  }
+  &__select {
+    max-width: 100px;
+    font-size: var(--text-sm);
+    padding: var(--space-1) var(--space-2);
+    @include respond(md) {
+      max-width: 150px;
+      font-size: var(--text-base);
+      padding: var(--space-2) var(--space-4);
+    }
+  }
+  &__textarea {
+    width: 100%;
+    height: 250px;
+    padding: 1rem;
+    font-family: monospace;
+    font-size: 0.9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    resize: none;
+    box-sizing: border-box; // tránh dư width
+  }
+
+  &__output {
+    margin-top: 1rem;
+    height: 250px;
+    padding: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-family: monospace;
+    font-size: 0.9rem;
+    overflow-y: auto;
+    min-width: 0; // tránh tràn
+  }
+  &__tabs {
+    margin-bottom: var(--space-4);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  &__success {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #16a34a;
+    background: #ecfdf5;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+
+    &-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+}

@@ -1,9 +1,8 @@
-import Hero from "@/components/Hero/Hero";
-import "./HomePage.scss";
-import { Features } from "@/components/Feature/Feature";
-import { CodeEditor } from "@/components/CodeEditorRun/CodeEditorRun";
-import ReasonSection from "@/components/ReasonSection/ReasonSection";
-import CourseCarousel from "@/components/CourseCarousel/CourseCarousel";
+import Hero from "@/common/components/Hero/Hero";
+import { Features } from "@/common/components/Feature/Feature";
+import { CodeEditor } from "@/common/components/CodeEditorRun/CodeEditorRun";
+import ReasonSection from "@/common/components/ReasonSection/ReasonSection";
+import CourseCarousel from "@/common/components/CourseCarousel/CourseCarousel";
 const HomePage = () => {
   return (
     <>

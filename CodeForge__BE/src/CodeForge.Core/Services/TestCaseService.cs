@@ -1,15 +1,20 @@
 using AutoMapper;
 using CodeForge.Api.DTOs;
-using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Entities;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Interfaces.Services;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+// ✅ Import Custom Exceptions
+using CodeForge.Core.Exceptions;
+using CodeForge.Api.DTOs.Response; // Giả định DTOs nằm ở đây
 
 namespace CodeForge.Core.Service
 {
-    public class TestCaseService : ITestCaseService
+    public class TestCaseService : ITestCaseService // ITestCaseService phải được cập nhật
     {
-
         private readonly ITestCaseRepository _TestCaseRepository;
         private readonly IMapper _mapper;
 
@@ -19,92 +24,78 @@ namespace CodeForge.Core.Service
             _mapper = mapper;
         }
 
-        public async Task<ApiResponse<TestCaseDto>> CreateTestCaseAsync(CreateTestCaseDto createTestCaseDto)
+        // --- CREATE TestCase ---
+        // ✅ Kiểu trả về mới: Task<TestCaseDto>
+        public async Task<TestCaseDto> CreateTestCaseAsync(CreateTestCaseDto createTestCaseDto)
         {
-            try
-            {
-                TestCase testCase = await _TestCaseRepository.CreateAsync(createTestCaseDto);
-                TestCaseDto TestCaseDto = _mapper.Map<TestCaseDto>(testCase);
+            // Bỏ khối try-catch và ApiResponse<T>
 
-                return new ApiResponse<TestCaseDto>(201, "Create TestCase success", TestCaseDto);
-            }
-            catch (Exception e)
-            {
-                return new ApiResponse<TestCaseDto>(500, e.Message);
-            }
+            // Nếu có logic kiểm tra trùng lặp (ví dụ: Input/Output trùng nhau), hãy thêm ConflictException ở đây
+
+            // Mapping DTO sang Entity và tạo
+            TestCase testCase = await _TestCaseRepository.CreateAsync(createTestCaseDto);
+
+            return _mapper.Map<TestCaseDto>(testCase);
         }
 
-        public async Task<ApiResponse<bool>> DeleteTestCaseAsync(Guid testCaseId)
+        // --- DELETE TestCase ---
+        // ✅ Kiểu trả về mới: Task<bool>
+        public async Task<bool> DeleteTestCaseAsync(Guid testCaseId)
         {
-            try
+            // Bỏ khối try-catch
+            bool result = await _TestCaseRepository.DeleteAsync(testCaseId);
+
+            // ✅ SỬA: Thay thế return new ApiResponse<bool>(404, ...) bằng NotFoundException
+            if (!result)
             {
-                bool result = await _TestCaseRepository.DeleteAsync(testCaseId);
-                if (!result)
-                {
-                    return new ApiResponse<bool>(404, "Invalid");
-                }
-                return new ApiResponse<bool>(200, "Delete TestCase success");
+                throw new NotFoundException($"TestCase with ID {testCaseId} not found.");
             }
-            catch (Exception e)
-            {
-                return new ApiResponse<bool>(500, e.Message);
-            }
+
+            return true;
         }
 
-        public async Task<ApiResponse<List<TestCaseDto>>> GetAllTestCaseAsync(bool? isHiden)
+        // --- GET All TestCase ---
+        // ✅ Kiểu trả về mới: Task<List<TestCaseDto>>
+        public async Task<List<TestCaseDto>> GetAllTestCaseAsync(bool? isHiden)
         {
-            try
-            {
-                List<TestCase> testCases = await _TestCaseRepository.GetAllAsync(isHiden);
-                List<TestCaseDto> testCaseDtos = _mapper.Map<List<TestCaseDto>>(testCases);
-
-                return new ApiResponse<List<TestCaseDto>>(200, "Get all TestCase success", testCaseDtos);
-            }
-            catch (Exception e)
-            {
-                return new ApiResponse<List<TestCaseDto>>(500, e.Message);
-            }
+            // Bỏ khối try-catch và ApiResponse<T>
+            List<TestCase> testCases = await _TestCaseRepository.GetAllAsync(isHiden);
+            return _mapper.Map<List<TestCaseDto>>(testCases);
         }
 
-        public async Task<ApiResponse<TestCaseDto>> GetTestCaseByIdAsync(Guid testCaseId)
+        // --- GET TestCase by ID ---
+        // ✅ Kiểu trả về mới: Task<TestCaseDto>
+        public async Task<TestCaseDto> GetTestCaseByIdAsync(Guid testCaseId)
         {
-            try
-            {
-                TestCase? testCase = await _TestCaseRepository.GetByIdAsync(testCaseId);
+            // Bỏ khối try-catch và ApiResponse<T>
+            TestCase? testCase = await _TestCaseRepository.GetByIdAsync(testCaseId);
 
-                if (testCase == null)
-                {
-                    return new ApiResponse<TestCaseDto>(404, "Invalid");
-                }
-
-                TestCaseDto testCaseDto = _mapper.Map<TestCaseDto>(testCase);
-                return new ApiResponse<TestCaseDto>(200, "Get all TestCase success", testCaseDto);
-            }
-            catch (Exception e)
+            // ✅ SỬA: Thay thế return new ApiResponse<TestCaseDto>(404, ...) bằng NotFoundException
+            if (testCase == null)
             {
-                return new ApiResponse<TestCaseDto>(500, e.Message);
+                throw new NotFoundException($"TestCase with ID {testCaseId} not found.");
             }
+
+            return _mapper.Map<TestCaseDto>(testCase);
         }
 
-        public async Task<ApiResponse<TestCaseDto>> UpdateTestCaseAsync(UpdateTestCaseDto updateTestCaseDto)
+        // --- UPDATE TestCase ---
+        // ✅ Kiểu trả về mới: Task<TestCaseDto>
+        public async Task<TestCaseDto> UpdateTestCaseAsync(UpdateTestCaseDto updateTestCaseDto)
         {
-            try
+            // Bỏ khối try-catch và ApiResponse<T>
+
+            // Mapping DTO sang Entity và cập nhật
+            TestCase? testCase = await _TestCaseRepository.UpdateAsync(updateTestCaseDto);
+
+            // ✅ SỬA: Thay thế return new ApiResponse<TestCaseDto>(404, ...) bằng NotFoundException
+            if (testCase == null)
             {
-                TestCase? testCase = await _TestCaseRepository.UpdateAsync(updateTestCaseDto);
-
-                if (testCase == null)
-                {
-                    return new ApiResponse<TestCaseDto>(404, "Invalid TestCase need update");
-                }
-
-                TestCaseDto testCaseDto = _mapper.Map<TestCaseDto>(testCase);
-
-                return new ApiResponse<TestCaseDto>(201, "Create TestCase success", testCaseDto);
+                // Giả định UpdateTestCaseDto có trường ID
+                throw new NotFoundException($"TestCase with ID {updateTestCaseDto.TestCaseId} not found for update.");
             }
-            catch (Exception e)
-            {
-                return new ApiResponse<TestCaseDto>(500, e.Message);
-            }
+
+            return _mapper.Map<TestCaseDto>(testCase);
         }
     }
 }

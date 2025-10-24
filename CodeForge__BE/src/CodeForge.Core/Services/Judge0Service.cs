@@ -10,7 +10,7 @@ namespace CodeForge.Core.Service
 {
     public class Judge0Service : IJudge0Service
     {
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient? _httpClient;
         private readonly ITestCaseRepository _testCaseRepository;
 
         private const string BaseUrl = "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true";

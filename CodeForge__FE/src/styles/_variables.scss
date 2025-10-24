@@ -61,6 +61,7 @@
 // ============================================
 @use "sass:map";
 @use "sass:math";
+@use "sass:meta"; // Thêm dòng này
 
 // ============================================
 // 1. SPACING SYSTEM (8px base grid)
@@ -189,7 +190,7 @@ $font-weights: (
   semibold: 600,
   bold: 700,
   extrabold: 800,
-  black: 900,
+  "black": 900,
 ) !default;
 
 $line-heights: (
@@ -808,7 +809,10 @@ $opacity: (
     $color-map: $rose;
   }
 
-  @if $color-map != null and type-of($color-map) == "map" {
+  // ... (nội dung if/else)
+  // ... (nội dung if/else)
+  @if $color-map != null and meta.type-of($color-map) == "map" {
+    // Đã thay thế type-of() bằng meta.type-of()
     @return map.get($color-map, $shade);
   } @else {
     @warn "Palette `#{$palette}` not found in color() function.";

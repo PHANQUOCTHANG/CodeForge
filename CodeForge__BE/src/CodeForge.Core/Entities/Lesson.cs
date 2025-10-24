@@ -3,33 +3,33 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeForge.Core.Entities
 {
-    public class Lesson
-    {
-      
-        [Key]
-        public Guid LessonId { get; set; } = Guid.NewGuid();
+        [Table("Lessons")]
+        public class Lesson
+        {
 
-        [Required]
-        public Guid ModuleId { get; set; }
+                [Key]
+                public Guid LessonId { get; set; } = Guid.NewGuid();
 
-        [Required]
-        [MaxLength(200)]
-        public string Title { get; set; } = string.Empty;
+                [Required]
+                public Guid ModuleId { get; set; }
 
-        public string? Content { get; set; }
+                [Required]
+                [MaxLength(200)]
+                public string Title { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(20)]
-        public string LessonType { get; set; } = string.Empty; // video, text, quiz, coding
+                public string? Content { get; set; }
 
-        public int OrderIndex { get; set; }
+                [Required]
+                [MaxLength(20)]
+                public string LessonType { get; set; } = string.Empty; // video, text, quiz, coding
 
-        public bool IsDeleted { get; set; } = false;
+                public int OrderIndex { get; set; }
 
-        // Navigation property
-        [ForeignKey(nameof(ModuleId))]
-        public Module? Module { get; set; }
-
-        public Lesson() {}
-    }
+                public bool IsDeleted { get; set; } = false;
+                public string? VideoUrl { get; set; }
+                // Navigation property
+                [ForeignKey(nameof(ModuleId))]
+                public Module? Module { get; set; }
+                public ICollection<Problem> CodingProblems { get; set; } = new List<Problem>();
+        }
 }

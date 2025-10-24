@@ -2,12 +2,17 @@ using AutoMapper;
 using CodeForge.Api.DTOs;
 using CodeForge.Core.Entities;
 using CodeForge.Core.Interfaces.Repositories;
+using CodeForge.Core.Interfaces.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+// ✅ Import Custom Exceptions
+using CodeForge.Core.Exceptions;
 
 namespace CodeForge.Core.Service
 {
-    public class ModuleService : IModuleService
+    public class ModuleService : IModuleService // Phải có IModuleService đã sửa
     {
-
         private readonly IModuleRepository _moduleRepository;
         private readonly IMapper _mapper;
 
@@ -17,100 +22,87 @@ namespace CodeForge.Core.Service
             _mapper = mapper;
         }
 
-        public async Task<ApiResponse<ModuleDto>> CreateModuleAsync(CreateModuleDto createModuleDto)
+        // --- CREATE Module ---
+        // ✅ Kiểu trả về mới: Task<ModuleDto>
+        public async Task<ModuleDto> CreateModuleAsync(CreateModuleDto createModuleDto)
         {
-            try
-            {
-                bool isExistsByTitle = await _moduleRepository.ExistsByTitle(createModuleDto.Title);
-                if (isExistsByTitle)
-                {
-                    return new ApiResponse<ModuleDto>(404, "Title is exists");
-                }
-                Module module = await _moduleRepository.CreateAsync(createModuleDto);
-                ModuleDto moduleDto = _mapper.Map<ModuleDto>(module);
+            // Bỏ khối try-catch
+            bool isExistsByTitle = await _moduleRepository.ExistsByTitle(createModuleDto.Title);
 
-                return new ApiResponse<ModuleDto>(201, "Create Module success", moduleDto);
-            }
-            catch (Exception e)
+            // ✅ SỬA: Thay thế return new ApiResponse<ModuleDto>(404, ...) bằng ConflictException (409)
+            if (isExistsByTitle)
             {
-                return new ApiResponse<ModuleDto>(500, e.Message);
+                throw new ConflictException($"Module with title '{createModuleDto.Title}' already exists.");
             }
+
+            // Mapping DTO sang Entity và tạo
+            Module module = await _moduleRepository.CreateAsync(createModuleDto);
+
+            return _mapper.Map<ModuleDto>(module);
         }
 
-        public async Task<ApiResponse<bool>> DeleteModuleAsync(Guid moduleId)
+        // --- DELETE Module ---
+        // ✅ Kiểu trả về mới: Task<bool>
+        public async Task<bool> DeleteModuleAsync(Guid moduleId)
         {
-            try
+            // Bỏ khối try-catch
+            bool result = await _moduleRepository.DeleteAsync(moduleId);
+
+            // ✅ SỬA: Thay thế return new ApiResponse<bool>(404, ...) bằng NotFoundException
+            if (!result)
             {
-                bool result = await _moduleRepository.DeleteAsync(moduleId);
-                if (!result)
-                {
-                    return new ApiResponse<bool>(404, "Invalid");
-                }
-                return new ApiResponse<bool>(200, "Delete Module success");
+                throw new NotFoundException($"Module with ID {moduleId} not found.");
             }
-            catch (Exception e)
-            {
-                return new ApiResponse<bool>(500, e.Message);
-            }
+
+            return true;
         }
 
-        public async Task<ApiResponse<List<ModuleDto>>> GetAllModuleAsync()
+        // --- GET All Module ---
+        // ✅ Kiểu trả về mới: Task<List<ModuleDto>>
+        public async Task<List<ModuleDto>> GetAllModuleAsync()
         {
-            try
-            {
-                List<Module> modules = await _moduleRepository.GetAllAsync();
-                List<ModuleDto> moduleDtos = _mapper.Map<List<ModuleDto>>(modules);
-
-                return new ApiResponse<List<ModuleDto>>(200, "Get all Module success", moduleDtos);
-            }
-            catch (Exception e)
-            {
-                return new ApiResponse<List<ModuleDto>>(500, e.Message);
-            }
+            // Bỏ khối try-catch
+            List<Module> modules = await _moduleRepository.GetAllAsync();
+            return _mapper.Map<List<ModuleDto>>(modules);
         }
 
-        public async Task<ApiResponse<ModuleDto>> GetModuleByIdAsync(Guid moduleId)
+        // --- GET Module by ID ---
+        // ✅ Kiểu trả về mới: Task<ModuleDto>
+        public async Task<ModuleDto> GetModuleByIdAsync(Guid moduleId)
         {
-            try
-            {
-                Module? module = await _moduleRepository.GetByIdAsync(moduleId);
+            // Bỏ khối try-catch
+            Module? module = await _moduleRepository.GetByIdAsync(moduleId);
 
-                if (module == null)
-                {
-                    return new ApiResponse<ModuleDto>(404, "Invalid");
-                }
-
-                ModuleDto moduleDto = _mapper.Map<ModuleDto>(module);
-                return new ApiResponse<ModuleDto>(200, "Get all Module success", moduleDto);
-            }
-            catch (Exception e)
+            // ✅ SỬA: Thay thế return new ApiResponse<ModuleDto>(404, ...) bằng NotFoundException
+            if (module == null)
             {
-                return new ApiResponse<ModuleDto>(500, e.Message);
+                throw new NotFoundException($"Module with ID {moduleId} not found.");
             }
+
+            return _mapper.Map<ModuleDto>(module);
         }
 
-        public async Task<ApiResponse<ModuleDto>> UpdateModuleAsync(UpdateModuleDto updateModuleDto)
+        // --- UPDATE Module ---
+        // ✅ Kiểu trả về mới: Task<ModuleDto>
+        public async Task<ModuleDto> UpdateModuleAsync(UpdateModuleDto updateModuleDto)
         {
-            try
+            // Bỏ khối try-catch
+            bool isExistsByTitle = await _moduleRepository.ExistsByTitle(updateModuleDto.Title);
+
+            // ✅ SỬA: Thay thế return new ApiResponse<ModuleDto>(404, ...) bằng ConflictException
+            // Lưu ý: Logic này nên kiểm tra trùng tên của module KHÁC ID
+            if (isExistsByTitle)
+                throw new ConflictException($"Module with title '{updateModuleDto.Title}' already exists.");
+
+            Module? module = await _moduleRepository.UpdateAsync(updateModuleDto);
+
+            // ✅ SỬA: Thay thế return new ApiResponse<ModuleDto>(404, ...) bằng NotFoundException
+            if (module == null)
             {
-                bool isExistsByTitle = await _moduleRepository.ExistsByTitle(updateModuleDto.Title);
-                if (isExistsByTitle) return new ApiResponse<ModuleDto>(404, "Create Module failed");
-
-                Module? module = await _moduleRepository.UpdateAsync(updateModuleDto);
-
-                if (module == null)
-                {
-                    return new ApiResponse<ModuleDto>(404, "Invalid Module need update");
-                }
-
-                ModuleDto moduleDto = _mapper.Map<ModuleDto>(module);
-
-                return new ApiResponse<ModuleDto>(201, "Create Module success", moduleDto);
+                throw new NotFoundException($"Module with ID {updateModuleDto.ModuleId} not found for update.");
             }
-            catch (Exception e)
-            {
-                return new ApiResponse<ModuleDto>(500, e.Message);
-            }
+
+            return _mapper.Map<ModuleDto>(module);
         }
     }
 }
