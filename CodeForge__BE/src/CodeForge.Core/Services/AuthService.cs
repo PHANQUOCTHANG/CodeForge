@@ -1,65 +1,154 @@
-using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Auth;
 using CodeForge.Api.DTOs.Request.Auth;
+using CodeForge.Api.Helpers;
 using CodeForge.Core.Entities;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Interfaces.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration; // Đảm bảo IConfiguration được dùng
+using System;
+using System.Threading.Tasks;
 
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+// Giả định bạn có namespace này cho các Custom Exceptions
+using CodeForge.Core.Exceptions;
+using AutoMapper;
+using CodeForge.Api.DTOs.Response;
 
 namespace CodeForge.Core.Service
 {
     public class AuthService : IAuthService
     {
         private readonly IAuthRepository _authRepository;
+        private readonly PasswordHasher<User> _hasher = new();
+        private readonly IMapper _mapper;
+
         private readonly IConfiguration _config;
-        public AuthService(IAuthRepository authRepository, IConfiguration config)
+
+        public AuthService(IAuthRepository authRepository, IConfiguration config, IMapper mapper)
         {
             _authRepository = authRepository;
             _config = config;
+            _mapper = mapper;
         }
 
-        private string GenerateJwtToken(string email)
+        // --- REGISTER ---
+        public async Task<AuthDto> RegisterAsync(RegisterDto request, string ipAddress)
         {
-            var claims = new[]
+            var existing = await _authRepository.GetUserByEmailAsync(request.Email);
+
+            // ✅ SỬA: Thay thế Exception bằng ConflictException
+            if (existing != null)
+                throw new ConflictException("Email already exists");
+
+            var user = new User
             {
-            new Claim(JwtRegisteredClaimNames.Sub, email),
-            new Claim("role", "admin"),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
+                Username = request.Username,
+                Email = request.Email,
+                // Luôn kiểm tra nullability cho HashPassword
+                PasswordHash = _hasher.HashPassword(null!, request.Password)
+            };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            await _authRepository.AddUserAsync(user);
 
-            var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
+            var refreshToken = TokenGenerator.GenerateRefreshToken(ipAddress);
+            refreshToken.UserId = user.UserId; // 👈 Gắn thủ công liên kết
+            await _authRepository.AddRefreshTokenAsync(refreshToken);
+            await _authRepository.SaveChangesAsync();
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var jwt = JwtHelper.GenerateJwtToken(user, _config);
+            var userProfile = _mapper.Map<UserDto>(user);
+            return new AuthDto
+            {
+                UserInfo = userProfile,
+                AccessToken = jwt,
+                // ✅ LƯU Ý: Đảm bảo refreshToken.TokenHash ở đây là chuỗi token GỐC, không phải giá trị hash.
+                RefreshToken = refreshToken.TokenString
+            };
         }
 
-        public async Task<AuthDto> Login(LoginDto loginDto)
+        // --- LOGIN ---
+        public async Task<AuthDto> LoginAsync(LoginDto request, string ipAddress)
         {
-            User? user = await _authRepository.Login(loginDto);
-            if (user == null) return new AuthDto { Code = (int)LoginResult.UserNotFound, Message = "Invalid" };
-            if (!BCrypt.Net.BCrypt.Verify(loginDto.PasswordHash, user.PasswordHash))
-                return new AuthDto { Code = (int)LoginResult.InvalidPassword, Message = "Invalid Password" }; // Sai mật khẩu
-            string token = GenerateJwtToken(loginDto.Email);
-            return new AuthDto { Code = (int)LoginResult.Success, AccessToken = token, Message = "Login success" };
+            await _authRepository.ClearExpireToken();
+            var user = await _authRepository.GetTrackedUserByEmailAsync(request.Email)
+                // ✅ SỬA: Thay thế Exception bằng UnauthorizedException
+                ?? throw new UnauthorizedException("Invalid credentials");
+
+            var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+
+            // ✅ SỬA: Thay thế Exception bằng UnauthorizedException
+            if (result == PasswordVerificationResult.Failed)
+                throw new UnauthorizedException("Invalid credentials");
+
+            var jwt = JwtHelper.GenerateJwtToken(user, _config);
+            var refreshToken = TokenGenerator.GenerateRefreshToken(ipAddress);
+            refreshToken.UserId = user.UserId; // 👈 Gắn thủ công liên kết
+            await _authRepository.AddRefreshTokenAsync(refreshToken);
+            await _authRepository.SaveChangesAsync();
+            var userProfile = _mapper.Map<UserDto>(user);
+            return new AuthDto
+            {
+                UserInfo = userProfile,
+                AccessToken = jwt,
+                RefreshToken = refreshToken.TokenString
+            };
         }
 
-        public async Task<AuthDto> Register(RegisterDto registerDto)
+        // --- REFRESH TOKEN ---
+        public async Task<AuthDto> RefreshTokenAsync(string refreshToken, string ipAddress)
         {
-            User? user = await _authRepository.Register(registerDto);
-            if (user == null) return new AuthDto { Code = (int)LoginResult.UserNotFound, Message = "User is exists" };
-            string token = GenerateJwtToken(registerDto.Email);
-            return new AuthDto { Code = (int)LoginResult.Success, AccessToken = token, Message = "Register success" };
+            //clear expired token
+            await _authRepository.ClearExpireToken();
+            // ⚡ Giải mã trước khi hash (sửa lỗi %3D)
+            var rawToken = Uri.UnescapeDataString(refreshToken);
+
+            var tokenHash = rawToken.Sha256();
+            var existingToken = await _authRepository.GetRefreshTokenAsync(tokenHash)
+                // ✅ SỬA: Thay thế Exception bằng UnauthorizedException
+                ?? throw new UnauthorizedException("Invalid token");
+
+            // ✅ SỬA: Tách riêng việc kiểm tra token bị thu hồi/hết hạn
+            if (!existingToken.IsActive)
+                throw new UnauthorizedException("Token expired or revoked");
+
+            var newRefreshToken = TokenGenerator.GenerateRefreshToken(ipAddress);
+
+            // Thu hồi token cũ (Token Rotation)
+            existingToken.RevokedAt = DateTime.UtcNow;
+            existingToken.RevokedByIp = ipAddress;
+            existingToken.ReplacedByTokenHash = newRefreshToken.TokenHash;
+
+            // Thêm token mới vào User
+            newRefreshToken.UserId = existingToken.UserId; // 👈 Gắn thủ công liên kết
+            await _authRepository.AddRefreshTokenAsync(newRefreshToken);
+
+            await _authRepository.SaveChangesAsync();
+
+            var jwt = JwtHelper.GenerateJwtToken(existingToken.User, _config);
+            var userProfile = _mapper.Map<UserDto>(existingToken.User);
+            return new AuthDto
+            {
+                UserInfo = userProfile,
+                AccessToken = jwt,
+                RefreshToken = newRefreshToken.TokenString
+            };
+        }
+
+        // --- REVOKE TOKEN ---
+        public async Task RevokeTokenAsync(string refreshToken, string ipAddress)
+        {
+            var tokenHash = refreshToken.Sha256();
+            var existingToken = await _authRepository.GetRefreshTokenAsync(tokenHash)
+                // ✅ SỬA: Thay thế Exception bằng UnauthorizedException
+                ?? throw new UnauthorizedException("Invalid token");
+
+            // Nếu token đã bị thu hồi trước đó, không cần làm gì thêm, hoặc có thể ném lỗi 401 tùy logic
+            if (existingToken.RevokedAt != null)
+                return;
+
+            existingToken.RevokedAt = DateTime.UtcNow;
+            existingToken.RevokedByIp = ipAddress;
+            await _authRepository.SaveChangesAsync();
         }
     }
 }
-

@@ -1,14 +1,16 @@
 
 
+
 using CodeForge.Api.DTOs;
 using CodeForge.Api.DTOs.Request.User;
-using CodeForge.Core.Entities;
+using CodeForge.Api.DTOs.Response;
 
 namespace CodeForge.Core.Interfaces.Services
 {
     public interface IUserService
     {
-        Task<IEnumerable<UserDto>> GetUsersAsync();
-        Task<UserDto> CreateUserAsync(CreateUserDto userDto);
+        Task<List<UserDto>> GetUsersAsync();
+        Task<UserDto> CreateUserAsync(CreateUserDto createUserDto);
+
     }
 }

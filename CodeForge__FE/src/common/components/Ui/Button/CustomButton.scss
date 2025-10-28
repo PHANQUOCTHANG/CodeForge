@@ -1,0 +1,134 @@
+.btn {
+  @include flex-center;
+  @include transition(all, 0.25s);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  gap: vars.space(2);
+  text-align: center;
+  a {
+    color: inherit;
+  }
+  // ✅ Override CSS Ant Design
+  &.ant-btn {
+    all: unset;
+    @include flex-center;
+    border: none;
+    background: none;
+    font: inherit;
+  }
+
+  // ===========================
+  // SIZE VARIANTS
+  // ===========================
+  &--sm {
+    font-size: var(--text-sm);
+    padding: vars.space(1) vars.space(3);
+  }
+
+  &--md {
+    font-size: var(--text-base);
+    padding: vars.space(2) vars.space(4);
+  }
+
+  &--lg {
+    font-size: var(--text-lg);
+    padding: vars.space(3) vars.space(5);
+  }
+
+  // ===========================
+  // FULL WIDTH
+  // ===========================
+  &--full {
+    width: 100%;
+    @include flex-center;
+  }
+
+  // ===========================
+  // VARIANT STYLES
+  // ===========================
+  &--primary {
+    background-color: vars.color("blue", 600);
+    color: vars.$white;
+    &:hover {
+      background-color: vars.color("blue", 500);
+    }
+  }
+  &--register {
+    background-color: vars.color("red", 500) !important;
+    padding: vars.space(0) vars.space(4);
+    color: vars.$white !important;
+    &:hover {
+      color: vars.$white !important;
+      background-color: vars.color("blue", 500) !important;
+    }
+  }
+  &--login {
+    color: vars.color("blue", 600) !important;
+    padding: vars.space(0) vars.space(4);
+    display: none;
+    &:hover {
+      color: vars.$white !important;
+      background-color: vars.color("blue", 500) !important;
+    }
+  }
+  &--menu {
+    padding: vars.space(0) vars.space(2);
+    color: vars.color("gray", 900) !important;
+    background-color: vars.$white !important;
+    &:hover {
+      color: vars.color("gray", 900) !important;
+      background-color: vars.$white !important;
+    }
+  }
+  &--secondary {
+    background-color: vars.color("gray", 200);
+    color: vars.color("gray", 800);
+    &:hover {
+      background-color: vars.color("gray", 300);
+    }
+  }
+
+  &--outline {
+    background-color: transparent;
+    color: vars.color("blue", 600);
+    border-color: vars.color("blue", 600);
+    &:hover {
+      background-color: vars.color("blue", 50);
+    }
+  }
+
+  &--danger {
+    background-color: vars.color("red", 600);
+    color: vars.$white;
+    &:hover {
+      background-color: vars.color("red", 500);
+    }
+  }
+
+  &--ghost {
+    background-color: transparent;
+    color: vars.color("gray", 700);
+    &:hover {
+      background-color: vars.color("gray", 100);
+    }
+  }
+
+  // ===========================
+  // RESPONSIVE
+  // ===========================
+  font-size: var(--text-base);
+  @include respond(md) {
+  }
+
+  @include respond(sm) {
+    width: 100%;
+    &--md,
+    &--sm {
+      padding: vars.space(1) vars.space(3);
+    }
+  }
+}

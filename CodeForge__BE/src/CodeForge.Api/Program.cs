@@ -2,10 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using CodeForge.Infrastructure;
 using CodeForge.Infrastructure.Data;
 using CodeForge.Core.Mappings;
-using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using CodeForge.Api.Middleware;
+using System.Text.Json.Serialization;
 
 namespace CodeForge
 {
@@ -16,7 +17,13 @@ namespace CodeForge
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+            // 👇 Dòng này giúp tránh vòng lặp khi serialize entity có quan hệ
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.WriteIndented = true; // (tùy chọn: in JSON đẹp)
+                });
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -26,6 +33,7 @@ namespace CodeForge
 
             // AutoMapper
             builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 
             // Register DI
             builder.Services.AddInfrastructure();
@@ -67,7 +75,9 @@ namespace CodeForge
             });
 
             var app = builder.Build();
-
+            // ĐĂNG KÝ MIDDLEWARE XỬ LÝ LỖI TOÀN CỤC Ở ĐÂY!
+            // Vị trí này đảm bảo nó có thể bắt ngoại lệ từ hầu hết các phần sau đó của pipeline.
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
             // ✅ Thứ tự middleware đúng
             if (app.Environment.IsDevelopment())
             {
@@ -79,7 +89,10 @@ namespace CodeForge
 
             app.UseCors("AllowFrontend"); // ⚡️ PHẢI đặt trước Authentication
 
+            // 1. Kích hoạt Authentication: Đọc và xác minh token JWT
             app.UseAuthentication();
+
+            // 2. Kích hoạt Authorization: Áp dụng các quy tắc bảo vệ
             app.UseAuthorization();
 
             app.MapControllers();

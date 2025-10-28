@@ -1,57 +1,73 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeForge.Core.Entities
 {
-    public class Course
-    {
-        [Key]
-        public Guid CourseId { get; set; } = Guid.NewGuid();  // tương ứng CourseID UNIQUEIDENTIFIER DEFAULT NEWID()
-
-        [Required]
-        [MaxLength(200)]
-        public string Title { get; set; } = string.Empty;
-
-        public string? Description { get; set; }
-
-        [Required]
-        [MaxLength(20)]
-        public string Level { get; set; } = "Beginner"; // "Beginner","Intermediate","Advanced"
-
-        [Required]
-        [MaxLength(50)]
-        public string Language { get; set; } = string.Empty;
-
-        [Required]
-        public Guid CreatedBy { get; set; }   // FK -> Users.UserID
-
-        [ForeignKey("CreatedBy")]
-        public User User { get; set; } = null!;   // navigation property
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        [Required]
-        [MaxLength(20)]
-        public string Status { get; set; } = "draft"; // mặc định "draft"
-
-        public bool IsDeleted { get; set; } = false;
-        public Course()
+        [Table("Courses")]
+        public class Course
         {
+                [Key]
+                public Guid CourseId { get; set; } = Guid.NewGuid(); // CourseID UNIQUEIDENTIFIER DEFAULT NEWID()
 
-        }
-        public Course(string title, string? description, string language, string level, Guid createdBy, User user, DateTime createdAt, string status, bool isDeleted)
-        {
-            CourseId = Guid.NewGuid();
-            Title = title;
-            Description = description;
-            Language = language;
-            Level = level;
-            CreatedBy = createdBy;
-            User = user;
-            CreatedAt = createdAt;
-            Status = status;
-            IsDeleted = isDeleted;
-        }
+                [Required, MaxLength(200)]
+                public string Title { get; set; } = string.Empty;
 
-    }
+                public string? Description { get; set; }
+                public string? Overview { get; set; } // ✅ phần dài
+                [Required]
+                [MaxLength(20)]
+                public string Level { get; set; } = "Beginner"; // beginner, intermediate, advanced
+
+                [Required, MaxLength(50)]
+                public string Language { get; set; } = string.Empty;
+
+                // --- User relationship ---
+                [Required]
+                public Guid CreatedBy { get; set; }   // FK -> Users(UserID)
+
+                [ForeignKey(nameof(CreatedBy))]
+                public User User { get; set; } = null!;   // navigation property
+
+                // --- Course category relationship ---
+                [Required]
+                public Guid CategoryId { get; set; } // FK -> CourseCategories(CategoryID)
+
+                [ForeignKey(nameof(CategoryId))]
+                public CourseCategory Category { get; set; } = null!;
+
+                // --- Metadata ---
+                public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+                [Required]
+                [MaxLength(20)]
+                public string Status { get; set; } = "active"; // default active
+
+                public bool IsDeleted { get; set; } = false;
+
+                // --- Additional fields ---
+                [MaxLength(255)]
+                public string? Thumbnail { get; set; } = null;  // Ảnh đại diện
+                [Required, MaxLength(200)]
+                public string Slug { get; set; } = string.Empty;  // ✅ thêm Slug
+
+                [Column(TypeName = "decimal(18,2)")]
+                public decimal Price { get; set; } = 0;         // 0 = miễn phí
+
+                [Column(TypeName = "decimal(5,2)")]
+                public decimal Discount { get; set; } = 0;      // % giảm giá
+
+                public int Duration { get; set; } = 0;          // thời lượng (phút)
+
+                public double Rating { get; set; } = 0;         // trung bình đánh giá
+                public int TotalRatings { get; set; } = 0;      // tổng lượt đánh giá
+                public int TotalStudents { get; set; } = 0;     // tổng số học viên
+                public int LessonCount { get; set; } = 0;     // tổng số học viên
+
+
+                public ICollection<Module> Modules { get; set; } = new List<Module>();
+                public ICollection<CourseReview> Reviews { get; set; } = new List<CourseReview>();
+                // --- Constructors ---
+                public Course() { }
+        }
 }

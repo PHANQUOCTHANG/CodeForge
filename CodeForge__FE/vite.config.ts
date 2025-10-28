@@ -9,6 +9,16 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `
+        @use "@/styles/variables" as vars;
+        @use "@/styles/mixins" as *;
+      `,
+      },
+    },
+  },
 
   server: {
     host: true, // cho phép truy cập từ ngoài container

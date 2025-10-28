@@ -1,103 +1,113 @@
+using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Request.Course;
+using CodeForge.Api.DTOs.Response;
+using CodeForge.Application.DTOs.Courses; // Assuming your Course DTOs are here
+using CodeForge.Core.Interfaces.Services;
+using CodeForge__BE.src.CodeForge.Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using CodeForge__BE.src.CodeForge.Api.DTOs.Request.Course;
-using CodeForge__BE.src.CodeForge.Api.DTOs.Response;
-using CodeForge__BE.src.CodeForge.Core.Interfaces.Services;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CodeForge__BE.src.CodeForge.Api.Controllers
 {
     [ApiController]
     [Route("api/[Controller]")]
-    public class CourseController : ControllerBase
+    public class CoursesController : ControllerBase
     {
-        private readonly ICourseService _service;
-        public CourseController(ICourseService _service)
+        private readonly ICourseService _courseService;
+
+        public CoursesController(ICourseService courseService)
         {
-            this._service = _service;
+            _courseService = courseService;
         }
-        //[GET] api/courses
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+
+        // --- GET ALL COURSES PAGED (GET /api/course/paged) ---
+        [HttpGet("paged")]
+        // ✅ Public endpoint - No Authorize attribute needed
+        public async Task<IActionResult> GetCoursePagedAsync([FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? search = null)
         {
-            var courses = await _service.GetAllAsync();
-            return Ok(new ApiResponse<IEnumerable<CourseDto>>(200, "Course retrieved successfully", courses));
+            // Service returns PaginationResult<object> (assuming this handles success structure internally)
+            var result = await _courseService.GetPagedCoursesAsync(page, pageSize, search);
+
+            // If PaginationResult is your success wrapper, just return Ok(result).
+            // If not, you should wrap it:
+            return Ok(result);
         }
-        // GET api/courses/{id}
+
+        // --- GET DETAIL BY SLUG (GET /api/course/slug/{slug}) ---
+        [HttpGet("slug/{slug}")]
+        // ✅ Public endpoint - No Authorize attribute needed
+        public async Task<IActionResult> GetBySlug(string slug)
+        {
+            var result = await _courseService.GetCourseDetailBySlugAsync(slug);
+
+            // ✅ IMPROVEMENT: Check for null and return 404 (NotFoundException should be thrown in service, 
+            // but checking for null here is okay if the service returns null instead of throwing 404)
+            if (result == null)
+            {
+                // Note: If GetCourseDetailBySlugAsync was designed to throw NotFoundException,
+                // you would remove this block completely. For null checks, this is fine.
+                return NotFound(ApiResponse<string>.Fail("Course not found."));
+            }
+
+            // ✅ Wrap and return 200 OK
+            return Ok(ApiResponse<CourseDetailDto>.Success(result, "Course detail retrieved."));
+        }
+
+        // --- GET COURSE BY ID (GET /api/course/{courseId}) ---
         [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetById(Guid id)
+        // ✅ Public endpoint - No Authorize attribute needed (Assuming course view is public)
+        public async Task<IActionResult> GetCourseByIdAsync([FromRoute] Guid courseId)
         {
-            try
-            {
-                var course = await _service.GetByIdAsync(id);
-                if (course == null)
-                {
-                    return NotFound(new ApiResponse<string>(404, "Course not found"));
-                }
+            // Service throws NotFoundException if not found.
+            var result = await _courseService.GetCourseByIdAsync(courseId);
 
-                return Ok(new ApiResponse<CourseDto>(200, "Success", course));
-            }
-            catch (Exception ex)
-            {
-                // log lỗi nếu cần
-                return StatusCode(500, new ApiResponse<string>(500, $"Internal Server Error: {ex.Message}"));
-            }
+            // ✅ Wrap and return 200 OK
+            return Ok(ApiResponse<CourseDto>.Success(result, "Course retrieved successfully."));
         }
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] createCourseDto _createCourseDto)
-        {
-            var created = await _service.CreateAsync(_createCourseDto);
 
+        // --- UPDATE COURSE (PATCH /api/course/update) ---
+        [Authorize] // 🛡️ Requires Access Token
+        [HttpPatch("update")]
+        public async Task<IActionResult> UpdateCourseAsync([FromBody] UpdateCourseDto updateCourseDto)
+        {
+            // Service throws NotFoundException/ConflictException.
+            var result = await _courseService.UpdateCourseAsync(updateCourseDto);
+
+            // ✅ Return 200 OK (Standard for successful update)
+            return Ok(ApiResponse<CourseDto>.Success(result, "Course updated successfully."));
+        }
+
+        // --- CREATE COURSE (POST /api/course/create) ---
+        [Authorize] // 🛡️ Requires Access Token
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateCourseAsync([FromBody] CreateCourseDto createCourseDto)
+        {
+            // Service throws ConflictException if title exists.
+            var result = await _courseService.CreateCourseAsync(createCourseDto);
+
+            // ✅ RESTful: Return 201 Created
             return CreatedAtAction(
-                nameof(GetById),
-                new { id = created.CourseId }, // đúng với DTO
-                new ApiResponse<CourseDto>(201, "Course created successfully", created)
+                nameof(GetCourseByIdAsync),
+                new { courseId = result.CourseId }, // Assumes CourseDto has an Id property
+                ApiResponse<CourseDto>.Created(result, "Course created successfully.")
             );
         }
 
-
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] updateCourseDto _updateCourseDto)
+        // --- DELETE COURSE (DELETE /api/course/delete/{courseId}) ---
+        [Authorize] // 🛡️ Requires Access Token
+        [HttpDelete("{id:guid}")] // ✅ Use route constraint and clean up route
+        public async Task<IActionResult> DeleteCourseAsync([FromRoute] Guid courseId)
         {
-            try
-            {
-                var updated = await _service.UpdateAsync(id, _updateCourseDto);
+            // Service throws NotFoundException if not found.
+            await _courseService.DeleteCourseAsync(courseId);
 
-                if (updated == null)
-                {
-                    return NotFound(new ApiResponse<string>(404, "Course not found"));
-                }
-
-                return Ok(new ApiResponse<CourseDto>(200, "Course updated successfully", updated));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ApiResponse<string>(500, $"Internal Server Error: {ex.Message}"));
-            }
+            // ✅ RESTful: Return 204 No Content
+            return NoContent();
         }
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            try
-            {
-                var deleted = await _service.DeleteAsync(id);
-
-                if (!deleted)
-                {
-                    return NotFound(new ApiResponse<string>(404, "Course not found"));
-                }
-
-                return Ok(new ApiResponse<string>(200, "Course deleted successfully"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ApiResponse<string>(500, $"Internal Server Error: {ex.Message}"));
-            }
-        }
-
-
-
     }
 }
