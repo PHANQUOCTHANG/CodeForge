@@ -11,6 +11,7 @@ const navItems = [
   { label: "Courses", icon: Home, path: "/courses" },
   { label: "Practice", icon: Home, path: "/practice" },
   { label: "Contact", icon: Home, path: "/contact" },
+  { label: "Community", icon: Home, path: "/community" },
 ];
 const items: MenuProps["items"] = [
   {

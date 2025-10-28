@@ -6,6 +6,7 @@ import NotFoundPage from "../pages/NotFound/NotFound";
 import LoginPage from "@/pages/client/Login/LoginPage";
 import RegisterPage from "@/pages/client/Register/RegisterPage";
 import ForgotPasswordPage from "@/pages/client/ForgetPassword/ForgetPasswordPage";
+import CommunityPage from "@/pages/client/Communication/CommunityPage";
 
 const ClientRouters = () => {
   const routers = useRoutes([
@@ -17,6 +18,7 @@ const ClientRouters = () => {
         { path: "courses", element: <HomePage /> },
         { path: "practice", element: <PracticePage /> },
         { path: "contact", element: <HomePage /> },
+        { path: "community", element: <CommunityPage /> },
       ],
     },
     {
@@ -30,6 +32,10 @@ const ClientRouters = () => {
     {
       path: "/forgot-password",
       element: <ForgotPasswordPage />,
+    },
+    {
+      path: "community",
+      element: <CommunityPage />,
     },
     {
       path: "*",
