@@ -26,6 +26,7 @@ const navItems = [
   { label: "Community", icon: Home, path: "/community" },
   { label: "Login", icon: LogIn, path: "/login" },
   { label: "Register", icon: UserRoundPen, path: "/register" },
+  { label: "About", icon: UserRoundPen, path: "/about" },
   // { label: "Log out", icon: LogOut, path: "/log-out" },
 ];
 const content = (

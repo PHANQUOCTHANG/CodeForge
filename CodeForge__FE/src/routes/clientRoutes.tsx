@@ -6,7 +6,7 @@ import NotFoundPage from "../pages/NotFound/NotFound";
 import LoginPage from "@/pages/client/Login/LoginPage";
 import RegisterPage from "@/pages/client/Register/RegisterPage";
 import ForgotPasswordPage from "@/pages/client/ForgetPassword/ForgetPasswordPage";
-import CommunityPage from "@/pages/client/Communication/CommunityPage";
+import CommunityPage from "@/pages/client/community/CommunityPage";
 
 const ClientRouters = () => {
   const routers = useRoutes([
