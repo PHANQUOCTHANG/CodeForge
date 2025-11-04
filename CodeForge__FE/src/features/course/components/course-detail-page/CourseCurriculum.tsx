@@ -1,5 +1,6 @@
 import React from "react";
-import { Collapse } from "antd";
+import { Collapse, Tooltip } from "antd";
+import { Link } from "react-router-dom";
 import type { CourseDetail } from "@/features/course/types";
 import {
   Award,
@@ -9,6 +10,8 @@ import {
   Video,
   ChevronDown,
   ChevronUp,
+  CheckCircle,
+  LockKeyhole,
 } from "lucide-react";
 
 const { Panel } = Collapse;
@@ -83,14 +86,47 @@ const CourseCurriculum: React.FC<Props> = ({ curriculumRef, course }) => {
               }
             >
               <div className="lessons-list">
-                {module.lessons.map((lesson) => (
-                  <div key={lesson.lessonId} className="lesson-item">
-                    <div className="lesson-icon">
-                      {getLessonIcon(lesson.lessonType)}
+                {module.lessons.map((lesson) => {
+                  const isEnrolled = course.isEnrolled;
+                  const lessonPath = `/courses/${course.slug}/learn/${module.moduleId}/${lesson.lessonId}`;
+                  const isCompleted = lesson.isCompleted;
+                  const lessonContent = (
+                    <>
+                      <div className="lesson-icon">
+                        {getLessonIcon(lesson.lessonType)}
+                      </div>
+                      <span className="lesson-title">{lesson.title}</span>
+                    </>
+                  );
+
+                  return (
+                    <div
+                      key={lesson.lessonId}
+                      className={`lesson-item ${
+                        isEnrolled ? "active" : "disabled"
+                      } ${isCompleted ? "completed" : ""}`}
+                    >
+                      {isEnrolled ? (
+                        <Link to={lessonPath} className="lesson-link">
+                          {lessonContent}
+                          {isCompleted && (
+                            <CheckCircle size={16} color="#22c55e" />
+                          )}
+                        </Link>
+                      ) : (
+                        <div className="lesson-locked">
+                          {lessonContent}
+                          <Tooltip
+                            placement="top"
+                            title="Bạn cần đăng ký khóa học để mở khóa bài học này."
+                          >
+                            <LockKeyhole color="gray" />
+                          </Tooltip>
+                        </div>
+                      )}
                     </div>
-                    <span className="lesson-title">{lesson.title}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </Panel>
           );

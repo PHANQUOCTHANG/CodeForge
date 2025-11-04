@@ -9,7 +9,6 @@ namespace CodeForge.Core.Entities
                 [Key]
                 [Column("ProblemID")]
                 public Guid ProblemId { get; set; }
-
                 public Guid? LessonId { get; set; }
 
                 [Required, MaxLength(200)]

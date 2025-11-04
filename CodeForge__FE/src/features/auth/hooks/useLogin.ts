@@ -19,7 +19,7 @@ export const useLogin = () => {
       setGlobalAccessToken(accessToken);
       dispatch(login({ accessToken: accessToken, userInfor: userInfo }));
       openNotification("success", "Thành công", "Đăng nhập thành công!");
-      navigate("/");
+      navigate(-1);
     },
     onError: () => {
       openNotification("error", "Thất bại", "Đăng nhập thất bại!");

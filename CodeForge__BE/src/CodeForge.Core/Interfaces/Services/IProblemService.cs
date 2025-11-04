@@ -1,4 +1,5 @@
 using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Entities;
 
 namespace CodeForge.Core.Interfaces.Services

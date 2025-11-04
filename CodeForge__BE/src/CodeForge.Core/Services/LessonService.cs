@@ -1,115 +1,124 @@
 using AutoMapper;
-using CodeForge.Api.DTOs;
+using CodeForge.Application.DTOs;
+using CodeForge.Application.DTOs.Lessons;
+using CodeForge.Application.DTOs.Response;
 using CodeForge.Core.Entities;
-using CodeForge.Core.Interfaces.Repositories;
-using CodeForge.Core.Interfaces.Services;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-// ✅ Import Custom Exceptions (Giả định nằm trong CodeForge.Core.Exceptions)
 using CodeForge.Core.Exceptions;
+using CodeForge.Core.Interfaces.Repositories;
+using CodeForge.Core.Services;
 
-namespace CodeForge.Core.Service
+namespace CodeForge.Core.Services
 {
-    // ✅ Chú ý: Đổi kiểu trả về của các phương thức CRUD
     public class LessonService : ILessonService
     {
         private readonly ILessonRepository _lessonRepository;
+        private readonly IModuleRepository _moduleRepository; // Cần để kiểm tra quyền (lấy CourseId)
+        private readonly IEnrollmentRepository _enrollmentRepository;
+        private readonly IProgressRepository _progressRepository;
         private readonly IMapper _mapper;
 
-        public LessonService(ILessonRepository lessonRepository, IMapper mapper)
+        public LessonService(
+            ILessonRepository lessonRepository,
+            IModuleRepository moduleRepository,
+            IEnrollmentRepository enrollmentRepository,
+            IProgressRepository progressRepository,
+            IMapper mapper)
         {
             _lessonRepository = lessonRepository;
+            _moduleRepository = moduleRepository;
+            _progressRepository = progressRepository;
+            _enrollmentRepository = enrollmentRepository;
             _mapper = mapper;
         }
 
-        // --- CREATE Lesson ---
-        // ✅ Đổi kiểu trả về từ Task<ApiResponse<LessonDto>> sang Task<LessonDto>
-        public async Task<LessonDto> CreateLessonAsync(CreateLessonDto createLessonDto)
+        public async Task<List<LessonDto>> GetLessonsByModuleAsync(Guid moduleId, Guid userId)
         {
-            // Bỏ khối try-catch
-            bool isExistsByTitle = await _lessonRepository.ExistsByTitle(createLessonDto.Title);
-
-            // ✅ SỬA: Thay thế return new ApiResponse<LessonDto>(404, ...) bằng ConflictException (409)
-            if (isExistsByTitle)
+            // 1. Kiểm tra quyền
+            var courseId = await _moduleRepository.GetCourseIdByModuleIdAsync(moduleId); // Cần thêm hàm này vào IModuleRepository
+            if (courseId == null)
             {
-                throw new ConflictException($"Lesson with title '{createLessonDto.Title}' already exists.");
+                throw new NotFoundException($"Module với ID {moduleId} không tồn tại.");
             }
 
-            // ✅ Mapping DTO sang Entity trước khi tạo
-            Lesson lesson = await _lessonRepository.CreateAsync(createLessonDto);
-
-            return _mapper.Map<LessonDto>(lesson);
-        }
-
-        // --- DELETE Lesson ---
-        // ✅ Đổi kiểu trả về từ Task<ApiResponse<bool>> sang Task<bool>
-        public async Task<bool> DeleteLessonAsync(Guid lessonId)
-        {
-            // Bỏ khối try-catch
-            bool result = await _lessonRepository.DeleteAsync(lessonId);
-
-            // ✅ SỬA: Thay thế return new ApiResponse<bool>(404, ...) bằng NotFoundException
-            if (!result)
+            bool isEnrolled = await _enrollmentRepository.ExistsAsync(userId, courseId.Value);
+            if (!isEnrolled)
             {
-                throw new NotFoundException($"Lesson with ID {lessonId} not found.");
+                throw new ForbiddenException("Bạn phải đăng ký khóa học để xem danh sách bài học.");
             }
 
-            return true;
-        }
-
-        // --- GET All Lesson ---
-        // ✅ Đổi kiểu trả về từ Task<ApiResponse<List<LessonDto>>> sang Task<List<LessonDto>>
-        public async Task<List<LessonDto>> GetAllLessonAsync()
-        {
-            // Bỏ khối try-catch
-            List<Lesson> lessons = await _lessonRepository.GetAllAsync();
+            // 2. Lấy dữ liệu
+            var lessons = await _lessonRepository.GetByModuleIdAsync(moduleId);
             return _mapper.Map<List<LessonDto>>(lessons);
         }
-
-        // --- GET Lesson by ID ---
-        // ✅ Đổi kiểu trả về từ Task<ApiResponse<LessonDto>> sang Task<LessonDto>
-        public async Task<LessonDto> GetLessonByIdAsync(Guid lessonId)
+        public async Task<LessonDto> GetLessonDetailAsync(Guid lessonId, Guid userId)
         {
-            // Bỏ khối try-catch
-            Lesson? lesson = await _lessonRepository.GetByIdAsync(lessonId);
-
-            // ✅ SỬA: Thay thế return new ApiResponse<LessonDto>(404, ...) bằng NotFoundException
-            if (lesson == null)
+            // 1. Get CourseId (check if lesson exists)
+            // (Using ModuleRepo is slightly more efficient if GetCourseIdByLessonIdAsync joins Module anyway)
+            var ids = await _moduleRepository.GetModuleAndCourseIdsByLessonIdAsync(lessonId);
+            if (ids.CourseId == null)
             {
-                throw new NotFoundException($"Lesson with ID {lessonId} not found.");
+                throw new NotFoundException($"Bài học với ID {lessonId} không tồn tại.");
+            }
+            Guid courseId = ids.CourseId.Value;
+
+
+            // 2. Check Enrollment (using CourseId obtained above)
+            bool isEnrolled = await _enrollmentRepository.ExistsAsync(userId, courseId);
+            if (!isEnrolled)
+            {
+                // Throw Forbidden if user isn't enrolled
+                throw new ForbiddenException("Bạn phải đăng ký khóa học để xem bài học này.");
             }
 
-            return _mapper.Map<LessonDto>(lesson);
+            // 3. Get Lesson Entity Data
+            var lessonEntity = await _lessonRepository.GetByIdAsync(lessonId);
+            if (lessonEntity == null) // Should technically be caught by step 1, but good failsafe
+            {
+                throw new NotFoundException($"Bài học với ID {lessonId} không tồn tại (lỗi nội bộ).");
+            }
+
+
+            // 4. ✅ Check Completion Status for THIS lesson
+            var progress = await _progressRepository.GetByUserIdAndLessonIdAsync(userId, lessonId);
+            bool isCompleted = progress != null && progress.Status == "completed";
+
+            // 5. Map Entity to DTO
+            var lessonDto = _mapper.Map<LessonDto>(lessonEntity);
+
+            // 6. ✅ Set the IsComplete flag on the DTO
+            lessonDto.IsCompleted = isCompleted;
+
+            return lessonDto;
         }
 
-        // --- UPDATE Lesson ---
-        // ✅ Đổi kiểu trả về từ Task<ApiResponse<LessonDto>> sang Task<LessonDto>
-        public async Task<LessonDto> UpdateLessonAsync(UpdateLessonDto updateLessonDto)
+        public async Task<LessonDto> CreateLessonAsync(CreateLessonDto createDto, Guid userId)
         {
-            // Bỏ khối try-catch
+            // 1. Kiểm tra quyền: Người dùng có phải là chủ khóa học/admin không?
+            var courseId = await _moduleRepository.GetCourseIdByModuleIdAsync(createDto.ModuleId);
+            // ... (Thêm logic kiểm tra quyền (Authorization) ở đây. 
+            //     Giả sử người dùng có quyền (ví dụ: là teacher của khóa học đó))
 
-            // Logic kiểm tra trùng tên/tiêu đề cần được tinh chỉnh (giống như trong CourseService)
-            bool isExistsByTitle = await _lessonRepository.ExistsByTitle(updateLessonDto.Title);
+            // 2. Map và Tạo Lesson chính
+            var lesson = _mapper.Map<Lesson>(createDto);
+            var newLesson = await _lessonRepository.AddAsync(lesson);
 
-            // ✅ SỬA: Thay thế return new ApiResponse<LessonDto>(404, "Create Lesson failed") bằng ConflictException (409)
-            if (isExistsByTitle)
+            // 3. Tạo nội dung chi tiết (Video, Text,...)
+            // Cần thêm các Repository cho LessonVideo, LessonText...
+            // Ví dụ:
+            if (createDto.LessonType == "video" && createDto.VideoContent != null)
             {
-                // Lưu ý: Cần kiểm tra xem Title có thuộc về Lesson khác hay không
-                throw new ConflictException($"Lesson with title '{updateLessonDto.Title}' already exists.");
+                // var video = new LessonVideo { 
+                //     LessonId = newLesson.LessonId, 
+                //     VideoUrl = createDto.VideoContent.VideoUrl 
+                // };
+                // await _lessonVideoRepository.AddAsync(video);
             }
 
-            // Giả định UpdateAsync nhận DTO và trả về Entity đã cập nhật
-            Lesson? lesson = await _lessonRepository.UpdateAsync(updateLessonDto);
-
-            // ✅ SỬA: Thay thế return new ApiResponse<LessonDto>(404, ...) bằng NotFoundException
-            if (lesson == null)
-            {
-                throw new NotFoundException($"Lesson with ID {updateLessonDto.LessonId} not found for update.");
-            }
-
-            return _mapper.Map<LessonDto>(lesson);
+            // 4. Lấy lại dữ liệu đầy đủ để trả về
+            var fullLesson = await _lessonRepository.GetByIdAsync(newLesson.LessonId);
+            return _mapper.Map<LessonDto>(fullLesson);
         }
+
+        // ... Các phương thức Update/Delete
     }
 }

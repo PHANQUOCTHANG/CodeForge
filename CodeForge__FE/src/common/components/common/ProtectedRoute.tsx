@@ -1,45 +1,57 @@
 import React from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/app/store/store";
-import { Spin } from "antd";
+import { Button, Result, Spin } from "antd";
 
 /**
- * ✅ ProtectedRoute.tsx
- * - Dùng để bảo vệ các route cần đăng nhập
- * - Có thể mở rộng cho quyền admin / user khác nhau
+ * ✅ ProtectedRoute
+ * - Bảo vệ route yêu cầu đăng nhập
+ * - Có thể giới hạn role: admin, teacher, student, ...
  */
 const ProtectedRoute: React.FC<{ requiredRole?: string }> = ({
   requiredRole,
 }) => {
-  const location = useLocation();
+  const navigate = useNavigate();
   const { token, user, isAuthChecking } = useAppSelector((state) => state.auth);
 
-  // ⏳ 1. Đang kiểm tra trạng thái đăng nhập
-  if (!isAuthChecking) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Spin tip="Đang xác thực..." size="large" fullscreen={false} />
-      </div>
-    );
+  // 1️⃣ Đang xác thực (ví dụ đang gọi refreshToken)
+  if (isAuthChecking) {
+    return <Spin tip="Đang xác thực..." fullscreen />;
   }
 
-  // ❌ 2. Nếu chưa đăng nhập → quay về trang login
+  // 2️⃣ Chưa đăng nhập → yêu cầu login
   if (!token) {
     return (
-      <Navigate
-        to="/login"
-        state={{ from: location }} // lưu lại trang gốc để quay lại sau login
-        replace
+      <Result
+        status="403"
+        title="Yêu cầu đăng nhập"
+        subTitle="Vui lòng đăng nhập để truy cập nội dung này."
+        extra={
+          <Button type="primary" onClick={() => navigate("/login")}>
+            Đăng nhập
+          </Button>
+        }
       />
     );
   }
 
-  // ⚙️ 3. Nếu có yêu cầu quyền hạn (ví dụ admin) → kiểm tra role
+  // 3️⃣ Kiểm tra role (nếu route có yêu cầu)
   if (requiredRole && user?.role !== requiredRole) {
-    return <Navigate to="/403" replace />; // trang lỗi quyền truy cập
+    return (
+      <Result
+        status="403"
+        title="403 - Không có quyền truy cập"
+        subTitle="Xin lỗi! Bạn không có quyền vào trang này."
+        extra={
+          <Button type="primary" onClick={() => navigate("/")}>
+            Quay lại trang chủ
+          </Button>
+        }
+      />
+    );
   }
 
-  // ✅ 4. Nếu hợp lệ → render trang con (route con trong <Outlet />)
+  // 4️⃣ Đã xác thực hợp lệ → cho phép truy cập
   return <Outlet />;
 };
 

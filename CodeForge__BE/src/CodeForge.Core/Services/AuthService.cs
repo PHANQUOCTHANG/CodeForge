@@ -69,16 +69,16 @@ namespace CodeForge.Core.Service
         // --- LOGIN ---
         public async Task<AuthDto> LoginAsync(LoginDto request, string ipAddress)
         {
+            Console.WriteLine("======password" + request.Password);
             await _authRepository.ClearExpireToken();
             var user = await _authRepository.GetTrackedUserByEmailAsync(request.Email)
                 // ✅ SỬA: Thay thế Exception bằng UnauthorizedException
-                ?? throw new UnauthorizedException("Invalid credentials");
+                ?? throw new UnauthorizedException("Invalid email");
 
             var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
-
             // ✅ SỬA: Thay thế Exception bằng UnauthorizedException
             if (result == PasswordVerificationResult.Failed)
-                throw new UnauthorizedException("Invalid credentials");
+                throw new UnauthorizedException("Invalid password");
 
             var jwt = JwtHelper.GenerateJwtToken(user, _config);
             var refreshToken = TokenGenerator.GenerateRefreshToken(ipAddress);

@@ -31,7 +31,7 @@ const ProblemsPage = () => {
   useEffect(() => {
     const getProblem = async () => {
       try {
-        const response = await fetch(`${apiUrl}/api/problem`);
+        const response = await fetch(`${apiUrl}/problems`);
 
         if (response.ok) {
           const problemData = await response.json();

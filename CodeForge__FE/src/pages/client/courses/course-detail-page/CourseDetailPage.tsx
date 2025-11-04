@@ -21,13 +21,12 @@ const CourseDetailPage: React.FC = () => {
     data: course, // ✅ 'course' bây giờ sẽ là object data bên trong
     isLoading,
     isError,
+    error,
   } = useCourseDetail(slug);
-
   const reviews: Review[] = course?.reviews || [];
   const [activeTab, setActiveTab] = useState<
     "overview" | "curriculum" | "reviews"
   >("overview");
-  const [isEnrolled, setIsEnrolled] = useState(false);
   const overviewRef = useRef<HTMLDivElement | null>(null);
   const curriculumRef = useRef<HTMLDivElement | null>(null);
   const reviewsRef = useRef<HTMLDivElement | null>(null);
@@ -39,9 +38,9 @@ const CourseDetailPage: React.FC = () => {
       });
     }
   };
-
+  console.log(course);
   const finalPrice = calculateDiscount(course?.price, course?.discount);
-
+  console.log(course?.price, course?.discount, finalPrice);
   return (
     <>
       {/* Course Grid */}
@@ -51,18 +50,14 @@ const CourseDetailPage: React.FC = () => {
           <p>Đang tải khóa học...</p>
         </div>
       ) : isError ? (
-        <Empty description="Lỗi khi tải dữ liệu" />
+        <Empty description={error.message} />
       ) : course == null || course.length === 0 ? (
         <Empty description="Không có khóa học nào" />
       ) : (
         <div className="course-detail-page">
           <div className="course-detail-page__container">
             <div className="course-detail-page__main">
-              <CourseHero
-                finalPrice={finalPrice}
-                course={course}
-                isEnrolled={isEnrolled}
-              />
+              <CourseHero finalPrice={finalPrice} course={course} />
 
               {/* Main Content */}
               <div className="course-content">
@@ -132,7 +127,7 @@ const CourseDetailPage: React.FC = () => {
             </div>
             <CourseSidebar
               course={course}
-              isEnrolled={isEnrolled}
+              isEnrolled={course.isEnrolled}
               finalPrice={finalPrice}
             />
           </div>

@@ -1,6 +1,7 @@
 using System;
+using CodeForge.Application.DTOs.Response;
 
-namespace CodeForge.Api.DTOs
+namespace CodeForge.Api.DTOs.Response
 {
         public class ProblemDto
         {

@@ -6,8 +6,6 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RouterProvider } from "react-router-dom";
 import { Spin } from "antd";
 import { router } from "./routes/router";
-import { useInitAuth } from "@/features/auth/hooks/useInitAuth";
-import { useAppSelector } from "@/app/store/store";
 
 const queryClient = new QueryClient({
   defaultOptions: {

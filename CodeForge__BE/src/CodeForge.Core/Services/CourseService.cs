@@ -6,30 +6,46 @@ using CodeForge.Core.Interfaces.Repositories;
 using CodeForge__BE.src.CodeForge.Core.Interfaces.Services;
 using CodeForge.Core.Models; // Giả định PaginationResult nằm đây
 using CodeForge.Core.Helpers; // SlugHelper
-using CodeForge.Api.DTOs; // ApiResponse<T>
-using CodeForge.Application.DTOs.Courses; // CourseDto, CourseDetailDto
-using CodeForge.Core.Exceptions; // ✅ Import Custom Exceptions
+
+using CodeForge.Core.Exceptions;
+using CodeForge.Application.DTOs.Response;
+using CodeForge.Core.Services; // ✅ Import Custom Exceptions
 
 namespace CodeForge__BE.src.CodeForge.Core.Services
 {
     public class CourseService : ICourseService
     {
         private readonly ICourseRepository _courseRepository;
+        private readonly IProgressService _progressService;
         private readonly IMapper _mapper;
 
-        public CourseService(ICourseRepository courseRepository, IMapper mapper)
+        public CourseService(ICourseRepository courseRepository, IProgressService progressService, IMapper mapper)
         {
             _courseRepository = courseRepository;
+            _progressService = progressService;
             _mapper = mapper;
         }
 
         // --- GET Paged --- (Không cần sửa)
         public async Task<PaginationResult<object>> GetPagedCoursesAsync(
-            int page, int pageSize, string? search)
+            Guid? userId, int page, int pageSize, string? search)
         {
             var (courses, totalItems) = await _courseRepository.GetPagedCoursesAsync(page, pageSize, search);
 
             var result = _mapper.Map<IEnumerable<CourseDto>>(courses);
+
+            if (userId.HasValue)
+            {
+                // Phải chạy tuần tự, KHÔNG song song, vì dùng chung DbContext
+                var enrolledIds = await _courseRepository.GetUserEnrolledCourseIdsAsync(userId.Value);
+                var progressDict = await _courseRepository.GetUserCourseProgressAsync(userId.Value);
+
+                foreach (var dto in result)
+                {
+                    dto.IsEnrolled = enrolledIds.Contains(dto.CourseId);
+                    dto.Progress = progressDict.TryGetValue(dto.CourseId, out var progress) ? progress : 0;
+                }
+            }
 
             return new PaginationResult<object>(
                 result,
@@ -40,12 +56,52 @@ namespace CodeForge__BE.src.CodeForge.Core.Services
         }
 
         // --- GET Detail by Slug --- (Không cần sửa)
-        public async Task<CourseDetailDto?> GetCourseDetailBySlugAsync(string slug)
+        public async Task<CourseDetailDto?> GetCourseDetailBySlugAsync(string slug, Guid? userId)
         {
             var course = await _courseRepository.GetBySlugAsync(slug);
-            // ✅ Không ném lỗi 404 trong Service nếu trả về null là chấp nhận được
             if (course == null) return null;
-            return _mapper.Map<CourseDetailDto>(course);
+            var result = _mapper.Map<CourseDetailDto>(course);
+            if (userId.HasValue)
+            {
+                // Phải chạy tuần tự, KHÔNG song song, vì dùng chung DbContext
+                var enrolledIds = await _courseRepository.GetUserEnrolledCourseIdsAsync(userId.Value);
+                result.IsEnrolled = enrolledIds.Contains(result.CourseId);
+                if (result.IsEnrolled)
+                {
+                    // 3. Lấy dữ liệu tiến độ (chỉ khi đã đăng ký)
+
+                    // Lấy danh sách các bài đã hoàn thành
+                    var completedProgressList = await _progressService.GetProgressForCourseAsync(userId.Value, result.CourseId);
+
+                    // Chuyển sang HashSet để tra cứu O(1) (rất nhanh)
+                    var completedLessonIds = completedProgressList
+                        .Select(p => p.LessonId)
+                        .ToHashSet();
+
+                    // Lấy % tổng
+                    var progressSummary = await _progressService.GetUserProgressSummaryAsync(userId.Value);
+                    result.Progress = progressSummary.TryGetValue(result.CourseId, out var progress) ? progress : 0;
+
+                    // 4. ✅ CẬP NHẬT DTO: Duyệt qua các lesson và gán cờ IsComplete
+                    foreach (var module in result.Modules)
+                    {
+                        foreach (var lesson in module.Lessons)
+                        {
+                            if (completedLessonIds.Contains(lesson.LessonId))
+                            {
+                                lesson.IsCompleted = true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Nếu chưa đăng ký, mọi thứ đều là 0 hoặc false (mặc định)
+                    result.Progress = 0;
+                }
+            }
+            // ✅ Không ném lỗi 404 trong Service nếu trả về null là chấp nhận được
+            return result;
         }
 
         // --- CREATE Course ---

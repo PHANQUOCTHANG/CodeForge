@@ -1,108 +1,112 @@
 using AutoMapper;
 using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Response;
+using CodeForge.Application.DTOs.Modules;
 using CodeForge.Core.Entities;
-using CodeForge.Core.Interfaces.Repositories;
-using CodeForge.Core.Interfaces.Services;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-// ✅ Import Custom Exceptions
 using CodeForge.Core.Exceptions;
+using CodeForge.Core.Interfaces.Repositories;
+using CodeForge.Core.Services;
 
-namespace CodeForge.Core.Service
+namespace CodeForge.Core.Services
 {
-    public class ModuleService : IModuleService // Phải có IModuleService đã sửa
+    public class ModuleService : IModuleService
     {
         private readonly IModuleRepository _moduleRepository;
+        private readonly ICourseRepository _courseRepository;
+        private readonly IEnrollmentRepository _enrollmentRepository;
         private readonly IMapper _mapper;
 
-        public ModuleService(IModuleRepository moduleRepository, IMapper mapper)
+        public ModuleService(
+            IModuleRepository moduleRepository,
+            ICourseRepository courseRepository,
+            IEnrollmentRepository enrollmentRepository,
+            IMapper mapper)
         {
             _moduleRepository = moduleRepository;
+            _courseRepository = courseRepository;
+            _enrollmentRepository = enrollmentRepository;
             _mapper = mapper;
         }
 
-        // --- CREATE Module ---
-        // ✅ Kiểu trả về mới: Task<ModuleDto>
-        public async Task<ModuleDto> CreateModuleAsync(CreateModuleDto createModuleDto)
+        public async Task<ModuleDto> GetByIdAsync(Guid moduleId, Guid userId)
         {
-            // Bỏ khối try-catch
-            bool isExistsByTitle = await _moduleRepository.ExistsByTitle(createModuleDto.Title);
+            var courseId = await _moduleRepository.GetCourseIdByModuleIdAsync(moduleId)
+                ?? throw new NotFoundException($"Module với ID {moduleId} không tồn tại.");
 
-            // ✅ SỬA: Thay thế return new ApiResponse<ModuleDto>(404, ...) bằng ConflictException (409)
-            if (isExistsByTitle)
-            {
-                throw new ConflictException($"Module with title '{createModuleDto.Title}' already exists.");
-            }
+            await CheckEnrollmentAsync(courseId, userId);
 
-            // Mapping DTO sang Entity và tạo
-            Module module = await _moduleRepository.CreateAsync(createModuleDto);
-
+            var module = await _moduleRepository.GetByIdAsync(moduleId);
             return _mapper.Map<ModuleDto>(module);
         }
 
-        // --- DELETE Module ---
-        // ✅ Kiểu trả về mới: Task<bool>
-        public async Task<bool> DeleteModuleAsync(Guid moduleId)
+        public async Task<List<ModuleDto>> GetByCourseIdAsync(Guid courseId, Guid userId)
         {
-            // Bỏ khối try-catch
-            bool result = await _moduleRepository.DeleteAsync(moduleId);
+            await CheckEnrollmentAsync(courseId, userId);
 
-            // ✅ SỬA: Thay thế return new ApiResponse<bool>(404, ...) bằng NotFoundException
-            if (!result)
-            {
-                throw new NotFoundException($"Module with ID {moduleId} not found.");
-            }
-
-            return true;
-        }
-
-        // --- GET All Module ---
-        // ✅ Kiểu trả về mới: Task<List<ModuleDto>>
-        public async Task<List<ModuleDto>> GetAllModuleAsync()
-        {
-            // Bỏ khối try-catch
-            List<Module> modules = await _moduleRepository.GetAllAsync();
+            var modules = await _moduleRepository.GetByCourseIdAsync(courseId);
             return _mapper.Map<List<ModuleDto>>(modules);
         }
 
-        // --- GET Module by ID ---
-        // ✅ Kiểu trả về mới: Task<ModuleDto>
-        public async Task<ModuleDto> GetModuleByIdAsync(Guid moduleId)
+        public async Task<ModuleDto> CreateAsync(CreateModuleDto dto, Guid userId)
         {
-            // Bỏ khối try-catch
-            Module? module = await _moduleRepository.GetByIdAsync(moduleId);
+            // Chỉ chủ sở hữu khóa học mới được tạo module
+            await CheckCourseOwnershipAsync(dto.CourseId, userId);
 
-            // ✅ SỬA: Thay thế return new ApiResponse<ModuleDto>(404, ...) bằng NotFoundException
-            if (module == null)
-            {
-                throw new NotFoundException($"Module with ID {moduleId} not found.");
-            }
-
-            return _mapper.Map<ModuleDto>(module);
+            var module = _mapper.Map<Module>(dto);
+            var newModule = await _moduleRepository.AddAsync(module);
+            return _mapper.Map<ModuleDto>(newModule);
         }
 
-        // --- UPDATE Module ---
-        // ✅ Kiểu trả về mới: Task<ModuleDto>
-        public async Task<ModuleDto> UpdateModuleAsync(UpdateModuleDto updateModuleDto)
+        public async Task<ModuleDto> UpdateAsync(UpdateModuleDto dto, Guid userId)
         {
-            // Bỏ khối try-catch
-            bool isExistsByTitle = await _moduleRepository.ExistsByTitle(updateModuleDto.Title);
+            var courseId = await _moduleRepository.GetCourseIdByModuleIdAsync(dto.ModuleId)
+                ?? throw new NotFoundException($"Module với ID {dto.ModuleId} không tồn tại.");
 
-            // ✅ SỬA: Thay thế return new ApiResponse<ModuleDto>(404, ...) bằng ConflictException
-            // Lưu ý: Logic này nên kiểm tra trùng tên của module KHÁC ID
-            if (isExistsByTitle)
-                throw new ConflictException($"Module with title '{updateModuleDto.Title}' already exists.");
+            // Chỉ chủ sở hữu khóa học mới được sửa
+            await CheckCourseOwnershipAsync(courseId, userId);
 
-            Module? module = await _moduleRepository.UpdateAsync(updateModuleDto);
+            var module = await _moduleRepository.GetByIdAsync(dto.ModuleId); // Lấy entity đang được track
+            _mapper.Map(dto, module); // Cập nhật entity
 
-            // ✅ SỬA: Thay thế return new ApiResponse<ModuleDto>(404, ...) bằng NotFoundException
-            if (module == null)
+            var updatedModule = await _moduleRepository.UpdateAsync(module!);
+            return _mapper.Map<ModuleDto>(updatedModule);
+        }
+
+        public async Task DeleteAsync(Guid moduleId, Guid userId)
+        {
+            var courseId = await _moduleRepository.GetCourseIdByModuleIdAsync(moduleId)
+                ?? throw new NotFoundException($"Module với ID {moduleId} không tồn tại.");
+
+            // Chỉ chủ sở hữu khóa học mới được xóa
+            await CheckCourseOwnershipAsync(courseId, userId);
+
+            var module = await _moduleRepository.GetByIdAsync(moduleId);
+            await _moduleRepository.DeleteAsync(module!);
+        }
+
+        // --- Helper Methods ---
+
+        private async Task CheckEnrollmentAsync(Guid courseId, Guid userId)
+        {
+            // TODO: Bỏ qua kiểm tra nếu người dùng là Admin hoặc là chủ khóa học
+            bool isEnrolled = await _enrollmentRepository.ExistsAsync(userId, courseId);
+            if (!isEnrolled)
             {
-                throw new NotFoundException($"Module with ID {updateModuleDto.ModuleId} not found for update.");
+                throw new ForbiddenException("Bạn phải đăng ký khóa học để xem nội dung này.");
             }
+        }
 
-            return _mapper.Map<ModuleDto>(module);
+        private async Task CheckCourseOwnershipAsync(Guid courseId, Guid userId)
+        {
+            // TODO: Bỏ qua kiểm tra nếu là Admin
+            var course = await _courseRepository.GetByIdAsync(courseId)
+                 ?? throw new NotFoundException($"Khóa học với ID {courseId} không tồn tại.");
+
+            // Schema của bạn dùng 'CreatedBy' làm chủ sở hữu
+            if (course.CreatedBy != userId)
+            {
+                throw new ForbiddenException("Bạn không có quyền chỉnh sửa khóa học này.");
+            }
         }
     }
 }
