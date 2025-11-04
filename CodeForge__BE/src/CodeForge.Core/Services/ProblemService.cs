@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-// ✅ Import Custom Exceptions
 using CodeForge.Core.Exceptions;
 using CodeForge.Api.DTOs.Response;
 
@@ -26,10 +25,10 @@ namespace CodeForge.Core.Service
         }
 
         // --- CREATE Problem ---
-        // ✅ Kiểu trả về: Task<ProblemDto>
         public async Task<ProblemDto> CreateProblemAsync(CreateProblemDto createProblemDto)
         {
-            bool isExistsByTitle = await _problemRepository.ExistsByTitle(createProblemDto.Title);
+            Guid problemId = new Guid();
+            bool isExistsByTitle = await _problemRepository.ExistsByTitle(createProblemDto.Title ,problemId);
 
             if (isExistsByTitle)
                 throw new ConflictException($"Problem with title '{createProblemDto.Title}' already exists.");
@@ -40,7 +39,6 @@ namespace CodeForge.Core.Service
         }
 
         // --- DELETE Problem ---
-        // ✅ Kiểu trả về: Task<bool>
         public async Task<bool> DeleteProblemAsync(Guid problemId)
         {
             bool result = await _problemRepository.DeleteAsync(problemId);
@@ -52,16 +50,13 @@ namespace CodeForge.Core.Service
         }
 
         // --- GET All Problem ---
-        // ✅ Kiểu trả về: Task<List<ProblemDto>>
         public async Task<List<ProblemDto>> GetAllProblemAsync()
         {
-            // Bỏ try-catch và ApiResponse<T>
             List<Problem> problems = await _problemRepository.GetAllAsync();
             return _mapper.Map<List<ProblemDto>>(problems);
         }
 
         // --- GET Problem by ID ---
-        // ✅ Kiểu trả về: Task<ProblemDto>
         public async Task<ProblemDto> GetProblemByIdAsync(Guid problemId)
         {
             Problem? problem = await _problemRepository.GetByIdAsync(problemId);
@@ -73,7 +68,6 @@ namespace CodeForge.Core.Service
         }
 
         // --- GET Problem by Slug ---
-        // ✅ Kiểu trả về: Task<ProblemDto>
         public async Task<ProblemDto> GetProblemBySlugAsync(string slug)
         {
             // Bỏ try-catch và ApiResponse<T>
@@ -86,13 +80,10 @@ namespace CodeForge.Core.Service
         }
 
         // --- UPDATE Problem ---
-        // ✅ Kiểu trả về: Task<ProblemDto>
         public async Task<ProblemDto> UpdateProblemAsync(UpdateProblemDto updateProblemDto)
         {
-            bool isExistsByTitle = await _problemRepository.ExistsByTitle(updateProblemDto.Title);
+            bool isExistsByTitle = await _problemRepository.ExistsByTitle(updateProblemDto.Title , updateProblemDto.ProblemId);
 
-            // ✅ FIX: Sửa logic kiểm tra trùng tên (Nên dùng ExistsByTitleAndDifferentIdAsync)
-            // Giả định Title trùng với ID khác sẽ ném Conflict
             if (isExistsByTitle)
                 throw new ConflictException($"Problem with title '{updateProblemDto.Title}' already exists.");
 

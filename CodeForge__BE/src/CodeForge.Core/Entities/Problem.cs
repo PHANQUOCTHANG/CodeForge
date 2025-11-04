@@ -8,7 +8,8 @@ namespace CodeForge.Core.Entities
         {
                 [Key]
                 [Column("ProblemID")]
-                public Guid ProblemId { get; set; }
+                public Guid ProblemId { get; set; } = Guid.NewGuid();
+
                 public Guid? LessonId { get; set; }
 
                 [Required, MaxLength(200)]
@@ -33,6 +34,8 @@ namespace CodeForge.Core.Entities
 
                 [MaxLength(100)]
                 public string? ReturnType { get; set; }
+
+                public string? Status { get; set; } = "NOT_STARTED";
 
                 public int TimeLimit { get; set; } = 1000;
 

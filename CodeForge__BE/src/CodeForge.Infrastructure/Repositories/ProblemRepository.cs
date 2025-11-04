@@ -70,9 +70,9 @@ namespace CodeForge.Infrastructure.Repositories
             return problem;
         }
 
-        public async Task<bool> ExistsByTitle(string title)
+        public async Task<bool> ExistsByTitle(string title , Guid problemId)
         {
-            Problem? problem = await _context.CodingProblems.FirstOrDefaultAsync(p => p.Title == title);
+            Problem? problem = await _context.CodingProblems.FirstOrDefaultAsync(p => p.Title == title && p.ProblemId != problemId);
             return problem != null;
         }
     }

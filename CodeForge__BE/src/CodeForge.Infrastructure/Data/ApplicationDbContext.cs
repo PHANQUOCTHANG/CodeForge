@@ -29,6 +29,7 @@ namespace CodeForge.Infrastructure.Data
         public DbSet<LessonText> LessonTexts { get; set; }
         public DbSet<Problem> CodingProblems { get; set; }
         public DbSet<TestCase> TestCases { get; set; }
+        public DbSet<Submission> Submissions { get; set; }
 
         // =============================
         // 🔹 Cấu hình mối quan hệ và converter

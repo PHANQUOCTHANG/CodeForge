@@ -56,6 +56,10 @@ namespace CodeForge.Infrastructure
 
             // judge0 .
             services.AddHttpClient<IJudge0Service, Judge0Service>();
+
+            // Submission .
+            services.AddScoped<ISubmissionRepository, SubmissionRepository>();
+            services.AddScoped<ISubmissionService, SubmissionService>();
             return services;
         }
     }

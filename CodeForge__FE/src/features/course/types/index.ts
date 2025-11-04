@@ -20,13 +20,29 @@ export interface Course {
   isEnrolled: boolean;
   progress: number;
 }
-export interface CodingProblems {
-  problemId: string;
-  title: string;
-  difficulty: string;
-  description: string;
-  timeLimit: number;
-  memoryLimit: number;
+
+export interface CodingProblem {
+  problemId: string; // UNIQUEIDENTIFIER
+  lessonId?: string | null; // Cho phép null
+
+  title: string; // Tiêu đề bài toán
+  slug: string; // Dạng URL-friendly (ví dụ: two-sum)
+  difficulty: "Easy" | "Medium" | "Hard"; // Mức độ (có thể dùng enum)
+  description?: string | null; // Mô tả bài toán
+  tags?: string | null; // Các tag (ví dụ: "Array, HashMap")
+
+  functionName?: string | null; // Tên hàm (ví dụ: twoSum)
+  parameters?: string | null; // Các tham số đầu vào
+  returnType?: string | null; // Kiểu dữ liệu trả về
+  notes?: string | null; // Ghi chú thêm
+  constraints?: string | null; // Ràng buộc bài toán
+
+  timeLimit: number; // Giới hạn thời gian (ms)
+  memoryLimit: number; // Giới hạn bộ nhớ (MB)
+
+  createdAt: string; // ISO Date
+  updatedAt: string; // ISO Date
+  isDeleted: boolean; // Xóa mềm
 }
 
 export interface Lesson {
