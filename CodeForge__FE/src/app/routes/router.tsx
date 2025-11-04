@@ -2,9 +2,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import { authRouters } from "./authRoutes";
 import { clientRouters } from "./clientRoutes";
-import { adminRouters } from "./adminRoutes";
+import { adminRoutes } from "./adminRoutes";
 import { lazy } from "react";
-import { RootLayout } from "@/layouts";
+import RootLayout from "@/layouts/root/RootLayout";
 import { courseRouters } from "./courseRoutes";
 import { practiceRouters } from "./practiceRoutes";
 const NotFound = lazy(() => import("@/pages/not-found/NotFound"));

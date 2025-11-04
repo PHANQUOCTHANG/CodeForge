@@ -1,0 +1,485 @@
+/* =========================================
+   Biến màu và Cài đặt Chung
+   ========================================= */
+:root {
+  --border-color: #e5e7eb; // Màu viền xám nhạt
+  --bg-light: #f9fafb; // Nền xám rất nhạt
+  --text-primary: #111827; // Chữ đen
+  --text-secondary: #6b7280; // Chữ xám
+  --text-blue: #2563eb;
+  --bg-blue-light: #eff6ff;
+  --text-green: #059669;
+  --bg-green-light: #ecfdf5;
+  --text-purple: #7c3aed;
+  --bg-purple-light: #f5f3ff;
+  --text-orange: #ea580c;
+  --bg-orange-light: #fff7ed;
+  --text-red: #dc2626;
+  --bg-red-light: #fee2e2;
+  --text-yellow: #ca8a04;
+  --bg-yellow-light: #fefce8;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --border-radius: 0.75rem; // 12px
+}
+
+.exercises-management-page {
+  padding: 24px;
+  background-color: var(--bg-light);
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 24px; // Khoảng cách giữa các khối (stats, header, table)
+}
+
+/* =========================================
+   1. Stats Cards
+   ========================================= */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+
+  .stat-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    padding: 20px 24px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    transition: box-shadow 0.2s ease;
+    border: 1px solid var(--border-color);
+
+    &:hover {
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin: 0 0 4px 0;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    .stat-icon-wrapper {
+      padding: 12px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+
+      .stat-icon {
+        font-size: 1.5rem; // 24px
+      }
+    }
+
+    // Màu icon khớp Figma
+    .icon-blue {
+      background-color: var(--bg-blue-light);
+      .stat-icon { color: var(--text-blue); }
+    }
+    .icon-green {
+      background-color: var(--bg-green-light);
+      .stat-icon { color: var(--text-green); }
+    }
+    .icon-purple {
+      background-color: var(--bg-purple-light);
+      .stat-icon { color: var(--text-purple); }
+    }
+    .icon-orange {
+      background-color: var(--bg-orange-light);
+      .stat-icon { color: var(--text-orange); }
+    }
+  }
+}
+
+/* =========================================
+   2. Header Row
+   ========================================= */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  // Thanh tìm kiếm
+  .search-bar {
+    position: relative;
+    width: 320px;
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    input {
+      width: 100%;
+      padding: 10px 14px 10px 40px; // lót cho icon
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem; // 8px
+      background-color: #fff;
+      font-size: 0.9rem;
+      &:focus {
+        outline: 1px solid var(--text-blue);
+        border-color: var(--text-blue);
+      }
+    }
+  }
+
+  // Cụm filter và nút
+  .filters-and-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  // Bộ lọc
+  .filter-wrapper {
+    position: relative;
+
+    .filter-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    select {
+      padding: 10px 14px 10px 36px; // lót cho icon
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      background-color: #fff;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      appearance: none; // Tắt giao diện mặc định
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+      background-position: right 0.7rem center;
+      background-repeat: no-repeat;
+      background-size: 1em;
+      padding-right: 2.5rem; // Thêm chỗ cho mũi tên
+    }
+  }
+
+  // Nút thêm
+  .add-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--text-blue);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #1d4ed8; // Màu xanh đậm hơn
+    }
+  }
+}
+
+/* =========================================
+   3. Bảng
+   ========================================= */
+.table-container {
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  overflow-x: auto; // Cho phép cuộn ngang nếu hẹp
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 14px 20px;
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap; // Không xuống dòng
+    }
+
+    thead tr {
+      border-bottom: 1px solid var(--border-color);
+      background-color: var(--bg-light);
+    }
+
+    th {
+      font-size: 0.75rem; // 12px
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      font-weight: bolder;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-color);
+      transition: background-color 0.15s;
+      &:last-child {
+        border-bottom: none;
+      }
+      &:hover {
+        background-color: var(--bg-light);
+      }
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+    }
+  }
+}
+
+/* --- Style các ô trong bảng --- */
+.cell-exercise-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+
+  .icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 0.5rem; // 8px
+    display: grid;
+    place-items: center;
+    .icon {
+      color: white;
+      font-size: 1.1rem;
+    }
+  }
+  
+  // Màu icon nền khớp Figma
+  .icon-bg-yellow { background: linear-gradient(135deg, #facc15, #fb923c); }
+  .icon-bg-pink { background: linear-gradient(135deg, #f472b6, #ef4444); }
+  .icon-bg-teal { background: linear-gradient(135deg, #2dd4bf, #10b981); }
+  .icon-bg-purple { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+  .icon-bg-blue { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+  .icon-bg-green { background: linear-gradient(135deg, #4ade80, #16a34a); }
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  
+  &.badge-easy {
+    color: var(--text-green);
+    background-color: var(--bg-green-light);
+  }
+  &.badge-medium {
+    color: var(--text-yellow);
+    background-color: var(--bg-yellow-light);
+  }
+  &.badge-hard {
+    color: var(--text-red);
+    background-color: var(--bg-red-light);
+  }
+}
+
+.cell-pass-rate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  
+  &.pass {
+    color: var(--text-green);
+    .icon { color: var(--text-green); }
+  }
+  &.fail {
+    color: var(--text-red);
+    .icon { color: var(--text-red); }
+  }
+}
+
+.cell-score-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .score-bar-bg {
+    width: 100px;
+    height: 8px;
+    background-color: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+  }
+  .score-value {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  // Màu thanh điểm (giống icon)
+  .score-bar-green { background: linear-gradient(90deg, #4ade80, #16a34a); }
+  .score-bar-yellow { background: linear-gradient(90deg, #facc15, #fb923c); }
+  .score-bar-pink { background: linear-gradient(90deg, #f472b6, #ef4444); }
+  .score-bar-purple { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+}
+
+.cell-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  .icon { font-size: 0.9rem; }
+}
+
+/* --- Style Dropdown Menu (Giống Courses) --- */
+.menu-container {
+  position: relative;
+}
+
+.menu-trigger-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  &:hover {
+    background-color: var(--border-color);
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  z-index: 10;
+  width: 180px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    border: none;
+    background: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    text-align: left;
+
+    svg {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    &:hover {
+      background-color: var(--bg-light);
+    }
+    &.delete {
+      color: var(--text-red);
+      svg { color: var(--text-red); }
+      &:hover {
+        background-color: var(--bg-red-light);
+      }
+    }
+  }
+}
+
+/* =========================================
+   4. Pagination
+   ========================================= */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 16px; // Nằm ngoài thẻ table
+  gap: 8px;
+
+  button {
+    border: 1px solid var(--border-color);
+    background: #fff;
+    color: var(--text-secondary);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background: var(--bg-light);
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    &.active {
+      background: var(--text-blue);
+      color: white;
+      border-color: var(--text-blue);
+    }
+  }
+}
+
+/* =========================================
+   5. Responsive
+   ========================================= */
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .header-row {
+    flex-direction: column;
+    align-items: stretch; // Kéo dài ra
+    gap: 16px;
+
+    .search-bar {
+      width: 100%;
+    }
+    
+    .filters-and-actions {
+      flex-direction: column;
+      align-items: stretch;
+      
+      .filter-wrapper, .add-button {
+        width: 100%;
+      }
+      
+      select {
+        width: 100%;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
