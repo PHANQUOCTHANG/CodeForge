@@ -5,11 +5,10 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using CodeForge.Core.Interfaces.Repositories;
-using Microsoft.AspNetCore.Authorization; // Giả định Module DTOs nằm ở đây
+using Microsoft.AspNetCore.Authorization; 
 
 namespace CodeForge.Api.Controllers
 {
-    // ✅ Đổi tên class sang PascalCase (ModuleController) theo chuẩn C#
     [ApiController]
     [Route("api/[Controller]")]
     public class ModulesController : ControllerBase

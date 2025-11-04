@@ -4,7 +4,6 @@ import {
   CoursePage,
   CourseDetailPage,
   PracticePage,
-  PracticeDetailPage,
 } from "@/pages";
 export const clientRouters = {
   path: "/",
@@ -17,6 +16,5 @@ export const clientRouters = {
     },
     { path: "courses/:slug", element: <CourseDetailPage /> },
     { path: "practice", element: <PracticePage /> },
-    { path: "practice/:slug", element: <PracticeDetailPage /> },
   ],
 };

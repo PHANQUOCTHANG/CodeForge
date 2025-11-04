@@ -4,6 +4,7 @@ import "./PracticePage.scss";
 import { useNavigate } from "react-router-dom";
 import Loading from "@/common/helper/Loading";
 import { openNotification } from "@/common/helper/Alert";
+import practiceService from "@/features/practice/services/practiceService";
 
 interface Problem {
   problemId: number;
@@ -26,21 +27,13 @@ const ProblemsPage = () => {
   const [loading, setLoading] = useState(true);
   const [problems, setProblems] = useState<Problem[]>([]);
 
-  const apiUrl = import.meta.env.VITE_API_URL;
-
   useEffect(() => {
     const getProblem = async () => {
       try {
-        const response = await fetch(`${apiUrl}/api/problem`);
-
-        if (response.ok) {
-          const problemData = await response.json();
-          setProblems(problemData.data);
-        } else {
-          openNotification("error", "Failed to fetch problems", "");
-        }
-      } catch (_err) {
-        openNotification("error", "Error occurred while fetching problems", "");
+        const data = await practiceService.getAllProblem();
+        setProblems(data);
+      } catch (error: any) {
+        openNotification("error", "Lỗi khi tải danh sách bài tập", "");
       }
     };
 
@@ -49,7 +42,7 @@ const ProblemsPage = () => {
       setLoading(false);
     };
     fetchData();
-  }, [apiUrl]);
+  }, []);
 
   const allTags = [
     ...new Set(
@@ -79,12 +72,12 @@ const ProblemsPage = () => {
     return matchesSearch && matchesDifficulty && matchesStatus && matchesTag;
   });
 
-  const getStatusIcon = (status?: "solved" | "attempted") => {
-    if (status === "solved")
+  const getStatusIcon = (status: string) => {
+    if (status === "SOLVED")
       return (
         <CheckCircle2 className="practice-problem-list__status-icon practice-problem-list__status-icon--solved" />
       );
-    if (status === "attempted")
+    if (status === "ATTEMPTED")
       return (
         <Circle className="practice-problem-list__status-icon practice-problem-list__status-icon--attempted" />
       );
@@ -250,8 +243,6 @@ const ProblemsPage = () => {
                 </thead>
                 <tbody>
                   {filteredProblems.map((problem, index) => (
-                    // *** UPDATED: Use problem.slug for onClick navigation ***
-                    // Use problemId as the key
                     <tr
                       key={problem.problemId}
                       className="practice-problem-list__row"
@@ -262,7 +253,6 @@ const ProblemsPage = () => {
                       </td>
                       <td className="practice-problem-list__td practice-problem-list__td--title">
                         <div className="practice-problem-list__title-wrapper">
-                          {/* NOTE: If you want to display an index number (1. 2. 3.), you'll need to use the index from the map, not problem.problemId */}
                           <span className="practice-problem-list__problem-id">
                             {index + 1}.
                           </span>

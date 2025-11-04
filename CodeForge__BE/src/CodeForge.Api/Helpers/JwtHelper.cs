@@ -13,7 +13,7 @@ public static class JwtHelper
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.UtcNow.AddMinutes(15);
+        var expires = DateTime.UtcNow.AddMinutes(15); 
 
         var claims = new[]
         {

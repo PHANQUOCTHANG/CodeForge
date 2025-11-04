@@ -51,7 +51,7 @@ const isExcludedUrl = (url: string) =>
 
 const api = axios.create({
   baseURL: API_URL, // Thay thế bằng API_URL thực tế
-  timeout: 10000,
+  timeout: 10000000,
   withCredentials: true, // Gửi cookie Refresh Token
   headers: { "Content-Type": "application/json" },
 });
