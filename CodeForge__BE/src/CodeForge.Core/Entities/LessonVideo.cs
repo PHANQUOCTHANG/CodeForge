@@ -1,12 +1,15 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace CodeForge.Core.Entities
 {
     public class LessonVideo
     {
-        public Guid LessonVideoId { get; set; }
+        [Key, ForeignKey("Lesson")] // PK đồng thời là FK
         public Guid LessonId { get; set; }
 
         public string VideoUrl { get; set; } = string.Empty;
-        public TimeSpan Duration { get; set; }
+        public int Duration { get; set; }
 
         public Lesson Lesson { get; set; } = null!;
     }

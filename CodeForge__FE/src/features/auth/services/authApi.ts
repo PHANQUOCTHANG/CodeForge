@@ -16,9 +16,10 @@ const authApi = {
   // ✅ Trả về AuthDto: Đây là phần dữ liệu thuần túy được Redux lưu trữ
   login: async (payload: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
     // Axios được định kiểu sẽ trả về AuthResponse trong res.data
-    const res = await api.post<ApiResponse<LoginResponse>>("/auth/login", {
-      payload,
-    });
+    const res = await api.post<ApiResponse<LoginResponse>>(
+      "/auth/login",
+      payload
+    );
     // Kiểm tra lỗi (thường là lỗi logic 400/409/500 đã được Global Handler bắt,
     // nhưng nên phòng hờ nếu API trả 200/201 nhưng có lỗi logic)
     return res.data;

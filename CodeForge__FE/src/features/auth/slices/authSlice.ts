@@ -15,7 +15,6 @@ const initialState: AuthState<UserProfile> = {
   user: null,
   isAuthChecking: true, // 🔥 Cần có khi F5 (App đang kiểm tra refresh token)
 };
-
 // ========================
 // 4️⃣ Async thunk: refreshToken
 // ========================

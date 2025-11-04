@@ -40,6 +40,32 @@ namespace CodeForge.Infrastructure.Repositories
 
             return (data, totalItems);
         }
+        public async Task<Dictionary<Guid, double>> GetUserCourseProgressAsync(Guid userId)
+        {
+            var progressData = await (
+                from lesson in _context.Lessons
+                join module in _context.Modules on lesson.ModuleId equals module.ModuleId
+                join course in _context.Courses on module.CourseId equals course.CourseId
+                join progress in _context.Progress
+                    .Where(p => p.UserId == userId && p.Status == "completed")
+                    on lesson.LessonId equals progress.LessonId into lessonProgress
+                from lp in lessonProgress.DefaultIfEmpty() // LEFT JOIN: lp == null nếu chưa completed
+                group lp by course.CourseId into g
+                select new
+                {
+                    CourseId = g.Key,
+                    CompletedCount = g.Count(x => x != null),
+                    TotalCount = g.Count()
+                }
+            ).ToListAsync();
+
+            return progressData.ToDictionary(
+                x => x.CourseId,
+                x => x.TotalCount == 0 ? 0 : Math.Round((double)x.CompletedCount / x.TotalCount * 100, 2)
+            );
+        }
+
+
 
         public async Task<Course?> GetBySlugAsync(string slug)
         {
@@ -48,24 +74,29 @@ namespace CodeForge.Infrastructure.Repositories
                 .Include(c => c.User)
                 .Include(c => c.Reviews)
                     .ThenInclude(r => r.User)
-                .Include(c => c.Modules)
-                    .ThenInclude(m => m.Lessons)
-                        .ThenInclude(l => l.CodingProblems)
+
+                // 1. Sắp xếp Modules và Lessons ngay tại đây (trong SQL)
+                //    thay vì sắp xếp trong RAM.
+                .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
+                    .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                        .ThenInclude(l => l.CodingProblem)
+
+                // 2. Thêm AsSplitQuery() để sửa lỗi hiệu suất "Cartesian Explosion"
+                //    (Lỗi 'warn: Microsoft.EntityFrameworkCore.Query[20504]' trong log)
+                .AsSplitQuery()
+
                 .FirstOrDefaultAsync(c => c.Slug == slug && !c.IsDeleted);
 
-            if (course == null) return null;
-
-            // 🔽 Sort sau khi đã load lên RAM
-            course.Modules = course.Modules
-                .OrderBy(m => m.OrderIndex)
-                .ToList();
-
-            foreach (var module in course.Modules)
-                module.Lessons = module.Lessons
-                    .OrderBy(l => l.OrderIndex)
-                    .ToList();
-
+            // 3. Toàn bộ code sắp xếp bằng tay ở dưới có thể xóa đi,
+            //    vì database đã làm việc đó cho bạn.
             return course;
+        }
+        public async Task<List<Guid>> GetUserEnrolledCourseIdsAsync(Guid userId)
+        {
+            return await _context.Enrollments
+                .Where(e => e.UserId == userId)
+                .Select(e => e.CourseId)
+                .ToListAsync();
         }
 
         public async Task<Course> CreateAsync(CreateCourseDto createCourseDto)

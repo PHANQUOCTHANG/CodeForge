@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using CodeForge.Api.DTOs.Response;
 
 namespace CodeForge.Api.Controllers
 {

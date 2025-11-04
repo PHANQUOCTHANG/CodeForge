@@ -1,20 +1,22 @@
+using CodeForge.Api.Controllers;
 using CodeForge.Api.DTOs;
 using CodeForge.Api.DTOs.Request.Course;
 using CodeForge.Api.DTOs.Response;
-using CodeForge.Application.DTOs.Courses; // Assuming your Course DTOs are here
+using CodeForge.Application.DTOs.Response;
 using CodeForge.Core.Interfaces.Services;
 using CodeForge__BE.src.CodeForge.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace CodeForge__BE.src.CodeForge.Api.Controllers
 {
     [ApiController]
     [Route("api/[Controller]")]
-    public class CoursesController : ControllerBase
+    public class CoursesController : BaseApiController
     {
         private readonly ICourseService _courseService;
 
@@ -30,8 +32,17 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
             [FromQuery] int pageSize = 10,
             [FromQuery] string? search = null)
         {
+            Guid? userId = null;
+
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (idClaim != null && Guid.TryParse(idClaim.Value, out var parsed))
+                    userId = parsed;
+            }
+            Console.WriteLine($"User ID: {userId}");
             // Service returns PaginationResult<object> (assuming this handles success structure internally)
-            var result = await _courseService.GetPagedCoursesAsync(page, pageSize, search);
+            var result = await _courseService.GetPagedCoursesAsync(userId, page, pageSize, search);
 
             // If PaginationResult is your success wrapper, just return Ok(result).
             // If not, you should wrap it:
@@ -43,7 +54,16 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
         // ✅ Public endpoint - No Authorize attribute needed
         public async Task<IActionResult> GetBySlug(string slug)
         {
-            var result = await _courseService.GetCourseDetailBySlugAsync(slug);
+            Guid? userId = null;
+
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (idClaim != null && Guid.TryParse(idClaim.Value, out var parsed))
+                    userId = parsed;
+            }
+            Console.WriteLine($"User ID: {userId}");
+            var result = await _courseService.GetCourseDetailBySlugAsync(slug, userId);
 
             // ✅ IMPROVEMENT: Check for null and return 404 (NotFoundException should be thrown in service, 
             // but checking for null here is okay if the service returns null instead of throwing 404)

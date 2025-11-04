@@ -67,6 +67,8 @@ namespace CodeForge.Core.Entities
 
                 public ICollection<Module> Modules { get; set; } = new List<Module>();
                 public ICollection<CourseReview> Reviews { get; set; } = new List<CourseReview>();
+                public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+
                 // --- Constructors ---
                 public Course() { }
         }

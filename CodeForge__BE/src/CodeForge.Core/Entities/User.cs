@@ -31,6 +31,9 @@ namespace CodeForge.Core.Entities
                 public bool IsDeleted { get; set; } = false;
                 public ICollection<CourseReview> CourseReviews { get; set; } = new List<CourseReview>();
                 public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+                public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+                public ICollection<Progress> Progresses { get; set; } = new List<Progress>();
+
                 public User() { }
 
         }

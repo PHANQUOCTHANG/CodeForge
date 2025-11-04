@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using CodeForge.Core.Exceptions;
+using CodeForge.Api.DTOs.Response;
 
 
 namespace CodeForge.Core.Service

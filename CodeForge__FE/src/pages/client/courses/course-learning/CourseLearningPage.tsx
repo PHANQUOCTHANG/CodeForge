@@ -2,18 +2,38 @@ import React, { useState, useRef, useEffect } from "react";
 import "./CourseLearningPage.scss";
 import LessonSidebar from "@/features/course/components/course-learning/LessonSidebar";
 import LessonHeader from "@/features/course/components/course-learning/LessonHeader";
+import LessonContent from "@/features/course/components/course-learning/LessonContent";
+import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate
+import { useCourseLesson } from "@/features/course/hooks/useCourseLesson";
+import { useCourseDetail } from "@/features";
+import { Button, Result, Spin } from "antd";
+import { AxiosError } from "axios"; // Import AxiosError type
+import NotFound from "@/pages/not-found/NotFound";
+import { useAppSelector } from "@/app/store/store";
 
 const CourseLearningPage = () => {
+  const { isToggleUpdate } = useAppSelector((state) => state.lessonUpdate);
+  console.log(isToggleUpdate);
+  const { slug, moduleId, lessonId } = useParams<{
+    slug: string;
+    moduleId: string;
+    lessonId: string;
+  }>(); // Assume IDs are always present
+  const navigate = useNavigate(); // Hook for navigation
+
+  // --- Resizer Logic (Keep as is) ---
   const [leftWidth, setLeftWidth] = useState(30);
   const [isDragging, setIsDragging] = useState(false);
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null); // Add type for ref
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Add type for event
     setIsDragging(true);
     e.preventDefault();
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: MouseEvent) => {
+    // Add type for event
     if (!isDragging || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
@@ -41,39 +61,106 @@ const CourseLearningPage = () => {
       document.body.style.userSelect = "auto";
     };
   }, [isDragging]);
+  // --- End Resizer Logic ---
 
+  // --- Data Fetching ---
+  const {
+    data: course,
+    isLoading: isLoadingCourse,
+    isError: isErrorCourse,
+    error: errorCourse, // Get the detailed error object
+  } = useCourseDetail(slug, isToggleUpdate);
+
+  const {
+    data: lesson,
+    isLoading: isLoadingLesson,
+    isError: isErrorLesson,
+    error: errorLesson, // Get the detailed error object
+  } = useCourseLesson(lessonId, isToggleUpdate);
+
+  // --- Render Logic with Error Handling ---
+
+  // 1. Loading State: Show spinner if *either* query is loading
+  if (isLoadingCourse || isLoadingLesson) {
+    return <Spin tip="Đang tải nội dung khóa học..." fullscreen />;
+  }
+
+  // 2. Not Found State: Check if *either* query returned a 404
+  const courseNotFoundError =
+    (errorCourse as AxiosError)?.response?.status === 404;
+  const lessonNotFoundError =
+    (errorLesson as AxiosError)?.response?.status === 404;
+
+  if (courseNotFoundError || lessonNotFoundError) {
+    // Log specific error for debugging
+    console.error(
+      courseNotFoundError
+        ? `Course not found (slug: ${slug})`
+        : `Lesson not found (id: ${lessonId})`
+    );
+    return (
+      <Result
+        status="404"
+        title="404"
+        subTitle="Xin lỗi! Trang của bạn không tồn tại"
+        extra={
+          <Button onClick={() => navigate("/")} type="primary">
+            Trang chủ
+          </Button>
+        }
+      />
+    );
+  }
+
+  // 3. Other Error State: Handle any other error from either query
+  if (isErrorCourse || isErrorLesson) {
+    const errorToShow = (errorCourse || errorLesson) as AxiosError<any>; // Get the first error that occurred
+    console.error("Lỗi khi tải dữ liệu học:", errorToShow);
+    return (
+      <Result
+        status="500"
+        title="500"
+        subTitle="Xin lỗi! Đã có lỗi xảy ra"
+        extra={
+          <Button onClick={() => navigate("/")} type="primary">
+            Trang chủ
+          </Button>
+        }
+      />
+    );
+  }
+
+  // 4. Data Not Available (Fallback, should ideally be caught by 404)
+  if (!course || !lesson) {
+    console.warn("Dữ liệu không tồn tại dù không có lỗi.");
+    return <NotFound />; // Treat missing data also as Not Found
+  }
+
+  // --- Success State: Render the main content ---
   return (
     <div className="lesson-page" ref={containerRef}>
-      {/* Sidebar nhỏ cố định bên trái */}
-
-      {/* Nội dung chính */}
-      <LessonHeader />
+      <LessonHeader course={course} moduleId={moduleId} lessonId={lessonId} />
       <div className="lesson-page__main">
-        <LessonSidebar />
+        {/* Conditional Sidebar (Example) */}
+        {/* You might want a more robust way to manage sidebar visibility/content */}
+        {/* {lesson?.lessonType === "coding" && <LessonSidebar />} */}
 
-        <div className="lesson-page__content">
-          {/* Panel trái: danh sách bài */}
-          <div
-            className="lesson-page__left-panel"
-            style={{ width: `${leftWidth}%` }}
-          >
-            {/* TODO: render list lesson */}
-            oce
-          </div>
+        {/* Resizer */}
+        {/* <div
+                    className="lesson-page__resizer"
+                    onMouseDown={handleMouseDown}
+                 >
+                    <div className="lesson-page__resizer-handle"></div>
+                 </div> */}
 
-          {/* Thanh resize giữa */}
-          <div className="lesson-page__resizer" onMouseDown={handleMouseDown}>
-            <div className="lesson-page__resizer-handle"></div>
-          </div>
-
-          {/* Panel phải: nội dung học */}
-          <div
-            className="lesson-page__right-panel"
-            style={{ width: `${100 - leftWidth}%` }}
-          >
-            {/* TODO: render content */}
-          </div>
-        </div>
+        <LessonContent
+          lessonId={lessonId}
+          moduleId={moduleId}
+          course={course}
+          lesson={lesson}
+          // Pass resizer state if LessonContent needs it
+          // leftWidth={leftWidth}
+        />
       </div>
     </div>
   );

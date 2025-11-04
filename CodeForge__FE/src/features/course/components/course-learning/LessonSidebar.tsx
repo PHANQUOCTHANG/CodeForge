@@ -23,9 +23,8 @@ const LessonSidebar = () => {
     <aside className="lesson-page__sidebar">
       <ul className="lesson-page__sidebar-list">
         {items.map((item) => (
-          <Tooltip placement="right" title={item.label}>
+          <Tooltip key={item.key} placement="right" title={item.label}>
             <li
-              key={item.key}
               className={`lesson-page__sidebar-item ${
                 active === item.key ? "lesson-page__sidebar-item--active" : ""
               } ${item.badge ? "lesson-page__sidebar-item--has-badge" : ""}`}
