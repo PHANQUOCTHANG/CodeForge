@@ -1,5 +1,7 @@
+
 using AutoMapper;
 using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Request;
 using CodeForge.Api.DTOs.Request.Auth;
 using CodeForge.Api.DTOs.Request.Course;
 using CodeForge.Api.DTOs.Request.User;
@@ -25,6 +27,7 @@ namespace CodeForge.Core.Mappings
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false));
             CreateMap<UpdateProblemDto, Problem>();
+            CreateMap<Problem, UpdateProblemDto>();
 
             //Course
             CreateMap<Course, CourseDto>()
@@ -55,11 +58,17 @@ namespace CodeForge.Core.Mappings
 
             //problem
             CreateMap<Problem, ProblemDto>();
-            //TestCase
+
             //Module 
             CreateMap<TestCase, TestCaseDto>();
+
+            // TestCase 
             CreateMap<CreateTestCaseDto, TestCase>();
             CreateMap<UpdateTestCaseDto, TestCase>();
+
+            // Submission 
+            CreateMap<CreateSubmissionDto, Submission>();
+            CreateMap<Submission, SubmissionDto>();
         }
     }
 }

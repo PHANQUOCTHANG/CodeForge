@@ -5,7 +5,8 @@ namespace CodeForge.Core.Interfaces.Repositories
 {
     public interface ITestCaseRepository
     {
-        Task<List<TestCase>> GetAllAsync(bool? isHiden);
+        Task<List<TestCase>> GetAllAsync();
+        Task<List<TestCase>> GetAllByProblemIdAsync(bool? isHidden , Guid problemId);
         Task<TestCase?> GetByIdAsync(Guid testCaseId);
 
         Task<TestCase?> UpdateAsync(UpdateTestCaseDto updateTestCaseDto);

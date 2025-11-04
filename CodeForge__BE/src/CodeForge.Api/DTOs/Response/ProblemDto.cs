@@ -14,6 +14,7 @@ namespace CodeForge.Api.DTOs
                 public string? FunctionName { get; set; }
                 public string? Parameters { get; set; }
                 public string? ReturnType { get; set; }
+                public string? Status { get; set; }
                 public string? Constraints { get; set; }
                 public string? Notes { get; set; }
                 public int TimeLimit { get; set; }

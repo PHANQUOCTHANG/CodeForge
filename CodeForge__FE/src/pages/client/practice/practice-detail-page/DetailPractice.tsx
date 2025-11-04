@@ -1,229 +1,225 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import "./DetailPractice.scss";
-import problemApi from "@/api/problemApi";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Loading from "@/common/helper/Loading";
+import practiceService from "@/features/practice/services/practiceService";
+import type { CodingProblem } from "@/features";
+import type {
+  TestResult,
+  TestCase,
+  Language,
+  SubmitResult,
+} from "@/features/practice/types";
+import { ArrowLeft } from "lucide-react";
+import { generateFunctionTemplate } from "@/features/practice/utils/generateFunctionTemplate";
+import {
+  clampValue,
+  parseTestCaseInput,
+  readNumber,
+} from "@/features/practice/utils";
+import SubmitModal from "@/features/practice/components/submit-modal/SubmitModal";
+import ResultDetailsRaw from "@/features/practice/components/result-detail/ResultDetail";
+import { Spin } from "antd";
+import SubmissionsTab from "@/features/practice/components/submission/SubmissionTab";
 
-// Small helpers and types
-type Language = "javascript" | "python" | "cpp";
+// Ép kiểu tạm để tránh xung đột kiểu khi linter chưa cập nhật cache type
+const ResultDetails = ResultDetailsRaw as unknown as React.FC<any>;
 
-// type TestCase = {
-//   id: number;
-//   name: string;
-//   inputs: { nums: string; target: string };
-//   expected: string;
-// };
+// Ràng buộc layout và editor
+const DEFAULT_LEFT_WIDTH = 45;
+const DEFAULT_EDITOR_HEIGHT = 65;
+const DEFAULT_THEME = "vs-dark";
+const DEFAULT_LANGUAGE = "cpp";
 
-// create template by LANGUAGE PROGRAM .
-function generateFunctionTemplate(problem, lang = "js") {
-  if (problem === null) return;
-  const { functionName, parameters, returnType } = problem;
+const MIN_PANEL_WIDTH = 20;
+const MAX_PANEL_WIDTH = 80;
+const MIN_EDITOR_HEIGHT = 20;
+const MAX_EDITOR_HEIGHT = 90;
 
-  // Tách danh sách tham số -> [{ type, name }]
-  const paramList =
-    parameters
-      ?.split(",")
-      .map((p) => {
-        const parts = p.trim().split(" ");
-        const type = parts.slice(0, -1).join(" ");
-        const name = parts[parts.length - 1];
-        return { type, name };
-      })
-      .filter((p) => p.name) || [];
-
-  switch (lang.toLowerCase()) {
-    // ---------------- 🟦 C++ ----------------
-    case "cpp":
-      return `${returnType} ${functionName}(${parameters}) {
-    
-}`;
-
-    // ---------------- 🟨 JavaScript ----------------
-    case "js":
-    case "javascript": {
-      const jsDocParams = paramList
-        .map((p) => ` * @param {${convertTypeToJs(p.type)}} ${p.name}`)
-        .join("\n");
-      const jsDocReturn = ` * @return {${convertTypeToJs(returnType)}}`;
-      const paramNames = paramList.map((p) => p.name).join(", ");
-
-      return `/**
-${jsDocParams}
-${jsDocReturn}
- */
-function ${functionName}(${paramNames}) {
-    
-}`;
-    }
-
-    // ---------------- 🟩 Python ----------------
-    case "python": {
-      const paramNames = paramList.map((p) => p.name).join(", ");
-      return `def ${functionName}(${paramNames}):
-    `;
-    }
-
-    default:
-      return "// Unsupported language";
-  }
-}
-
-function convertTypeToJs(type) {
-  const map = {
-    int: "number",
-    long: "number",
-    float: "number",
-    double: "number",
-    bool: "boolean",
-    boolean: "boolean",
-    char: "string",
-    string: "string",
-    "int[]": "number[]",
-    "long[]": "number[]",
-    "vector<int>": "number[]",
-    "vector<string>": "string[]",
-    "string[]": "string[]",
-    "List[int]": "number[]",
-    "List[str]": "string[]",
-  };
-  if (!type) return "any";
-  return map[type.toLowerCase()] || "any";
-}
-
-// Types for test results
-type TestResult = {
-  id: number;
-  name: string;
-  status: "Accepted" | "Wrong Answer" | string;
-  output: string;
-  expected: string;
-  inputs: { nums: string; target: string };
-};
-
-// Component riêng để hiển thị chi tiết kết quả
-const ResultDetails: React.FC<{ result: TestResult | undefined | null }> = ({
-  result,
-}) => {
-  if (!result) return null;
-
-  const outputColor = result.status === "Accepted" ? "#00b8a3" : "#ef476f";
-
-  return (
-    <div className="result-details-container">
-      <div className="result-section">
-        <div className="result-label">Input</div>
-        <div className="result-content">
-          <div className="input-pair">
-            <span className="param-name">nums</span>
-            <code className="param-value">{result.inputs.nums}</code>
-          </div>
-          <div className="input-pair">
-            <span className="param-name">target</span>
-            <code className="param-value">{result.inputs.target}</code>
-          </div>
-        </div>
-      </div>
-
-      <div className="result-section">
-        <div className="result-label">Output</div>
-        <div className="result-content">
-          <code className="output-value" style={{ color: outputColor }}>
-            {result.output}
-          </code>
-        </div>
-      </div>
-
-      <div className="result-section">
-        <div className="result-label">Expected</div>
-        <div className="result-content">
-          <code className="expected-value">{result.expected}</code>
-        </div>
-      </div>
-    </div>
-  );
-};
-
+// Component chính
 const DetailPractice: React.FC = () => {
+  const navigate = useNavigate();
   const { slug } = useParams() || "";
-  const [problem, setProblem] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  const getProblem = async () => {
-    const response = await problemApi.getProblemBySlug(slug);
-    console.log(response);
-    setProblem(response.data.data);
+  // Core Data State
+  const [problem, setProblem] = useState<CodingProblem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [testCases, setTestCases] = useState<TestCase[]>([]);
+  const [testResults, setTestResults] = useState<TestResult[] | []>([]);
+  const [isTesting, setIsTesting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [modalData, setModalData] = useState({
+    isSuccess: false,
+    passedTests: 0,
+    totalTests: 0,
+    status: "Accepted",
+    message: "",
+    runtime: "N/A",
+    memory: "N/A",
+  });
+
+  // UI State - Layout
+  const [leftWidthPercent, setLeftWidthPercent] = useState<number>(() =>
+    readNumber("cf_leftWidthPercent", DEFAULT_LEFT_WIDTH)
+  );
+  const [editorHeightPercent, setEditorHeightPercent] = useState<number>(() =>
+    readNumber("cf_editorHeightPercent", DEFAULT_EDITOR_HEIGHT)
+  );
+
+  // UI State - Tabs
+  const [activeTab, setActiveTab] = useState("description");
+  const [testcaseTab, setTestcaseTab] = useState("testcase");
+  const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
+
+  // Editor State
+  const [theme, setTheme] = useState<"vs" | "vs-dark">(
+    () =>
+      (localStorage.getItem("cf_theme") as "vs" | "vs-dark") || DEFAULT_THEME
+  );
+
+  // Ngôn ngữ lập trình của editor (ưu tiên lấy từ localStorage nếu có)
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [code, setCode] = useState<string>("");
+
+  // Refs
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const rightPanelRef = useRef<HTMLDivElement | null>(null);
+  const isDraggingRef = useRef(false);
+  const isDraggingHorizontalRef = useRef(false);
+
+  // Derived State
+  const currentCase = testCases.find((c) => c.testCaseId === selectedCaseId);
+
+  const [passedCount, setPassedCount] = useState(
+    testResults?.filter((r) => r.status === "Accepted").length || 0
+  );
+  const [totalCount, setTotalCount] = useState(testResults?.length || 0);
+  const selectedResult = testResults?.find(
+    (r) => r.testCaseId === selectedCaseId
+  );
+
+  // Lấy dữ liệu bài toán theo slug
+  const fetchProblem = async () => {
+    try {
+      const response = await practiceService.getProblemBySlug(slug || "");
+      setProblem(response.data.data);
+      return response.data.data?.problemId;
+    } catch (error) {
+      console.error("Failed to fetch problem:", error);
+      setProblem(null);
+    }
   };
 
+  const fetchTestCases = async (problemId: string) => {
+    try {
+      const response = await practiceService.getTestCaseOfProblem(problemId);
+      const data = response?.data?.data;
+
+      if (!data) return;
+
+      const mapped = data.map((item: TestCase, idx: number): TestCase => {
+        return {
+          ...item,
+          input: parseTestCaseInput(item.input),
+          name: `Case ${idx + 1}`,
+        };
+      });
+
+      setTestCases(mapped);
+      setSelectedCaseId((prev) =>
+        prev === null && mapped.length > 0 ? mapped[0].testCaseId : prev
+      );
+    } catch (err) {
+      console.error("Failed to load test cases:", err);
+    }
+  };
+
+  // Lấy bài tập và test case theo slug
   useEffect(() => {
     const fetchData = async () => {
-      await getProblem();
-      setLoading(false);
+      if (!slug) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const problemId: string = await fetchProblem();
+        if (!problemId) {
+          setLoading(false);
+          return;
+        }
+        await fetchTestCases(problemId);
+        setLoading(false);
+      } catch (err) { 
+        console.error("Fetch data failed: ", err);
+      }
     };
-
     fetchData();
   }, [slug]);
 
-  const readNumber = (key: string, fallback: number) => {
-    try {
-      const v = localStorage.getItem(key);
-      return v ? Number(v) : fallback;
-    } catch {
-      return fallback;
+  useEffect(() => {
+    if (problem) {
+      const newTemplate = generateFunctionTemplate(problem, language);
+      setCode(newTemplate);
     }
-  };
+  }, [problem, language]);
 
-  // Resizable panels: left panel width as percent
-  const [leftWidthPercent, setLeftWidthPercent] = useState<number>(() =>
-    readNumber("cf_leftWidthPercent", 45)
-  );
-  // Vertical split within right panel: editor vs testcase (percent height for editor)
-  const [editorHeightPercent, setEditorHeightPercent] = useState<number>(() =>
-    readNumber("cf_editorHeightPercent", 65)
-  );
+  useEffect(() => {
+    try {
+      localStorage.setItem("cf_leftWidthPercent", String(leftWidthPercent));
+      localStorage.setItem(
+        "cf_editorHeightPercent",
+        String(editorHeightPercent)
+      );
+      localStorage.setItem("cf_language", language);
+      localStorage.setItem("cf_theme", theme);
+    } catch (err) {
+      console.error("Failed to save to localStorage:", err);
+    }
+  }, [leftWidthPercent, editorHeightPercent, language, theme]);
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const isDraggingRef = useRef(false);
-  const rightPanelRef = useRef<HTMLDivElement | null>(null);
-  const isDraggingHorizontalRef = useRef(false);
-
+  // Xử lý kéo thả thay đổi kích thước panel dọc (trái/phải)
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDraggingRef.current || !containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left; // x inside container
-      let percent = (x / rect.width) * 100;
-      // clamp between 20% and 80%
-      percent = Math.max(20, Math.min(80, percent));
+      const x = e.clientX - rect.left;
+      const percent = clampValue(
+        (x / rect.width) * 100,
+        MIN_PANEL_WIDTH,
+        MAX_PANEL_WIDTH
+      );
       setLeftWidthPercent(percent);
     };
 
     const handleMouseUp = () => {
+      if (!isDraggingRef.current) return;
       isDraggingRef.current = false;
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
       containerRef.current?.classList.remove("dragging");
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
-
-  // Touch support
-  useEffect(() => {
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isDraggingRef.current || !containerRef.current) return;
+      if (
+        !isDraggingRef.current ||
+        !containerRef.current ||
+        e.touches.length === 0
+      )
+        return;
       const touch = e.touches[0];
       const rect = containerRef.current.getBoundingClientRect();
       const x = touch.clientX - rect.left;
-      let percent = (x / rect.width) * 100;
-      percent = Math.max(20, Math.min(80, percent));
+      const percent = clampValue(
+        (x / rect.width) * 100,
+        MIN_PANEL_WIDTH,
+        MAX_PANEL_WIDTH
+      );
       setLeftWidthPercent(percent);
+      e.preventDefault();
     };
 
     const handleTouchEnd = () => {
@@ -233,24 +229,29 @@ const DetailPractice: React.FC = () => {
       containerRef.current?.classList.remove("dragging");
     };
 
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
     window.addEventListener("touchmove", handleTouchMove);
     window.addEventListener("touchend", handleTouchEnd);
 
     return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
-  // Horizontal (vertical resize) handlers for right panel: editor / testcase
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDraggingHorizontalRef.current || !rightPanelRef.current) return;
       const rect = rightPanelRef.current.getBoundingClientRect();
-      const y = e.clientY - rect.top; // y inside right panel
-      let percent = (y / rect.height) * 100;
-      // clamp so editor is between 20% and 90%
-      percent = Math.max(20, Math.min(90, percent));
+      const y = e.clientY - rect.top;
+      const percent = clampValue(
+        (y / rect.height) * 100,
+        MIN_EDITOR_HEIGHT,
+        MAX_EDITOR_HEIGHT
+      );
       setEditorHeightPercent(percent);
     };
 
@@ -262,24 +263,23 @@ const DetailPractice: React.FC = () => {
       rightPanelRef.current?.classList.remove("dragging-horizontal");
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
-
-  useEffect(() => {
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isDraggingHorizontalRef.current || !rightPanelRef.current) return;
+      if (
+        !isDraggingHorizontalRef.current ||
+        !rightPanelRef.current ||
+        e.touches.length === 0
+      )
+        return;
       const touch = e.touches[0];
       const rect = rightPanelRef.current.getBoundingClientRect();
       const y = touch.clientY - rect.top;
-      let percent = (y / rect.height) * 100;
-      percent = Math.max(20, Math.min(90, percent));
+      const percent = clampValue(
+        (y / rect.height) * 100,
+        MIN_EDITOR_HEIGHT,
+        MAX_EDITOR_HEIGHT
+      );
       setEditorHeightPercent(percent);
+      e.preventDefault();
     };
 
     const handleTouchEnd = () => {
@@ -289,139 +289,154 @@ const DetailPractice: React.FC = () => {
       rightPanelRef.current?.classList.remove("dragging-horizontal");
     };
 
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
     window.addEventListener("touchmove", handleTouchMove);
     window.addEventListener("touchend", handleTouchEnd);
 
     return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
-  const [activeTab, setActiveTab] = useState("description");
-  // const [language, setLanguage] = useState<Language>(
-  //   () => (localStorage.getItem("cf_language") as Language) || "javascript"
-  // );
+  // Thay đổi nội dung editor
+  const handleEditorChange = (value?: string | null) => {
+    const newValue = value || "";
+    setCode(newValue);
+  };
 
-  const [language, setLanguage] = useState("cpp");
+  // Chạy code với test case (Run)
+  const handleRun = async () => {
+    if (!problem) return;
 
-  // Monaco themes: 'vs' is the default light theme, 'vs-dark' is dark
-  const [theme, setTheme] = useState<"vs" | "vs-dark">(
-    () => (localStorage.getItem("cf_theme") as "vs" | "vs-dark") || "vs-dark"
-  );
-  const [testcaseTab, setTestcaseTab] = useState("testcase");
-
-  const [testCases, setTestCases] = useState([]);
-  const [selectedCaseId, setSelectedCaseId] = useState([]);
-  const currentCase = testCases.find((c) => c.id === selectedCaseId);
-
-  const initialCode = generateFunctionTemplate(problem, "cpp");
-
-  const [code, setCode] = useState<string>(() => {
-    try {
-      return localStorage.getItem("cf_code") || initialCode;
-    } catch {
-      return initialCode;
-    }
-  });
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResults, setTestResults] = useState<TestResult[] | null>(null);
-
-  const handleEditorChange = useCallback((value?: string | null) => {
-    const v = value ?? "";
-    setCode(v);
-    try {
-      localStorage.setItem("cf_code", v);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const handleRun = () => {
     const submissionPayload = {
+      userId: "f452f361-bcde-405a-afe0-3d404e37d319",
       problemId: problem.problemId,
-      language: language,
-      code: code,
+      language,
+      functionName: problem.functionName,
+      code,
       testCases: testCases.map((t) => t.testCaseId),
     };
-
-    console.log("--- SUBMISSION PAYLOAD ---");
-    console.log(submissionPayload);
-    console.log("--------------------------");
 
     setIsTesting(true);
     setTestcaseTab("result");
 
-    setTimeout(() => {
-      const results = testCases.map((caseItem) => {
-        // Giả lập kết quả
-        const passed = caseItem.id === 0 || caseItem.id === 2;
+    try {
+      const response = await practiceService.runTest(submissionPayload);
+      const dataResult = response.data.data;
 
-        const simulatedOutput = passed
-          ? caseItem.expected
-          : `[${Math.floor(Math.random() * 3)}, ${Math.floor(
-              Math.random() * 3
-            )}]`;
+      const formattedResults = dataResult.map((item: any, idx: number) => ({
+        testCaseId: item.testCaseId,
+        name: `Case ${idx + 1}`,
+        status: item.status?.description || item.status,
+        actualOutput: item.stdout || item.actualOutput,
+        expectedOutput: item.expectedOutput,
+        passed: item.passed,
+        executionTime: item.time,
+        memoryUsage: (item.memory / 1024).toFixed(2),
+        input: item.input,
+        explain: item.explain,
+      }));
 
-        return {
-          id: caseItem.id,
-          name: caseItem.name,
-          status: passed ? "Accepted" : "Wrong Answer",
-          output: simulatedOutput,
-          expected: caseItem.expected,
-          inputs: caseItem.inputs,
-        };
+      setTestResults(formattedResults);
+
+      if (formattedResults.length > 0) {
+        setSelectedCaseId(formattedResults[0].testCaseId);
+      }
+    } catch (error) {
+      console.error("Run test failed:", error);
+      alert("Failed to run test. Please try again.");
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  // Gửi bài làm (Submit)
+  const handleSubmit = async () => {
+    if (!problem) {
+      alert("Problem data is not loaded");
+      return;
+    }
+
+    if (!code || code.trim() === "") {
+      alert("Please write your code before submitting");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const submissionPayload = {
+        userId: "f452f361-bcde-405a-afe0-3d404e37d319",
+        problemId: problem.problemId,
+        language,
+        functionName: problem.functionName,
+        code,
+      };
+
+      const response = await practiceService.submitProblem(submissionPayload);
+      const result: SubmitResult = response.data.data;
+
+      // Hiển thị modal kết quả
+      setModalData({
+        isSuccess: !!result.submit,
+        passedTests: result.testCasePass ?? 0,
+        totalTests: result.totalTestCase ?? 0,
+        status: result.status ?? "Unknown",
+        message: result.message ?? "No message",
+        runtime: `${result.time ?? 0}s`,
+        memory: result.memory
+          ? `${(result.memory / 1024).toFixed(2)}MB`
+          : "0MB",
       });
 
-      setTestResults(results);
-      setIsTesting(false);
-    }, 1500);
+      setShowModal(true);
+
+      if (result.resultFail) {
+        setIsTesting(false);
+        setTestcaseTab("result");
+
+        const dataResult = [];
+        dataResult.push(result.resultFail);
+
+        const formattedResults = dataResult.map((item: any, idx: number) => ({
+          testCaseId: item.testCaseId,
+          name: `Case ${idx + 1}`,
+          status: item.status?.description || item.status,
+          actualOutput: item.stdout || item.actualOutput,
+          expectedOutput: item.expectedOutput,
+          passed: item.passed,
+          executionTime: item.time,
+          memoryUsage: (item.memory / 1024).toFixed(2),
+          input: item.input,
+          explain: item.explain,
+        }));
+
+        setPassedCount(result.testCasePass);
+        setTotalCount(result.totalTestCase);
+
+        setTestResults(formattedResults as unknown as TestResult[]);
+      }
+    } catch (error) {
+      console.error("Submit failed:", error);
+      alert("Failed to submit. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLang = e.target.value as "javascript" | "python" | "cpp";
+    const newLang = e.target.value as Language;
     setLanguage(newLang);
-    setCode(generateFunctionTemplate(problem, newLang));
-    setTestResults(null);
+    if (problem) {
+      setCode(generateFunctionTemplate(problem, newLang));
+    }
+    setTestResults([]);
   };
 
-  // Persist certain UI preferences when they change
-  useEffect(() => {
-    try {
-      localStorage.setItem("cf_leftWidthPercent", String(leftWidthPercent));
-    } catch (err) {
-      void err;
-    }
-  }, [leftWidthPercent]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "cf_editorHeightPercent",
-        String(editorHeightPercent)
-      );
-    } catch (err) {
-      void err;
-    }
-  }, [editorHeightPercent]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("cf_language", language);
-    } catch (err) {
-      void err;
-    }
-  }, [language]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("cf_theme", theme);
-    } catch (err) {
-      void err;
-    }
-  }, [theme]);
-
-  // Drag handlers for divider
+  // Bắt đầu kéo thanh chia dọc
   const handleDividerMouseDown = (e: React.MouseEvent) => {
     isDraggingRef.current = true;
     document.body.style.cursor = "col-resize";
@@ -430,44 +445,29 @@ const DetailPractice: React.FC = () => {
     e.preventDefault();
   };
 
+  // Bắt đầu kéo thanh chia dọc (touch)
   const handleDividerTouchStart = (e: React.TouchEvent) => {
     isDraggingRef.current = true;
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
     containerRef.current?.classList.add("dragging");
-    // prevent default to avoid scrolling
     e.preventDefault();
   };
 
-  // Keyboard accessibility for vertical divider (left/right)
+  // Điều chỉnh thanh chia dọc bằng phím mũi tên
   const handleDividerKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowLeft") {
-      setLeftWidthPercent((p) => Math.max(20, Math.min(80, p - 2)));
+      setLeftWidthPercent((p) =>
+        clampValue(p - 2, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH)
+      );
     } else if (e.key === "ArrowRight") {
-      setLeftWidthPercent((p) => Math.max(20, Math.min(80, p + 2)));
-    } else if (e.key === "Home") {
-      setLeftWidthPercent(20);
-    } else if (e.key === "End") {
-      setLeftWidthPercent(80);
+      setLeftWidthPercent((p) =>
+        clampValue(p + 2, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH)
+      );
     }
   };
 
-  // Add a simple handler to add a new test case (prevents unused setTestCases warning)
-  const handleAddCase = () => {
-    const newId = testCases.length
-      ? Math.max(...testCases.map((c) => c.id)) + 1
-      : 0;
-    const newCase = {
-      id: newId,
-      name: `Case ${newId + 1}`,
-      inputs: { nums: "[]", target: "0" },
-      expected: "[]",
-    };
-    setTestCases((prev) => [...prev, newCase]);
-    setSelectedCaseId(newId);
-  };
-
-  // Handlers for horizontal divider between editor and testcase
+  // Bắt đầu kéo thanh chia ngang
   const handleHDividerMouseDown = (e: React.MouseEvent) => {
     isDraggingHorizontalRef.current = true;
     document.body.style.cursor = "row-resize";
@@ -476,6 +476,7 @@ const DetailPractice: React.FC = () => {
     e.preventDefault();
   };
 
+  // Bắt đầu kéo thanh chia ngang (touch)
   const handleHDividerTouchStart = (e: React.TouchEvent) => {
     isDraggingHorizontalRef.current = true;
     document.body.style.cursor = "row-resize";
@@ -484,356 +485,400 @@ const DetailPractice: React.FC = () => {
     e.preventDefault();
   };
 
-  // Keyboard accessibility for horizontal divider (up/down)
+  // Điều chỉnh thanh chia ngang bằng phím mũi tên
   const handleHDividerKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowUp") {
-      setEditorHeightPercent((p) => Math.max(20, Math.min(90, p - 2)));
+      setEditorHeightPercent((p) =>
+        clampValue(p - 2, MIN_EDITOR_HEIGHT, MAX_EDITOR_HEIGHT)
+      );
     } else if (e.key === "ArrowDown") {
-      setEditorHeightPercent((p) => Math.max(20, Math.min(90, p + 2)));
-    } else if (e.key === "Home") {
-      setEditorHeightPercent(90);
-    } else if (e.key === "End") {
-      setEditorHeightPercent(20);
+      setEditorHeightPercent((p) =>
+        clampValue(p + 2, MIN_EDITOR_HEIGHT, MAX_EDITOR_HEIGHT)
+      );
     }
   };
 
-  const passedCount = testResults
-    ? testResults.filter((r) => r.status === "Accepted").length
-    : 0;
-  const totalCount = testResults ? testResults.length : 0;
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (!problem) {
+    return null;
+  }
 
   return (
     <>
-      {loading && <Loading></Loading>}
-      {problem && (
+      <Spin spinning={isSubmitting} fullscreen tip="Submitting..." />
+      <SubmitModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        isSuccess={modalData.isSuccess}
+        problemTitle={problem?.title || ""}
+        passedTests={modalData.passedTests}
+        totalTests={modalData.totalTests}
+        runtime={modalData.runtime}
+        memory={modalData.memory}
+        status={modalData.status}
+      />
+
+      <div
+        className="detail-practice-container"
+        ref={containerRef}
+        style={{ userSelect: isDraggingRef.current ? "none" : undefined }}
+      >
+        {/* BÊN TRÁI */}
         <div
-          className="detail-practice-container"
-          ref={containerRef}
-          style={{ userSelect: isDraggingRef.current ? "none" : undefined }}
+          className="left-panel"
+          style={{ width: `${leftWidthPercent}%`, minWidth: "20%" }}
         >
-          {/* LEFT PANEL: Problem Description */}
-          <div
-            className="left-panel"
-            style={{ width: `${leftWidthPercent}%`, minWidth: "20%" }}
-          >
-            <div className="panel-header">
-              <div
-                className={`tab ${activeTab === "description" ? "active" : ""}`}
-                onClick={() => setActiveTab("description")}
-              >
-                Description
-              </div>
-              <div
-                className={`tab ${activeTab === "editorial" ? "active" : ""}`}
-                onClick={() => setActiveTab("editorial")}
-              >
-                Editorial
-              </div>
-              <div
-                className={`tab ${activeTab === "solutions" ? "active" : ""}`}
-                onClick={() => setActiveTab("solutions")}
-              >
-                Solutions
-              </div>
-              <div
-                className={`tab ${activeTab === "submissions" ? "active" : ""}`}
-                onClick={() => setActiveTab("submissions")}
-              >
-                Submissions
-              </div>
+          <div className="panel-header">
+            <button className="btn-back" onClick={() => navigate("/practice")}>
+              <ArrowLeft />
+            </button>
+            <div
+              className={`tab ${activeTab === "description" ? "active" : ""}`}
+              onClick={() => setActiveTab("description")}
+            >
+              Description
             </div>
-            <div className="panel-content">
-              {activeTab === "description" && (
-                <div>
-                  <h1 className="problem-title">{problem.title}</h1>
-                  <div className="problem-meta">
-                    <span className="difficulty easy">Easy</span>
-                    <span className="tag">Array</span>
-                    <span className="tag">Hash Table</span>
-                  </div>
-                  <div className="problem-description">
-                    <p>{problem.description}</p>
-                    <div className="example">
-                      <div className="example-title">Example 1:</div>
+            {/* <div
+              className={`tab ${activeTab === "editorial" ? "active" : ""}`}
+              onClick={() => setActiveTab("editorial")}
+            >
+              Editorial
+            </div>
+            <div
+              className={`tab ${activeTab === "solutions" ? "active" : ""}`}
+              onClick={() => setActiveTab("solutions")}
+            >
+              Solutions
+            </div> */}
+            <div
+              className={`tab ${activeTab === "submissions" ? "active" : ""}`}
+              onClick={() => setActiveTab("submissions")}
+            >
+              Submissions
+            </div>
+          </div>
+          <div className="panel-content">
+            {activeTab === "description" && (
+              <div>
+                <h1 className="problem-title">{problem.title}</h1>
+                <div className="problem-meta">
+                  <span className="difficulty easy">Easy</span>
+                  <span className="tag">Array</span>
+                  <span className="tag">Hash Table</span>
+                </div>
+                <div className="problem-description">
+                  <p>{problem.description}</p>
+                  {testCases.slice(0, 3).map((testCase, idx) => (
+                    <div className="example" key={testCase.testCaseId}>
+                      <div className="example-title">Example {idx + 1}:</div>
                       <pre>
-                        Input: nums = [2,7,11,15], target = 9{"\n"}
-                        Output: [0,1]{"\n"}
-                        Explanation: Because nums[0] + nums[1] == 9, we return
-                        [0, 1].
+                        {`Input: ${
+                          typeof testCase.input === "object"
+                            ? Object.entries(testCase.input || "")
+                                .map(
+                                  ([k, v]) =>
+                                    `${k} = ${
+                                      typeof v === "string"
+                                        ? v
+                                        : JSON.stringify(v)
+                                    }`
+                                )
+                                .join(", ")
+                            : String(testCase.input)
+                        }\n`}
+                        {`Output: ${testCase.expectedOutput}\n`}
+                        {testCase.explain
+                          ? `Explanation: ${testCase.explain}`
+                          : ""}
                       </pre>
                     </div>
+                  ))}
+                  {problem.constraints && (
                     <div className="constraints">
                       <div className="constraints-title">Constraints:</div>
                       <ul>
-                        <li>2 ≤ nums.length ≤ 10⁴</li>
-                        <li>-10⁹ ≤ nums[i] ≤ 10⁹</li>
-                        <li>-10⁹ ≤ target ≤ 10⁹</li>
-                        <li>Only one valid answer exists.</li>
+                        {problem.constraints
+                          .split(";")
+                          .map(
+                            (item, idx) => item && <li key={idx}>{item}</li>
+                          )}
                       </ul>
                     </div>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
+
+            {activeTab == "submissions" && <SubmissionsTab problemId={problem.problemId} userId="f452f361-bcde-405a-afe0-3d404e37d319"></SubmissionsTab>}
+
+
+          </div>
+        </div>
+
+        {/* THANH NGĂN DỌC */}
+        <div
+          className="divider"
+          onMouseDown={handleDividerMouseDown}
+          onTouchStart={handleDividerTouchStart}
+          onKeyDown={handleDividerKeyDown}
+          role="separator"
+          tabIndex={0}
+          aria-orientation="vertical"
+          aria-label="Resize panels. Use mouse or Arrow keys."
+        />
+
+        {/* BÊN PHẢI */}
+        <div
+          className="right-panel"
+          style={{ width: `${100 - leftWidthPercent}%`, minWidth: "20%" }}
+          ref={rightPanelRef}
+        >
+          <div className="editor-header">
+            <div className="editor-controls">
+              <select
+                className="language-select"
+                value={language}
+                onChange={handleLanguageChange}
+                aria-label="Select programming language"
+              >
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="cpp">C++</option>
+              </select>
+              <button
+                className="theme-toggle"
+                onClick={() =>
+                  setTheme((t) => (t === "vs-dark" ? "vs" : "vs-dark"))
+                }
+                aria-pressed={theme === "vs-dark"}
+                aria-label="Toggle editor theme"
+              >
+                {theme === "vs-dark" ? "☀️" : "🌙"}
+              </button>
+            </div>
+            <div className="action-buttons">
+              <button
+                className="btn btn-run"
+                onClick={handleRun}
+                disabled={isTesting || isSubmitting}
+              >
+                {isTesting ? (
+                  <div className="loading-animation"></div>
+                ) : (
+                  <>▶ Run</>
+                )}
+              </button>
+              <button
+                className="btn btn-submit"
+                onClick={handleSubmit}
+                disabled={isTesting || isSubmitting}
+              >
+                Submit
+              </button>
             </div>
           </div>
 
-          {/* RIGHT PANEL: Editor and Test Case Panel */}
-          {/* Divider */}
           <div
-            className="divider"
-            onMouseDown={handleDividerMouseDown}
-            onTouchStart={handleDividerTouchStart}
-            onKeyDown={handleDividerKeyDown}
+            className="editor-wrapper"
+            style={{ height: `calc(${editorHeightPercent}% - 1px)` }}
+          >
+            <Editor
+              height="100%"
+              language={language}
+              theme={theme}
+              value={code}
+              onChange={handleEditorChange}
+              options={{
+                minimap: { enabled: true },
+                fontSize: 14,
+                lineNumbers: "on",
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                tabSize: 2,
+                wordWrap: "on",
+                suggestOnTriggerCharacters: true,
+                quickSuggestions: true,
+                parameterHints: { enabled: true },
+              }}
+            />
+          </div>
+
+          {/* THANH NGĂN NGANG */}
+          <div
+            className="h-divider"
+            onMouseDown={handleHDividerMouseDown}
+            onTouchStart={handleHDividerTouchStart}
+            onKeyDown={handleHDividerKeyDown}
             role="separator"
             tabIndex={0}
-            aria-orientation="vertical"
-            aria-label="Resize panels. Use mouse or Arrow keys."
+            aria-orientation="horizontal"
+            aria-label="Resize editor and testcase. Use mouse or Arrow keys."
           />
 
+          {/* BẢNG TESTCASE */}
           <div
-            className="right-panel"
-            style={{ width: `${100 - leftWidthPercent}%`, minWidth: "20%" }}
-            ref={rightPanelRef}
+            className="testcase-panel"
+            style={{ height: `calc(${100 - editorHeightPercent}% - 1px)` }}
           >
-            <div className="editor-header">
-              <div className="editor-controls">
-                {/* SỬA LỖI: Hoàn thiện thẻ <select> */}
-                <select
-                  className="language-select"
-                  value={language}
-                  onChange={handleLanguageChange} // ✅ Dùng handler đổi ngôn ngữ
-                  aria-label="Select programming language"
+            <div className="testcase-header">
+              <div className="testcase-tabs">
+                <div
+                  className={`testcase-tab ${
+                    testcaseTab === "testcase" ? "active" : ""
+                  }`}
+                  onClick={() => setTestcaseTab("testcase")}
                 >
-                  <option value="javascript">JavaScript</option>
-                  <option value="python">Python</option>
-                  <option value="cpp">C++</option>
-                </select>
-                <button
-                  className="theme-toggle"
-                  onClick={() =>
-                    setTheme((t) => (t === "vs-dark" ? "vs" : "vs-dark"))
-                  }
-                  aria-pressed={theme === "vs-dark"}
-                  aria-label="Toggle editor theme"
+                  Testcase
+                </div>
+                <div
+                  className={`testcase-tab ${
+                    testcaseTab === "result" ? "active" : ""
+                  }`}
+                  onClick={() => setTestcaseTab("result")}
                 >
-                  {theme === "vs-dark" ? "☀️" : "🌙"}
-                </button>
-              </div>
-              <div className="action-buttons">
-                <button
-                  className="btn btn-run"
-                  onClick={handleRun}
-                  disabled={isTesting}
-                >
-                  {isTesting ? (
-                    <div className="loading-animation"></div>
-                  ) : (
-                    <>▶ Run</>
+                  Test Result
+                  {testResults && (
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        padding: "2px 8px",
+                        background:
+                          passedCount === totalCount ? "#00b8a3" : "#ef476f",
+                        color: "white",
+                        borderRadius: "12px",
+                        fontSize: "11px",
+                        fontWeight: "700",
+                      }}
+                    >
+                      {passedCount}/{totalCount}
+                    </span>
                   )}
-                </button>
-                <button className="btn btn-submit" disabled={isTesting}>
-                  Submit
-                </button>
+                </div>
               </div>
             </div>
 
-            {/* THÊM: Editor Wrapper với component Editor hoàn chỉnh */}
-            <div
-              className="editor-wrapper"
-              style={{ height: `calc(${editorHeightPercent}% - 1px)` }}
-            >
-              <Editor
-                height="100%"
-                language={language}
-                theme={theme}
-                value={code}
-                onChange={handleEditorChange} // ✅ THÊM: Callback khi code thay đổi
-                options={{
-                  // ✅ THÊM: Các options cho Monaco Editor
-                  minimap: { enabled: true },
-                  fontSize: 14,
-                  lineNumbers: "on",
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  tabSize: 2,
-                  wordWrap: "on",
-                  suggestOnTriggerCharacters: true,
-                  quickSuggestions: true,
-                  parameterHints: { enabled: true },
-                }}
-              />
-            </div>
-
-            {/* Horizontal divider between editor and testcase */}
-            <div
-              className="h-divider"
-              onMouseDown={handleHDividerMouseDown}
-              onTouchStart={handleHDividerTouchStart}
-              onKeyDown={handleHDividerKeyDown}
-              role="separator"
-              tabIndex={0}
-              aria-orientation="horizontal"
-              aria-label="Resize editor and testcase. Use mouse or Arrow keys."
-            />
-
-            <div
-              className="testcase-panel"
-              style={{ height: `calc(${100 - editorHeightPercent}% - 1px)` }}
-            >
-              <div className="testcase-header">
-                <div className="testcase-tabs">
-                  <div
-                    className={`testcase-tab ${
-                      testcaseTab === "testcase" ? "active" : ""
-                    }`}
-                    onClick={() => setTestcaseTab("testcase")}
-                  >
-                    Testcase
-                  </div>
-                  <div
-                    className={`testcase-tab ${
-                      testcaseTab === "result" ? "active" : ""
-                    }`}
-                    onClick={() => setTestcaseTab("result")}
-                  >
-                    Test Result
-                    {testResults && (
-                      <span
-                        style={{
-                          marginLeft: "8px",
-                          padding: "2px 8px",
-                          // background: passedCount === totalCount ? '#22c55e' : '#ef4444',
-                          borderRadius: "12px",
-                          fontSize: "11px",
-                          fontWeight: "700",
-                        }}
-                      >
-                        {passedCount}/{totalCount}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* TESTCASE INPUTS TAB */}
-              {testcaseTab === "testcase" && (
-                <div className="testcase-content">
-                  <div className="case-selector">
-                    {testCases.map((caseItem) => (
-                      <div
-                        key={caseItem.id}
-                        className={`case-item ${
-                          selectedCaseId === caseItem.id ? "active" : ""
-                        }`}
-                        onClick={() => setSelectedCaseId(caseItem.id)}
-                      >
-                        {caseItem.name}
-                      </div>
-                    ))}
-                    <div className="case-item add-case" onClick={handleAddCase}>
-                      +
+            {testcaseTab === "testcase" && (
+              <div className="testcase-content">
+                <div className="case-selector">
+                  {testCases.map((caseItem) => (
+                    <div
+                      key={caseItem.testCaseId}
+                      className={`case-item ${
+                        selectedCaseId === caseItem.testCaseId ? "active" : ""
+                      }`}
+                      onClick={() => setSelectedCaseId(caseItem.testCaseId)}
+                    >
+                      {caseItem.name}
                     </div>
-                  </div>
-
-                  <div className="testcase-inputs">
-                    {currentCase && (
-                      <>
-                        <div className="input-group">
-                          <label className="input-label">nums =</label>
-                          <div className="input-value">
-                            {currentCase.inputs.nums}
-                          </div>
-                        </div>
-                        <div className="input-group">
-                          <label className="input-label">target =</label>
-                          <div className="input-value">
-                            {currentCase.inputs.target}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  ))}
                 </div>
-              )}
 
-              {/* TEST RESULT TAB */}
-              {testcaseTab === "result" && (
-                <div className="testcase-content">
-                  {isTesting && (
-                    <div className="result-placeholder">
-                      <div className="loading-animation"></div>
-                      <div className="result-text">Running your code...</div>
-                    </div>
-                  )}
-
-                  {!isTesting && testResults && (
+                <div className="testcase-inputs">
+                  {currentCase && (
                     <>
-                      {/* Hiển thị selector cho tất cả test cases */}
-                      <div className="case-selector">
-                        {testResults.map((result) => (
-                          <div
-                            key={result.id}
-                            className={`case-item ${
-                              selectedCaseId === result.id ? "active" : ""
-                            } ${
-                              result.status === "Accepted"
-                                ? "case-passed"
-                                : "case-failed"
-                            }`}
-                            onClick={() => setSelectedCaseId(result.id)}
-                          >
-                            {result.name}{" "}
-                            {result.status === "Accepted" ? "✓" : "✗"}
+                      {currentCase.input &&
+                      typeof currentCase.input === "object" &&
+                      !Array.isArray(currentCase.input) ? (
+                        Object.entries(currentCase.input).map(([k, v]) => (
+                          <div className="input-group" key={k}>
+                            <label className="input-label">{k} =</label>
+                            <div className="input-value">
+                              {typeof v === "string" ? v : JSON.stringify(v)}
+                            </div>
                           </div>
-                        ))}
-                      </div>
-
-                      {/* Summary cho case được chọn */}
-                      {testResults.length > 0 && (
-                        <div
-                          className={`test-case-summary ${
-                            testResults.find((r) => r.id === selectedCaseId)
-                              ?.status === "Accepted"
-                              ? "accepted"
-                              : "wrong-answer"
-                          }`}
-                        >
-                          <span>
-                            {
-                              testResults.find((r) => r.id === selectedCaseId)
-                                ?.status
-                            }
-                          </span>
-                          <div className="summary-stats">
-                            <span>Runtime: 50 ms</span>
-                            <span>Memory: 45.2 MB</span>
+                        ))
+                      ) : (
+                        <div className="input-group">
+                          <label className="input-label">input =</label>
+                          <div className="input-value">
+                            {String(currentCase.input)}
                           </div>
                         </div>
                       )}
 
-                      {/* Chi tiết kết quả của Case đang được chọn */}
-                      <ResultDetails
-                        result={testResults.find(
-                          (r) => r.id === selectedCaseId
-                        )}
-                      />
+                      <div className="input-group">
+                        <label className="input-label">Expected =</label>
+                        <div className="input-value">
+                          {currentCase.expectedOutput}
+                        </div>
+                      </div>
                     </>
                   )}
-
-                  {!isTesting && !testResults && (
-                    <div className="result-placeholder">
-                      <div className="result-icon">▶</div>
-                      <div className="result-text">
-                        Click Run to see the output
-                      </div>
-                    </div>
-                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {testcaseTab === "result" && (
+              <div className="testcase-content">
+                {isTesting && (
+                  <div className="result-placeholder">
+                    <div className="loading-animation"></div>
+                    <div className="result-text">Running your code...</div>
+                  </div>
+                )}
+
+                {!isTesting && testResults && (
+                  <>
+                    <div className="case-selector">
+                      {testResults.map((result) => (
+                        <div
+                          key={result.testCaseId}
+                          className={`case-item ${
+                            selectedCaseId === result.testCaseId ? "active" : ""
+                          } ${
+                            result.status === "Accepted"
+                              ? "case-passed"
+                              : "case-failed"
+                          }`}
+                          onClick={() => setSelectedCaseId(result.testCaseId)}
+                        >
+                          {result.name}{" "}
+                          {result.status === "Accepted" ? "✓" : "✗"}
+                        </div>
+                      ))}
+                    </div>
+
+                    {selectedResult && (
+                      <div
+                        className={`test-case-summary ${
+                          selectedResult.status === "Accepted"
+                            ? "accepted"
+                            : "wrong-answer"
+                        }`}
+                      >
+                        <span>{selectedResult.status}</span>
+                        <div className="summary-stats">
+                          <span>Runtime: {selectedResult.executionTime}s</span>
+                          <span>Memory: {selectedResult.memoryUsage}MB</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <ResultDetails
+                      result={selectedResult}
+                      testCase={testCases.find(
+                        (item) => item.testCaseId === selectedCaseId
+                      )}
+                    />
+                  </>
+                )}
+
+                {!isTesting && !testResults && (
+                  <div className="result-placeholder">
+                    <div className="result-icon">▶</div>
+                    <div className="result-text">
+                      Click Run to see the output
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 };

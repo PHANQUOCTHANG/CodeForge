@@ -6,7 +6,8 @@ namespace CodeForge.Core.Interfaces.Services
 {
     public interface ITestCaseService
     {
-        Task<List<TestCaseDto>> GetAllTestCaseAsync(bool? isHiden);
+        Task<List<TestCaseDto>> GetAllTestCaseAsync();
+        Task<List<TestCaseDto>> GetAllTestCaseByProblemIdAsync(bool? isHidden , Guid problemId);
         Task<TestCaseDto> GetTestCaseByIdAsync(Guid testCaseId);
 
         Task<TestCaseDto> UpdateTestCaseAsync(UpdateTestCaseDto updateTestCaseDto);

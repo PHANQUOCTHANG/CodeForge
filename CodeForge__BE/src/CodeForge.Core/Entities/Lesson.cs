@@ -6,7 +6,6 @@ namespace CodeForge.Core.Entities
         [Table("Lessons")]
         public class Lesson
         {
-
                 [Key]
                 public Guid LessonId { get; set; } = Guid.NewGuid();
 
@@ -17,7 +16,7 @@ namespace CodeForge.Core.Entities
                 [MaxLength(200)]
                 public string Title { get; set; } = string.Empty;
 
-                public string? Content { get; set; }
+                // public string? Content { get; set; }
 
                 [Required]
                 [MaxLength(20)]
@@ -26,7 +25,7 @@ namespace CodeForge.Core.Entities
                 public int OrderIndex { get; set; }
 
                 public bool IsDeleted { get; set; } = false;
-                public string? VideoUrl { get; set; }
+                // public string? VideoUrl { get; set; }
                 // Navigation property
                 [ForeignKey(nameof(ModuleId))]
                 public Module? Module { get; set; }

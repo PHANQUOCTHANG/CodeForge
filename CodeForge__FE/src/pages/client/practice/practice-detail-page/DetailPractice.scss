@@ -60,6 +60,11 @@
   background: #0a0a0a;
 }
 
+.btn-back {
+  padding: 5px;
+  border-radius: 50%;
+}
+
 .tab {
   padding: 8px 16px;
   cursor: pointer;
@@ -174,12 +179,13 @@
 
 .problem-description {
   line-height: 1.8;
-  color: #d4d4d8;
+  color: white;
   font-size: 15px;
 }
 
 .problem-description p {
   margin-bottom: 16px;
+  color: white;
 }
 
 .problem-description code {
@@ -636,6 +642,7 @@
   font-size: 14px;
   border: 1px solid #27272a;
   flex: 1;
+  color : white ;
 }
 
 .output-value {

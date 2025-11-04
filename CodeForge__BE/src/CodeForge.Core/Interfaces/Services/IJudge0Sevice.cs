@@ -9,7 +9,9 @@ namespace CodeForge.Core.Interfaces.Services
             string language,
             string userCode,
             string functionName,
-            List<Guid> testCases);
-        Task<Judge0Response> SubmitAsync(string language, string fullCode, string expectedOutput = null);
+            List<Guid> testCases, Guid problemId);
+        Task<Judge0Response> SubmitAsync(string language, string fullCode, Guid testCaseId, string expectedOutput , int timeLimit , int memory);
+
+        Task<Object> SubmitProblem(Guid userId ,Guid problemId, string language, string userCode, string functionName);
     }
 }

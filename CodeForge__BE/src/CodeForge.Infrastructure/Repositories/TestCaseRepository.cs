@@ -36,14 +36,21 @@ namespace CodeForge.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<List<TestCase>> GetAllAsync(bool? isHiden)
+        public async Task<List<TestCase>> GetAllAsync()
         {
-            return isHiden != null ? await _context.TestCases
+            return await _context.TestCases
                 .Include(b => b.Problem)
-                .Where(t => t.IsHidden == isHiden)
+                .ToListAsync();
+            }
+        public async Task<List<TestCase>> GetAllByProblemIdAsync(bool? isHidden, Guid problemId)
+        {
+            return isHidden != null ? await _context.TestCases
+                .Include(b => b.Problem)
+                .Where(t => t.IsHidden == isHidden && t.ProblemId == problemId)
                 .Take(3)
                 .ToListAsync() : await _context.TestCases
                 .Include(b => b.Problem)
+                .Where(t => t.ProblemId == problemId)
                 .ToListAsync();
         }
 
