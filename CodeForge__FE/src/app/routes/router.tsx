@@ -13,7 +13,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />, // ✅ Đây là chỗ App.tsx được render
-    children: [clientRouters, adminRouters, authRouters, courseRouters , practiceRouters],
+    children: [clientRouters, adminRoutes, authRouters, courseRouters , practiceRouters],
     errorElement: <NotFound />,
   },
 ]);
