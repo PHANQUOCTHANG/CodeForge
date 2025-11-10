@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./AboutPage.scss";
 import { ImageWithFallback } from "@/common/components/ImageWithFallback/ImageWithFallback";
 import { motion } from "framer-motion";
@@ -13,12 +13,28 @@ import { FaLinkedin, FaTwitter, FaEnvelope } from "react-icons/fa";
 
 const AboutPage: React.FC = () => {
   {/* Section 3 */}
-   const stats = [
-    { value: "100K+", label: "Happy Learners", sub: "Students worldwide" },
-    { value: "500+", label: "Courses", sub: "And growing daily" },
-    { value: "50+", label: "Expert Instructors", sub: "Industry professionals" },
-    { value: "95%", label: "Success Rate", sub: "Course completion" },
-  ];
+  const statsData = [
+  { value: 100000, label: "Happy Learners", sub: "Students worldwide" },
+  { value: 500, label: "Courses", sub: "And growing daily" },
+  { value: 50, label: "Expert Instructors", sub: "Industry professionals" },
+  { value: 95, label: "Success Rate", sub: "Course completion", suffix: "%" },
+];
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
   {/* Section 4 */}
   const values = [
   {
@@ -151,15 +167,18 @@ const milestones = [
         </div>
       </section>
       {/* Section 3 */}
-      <section className="stats-section">
+      <section ref={sectionRef} className="stats-section">
       <div className="container">
         <div className="stats-grid">
-          {stats.map((item, index) => (
-            <div className="stat-card" key={index}>
-              <div className="stat-value">{item.value}</div>
-              <div className="stat-label">{item.label}</div>
-              <div className="stat-sub">{item.sub}</div>
-            </div>
+          {statsData.map((item, index) => (
+            <StatCard
+              key={index}
+              value={item.value}
+              label={item.label}
+              sub={item.sub}
+              visible={visible}
+              suffix={item.suffix}
+            />
           ))}
         </div>
       </div>
@@ -281,6 +300,55 @@ const milestones = [
       </div>
     </section>
     </>
+  );
+};
+{/* Section 3 */}
+interface StatCardProps {
+  value: number;
+  label: string;
+  sub: string;
+  visible: boolean;
+  suffix?: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({
+  value,
+  label,
+  sub,
+  visible,
+  suffix = "",
+}) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!visible) return;
+    let start = 0;
+    const duration = 2000; // 2s
+    const stepTime = 20;
+    const increment = value / (duration / stepTime);
+
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= value) {
+        setCount(value);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, stepTime);
+
+    return () => clearInterval(timer);
+  }, [visible, value]);
+
+  const displayValue =
+    value >= 1000 ? `${count.toLocaleString()}${suffix}` : `${count}${suffix}`;
+
+  return (
+    <div className="stat-card fade-in">
+      <div className="stat-value">{displayValue}</div>
+      <div className="stat-label">{label}</div>
+      <div className="stat-sub">{sub}</div>
+    </div>
   );
 };
 
