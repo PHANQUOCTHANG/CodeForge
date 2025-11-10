@@ -22,5 +22,7 @@ namespace CodeForge.Api.DTOs.Response
                                                               // thông tin liên quan
                 public string CategoryName { get; set; } = string.Empty;
                 public string Author { get; set; } = string.Empty;
+                public double Progress { get; set; } = 0; // %
+                public bool IsEnrolled { get; set; } = false; // chỉ hiển thị nếu user đăng nhập
         }
 }

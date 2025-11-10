@@ -15,6 +15,6 @@ namespace CodeForge.Core.Interfaces.Repositories
 
         Task<bool> DeleteAsync(Guid problemId);
 
-        Task<bool> ExistsByTitle(string title);
+        Task<bool> ExistsByTitle(string title , Guid problemId);
     }
 }

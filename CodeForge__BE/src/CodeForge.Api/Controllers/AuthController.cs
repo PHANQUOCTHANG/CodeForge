@@ -25,6 +25,8 @@ namespace CodeForge.Api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
+            Console.WriteLine($"Email: {loginDto?.Email}, Password: {loginDto?.Password}");
+
             // KHÔNG CẦN try-catch. Global Middleware sẽ bắt các UnauthorizedException/ConflictException
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var result = await _authService.LoginAsync(loginDto, ip);

@@ -1,7 +1,7 @@
 using CodeForge.Api.DTOs;
 using CodeForge.Api.DTOs.Response;
 
-namespace CodeForge.Application.DTOs.Courses;
+namespace CodeForge.Application.DTOs.Response;
 
 public class CourseDetailDto
 {
@@ -22,7 +22,8 @@ public class CourseDetailDto
     public int LessonCount { get; set; } = 0;     // tổng số học viên
     public string CategoryName { get; set; } = string.Empty;
     public string Author { get; set; } = string.Empty;
-
+    public bool IsEnrolled { get; set; } = false; // chỉ hiển thị nếu user đăng nhập
+    public double Progress { get; set; } = 0; // %
     public List<ModuleDto> Modules { get; set; } = new();
     public List<CourseReviewDto> Reviews { get; set; } = new();
 

@@ -11,7 +11,7 @@ namespace CodeForge.Api.Controllers
 {
     [ApiController]
     [Route("api/[Controller]")]
-    public class UsersController : ControllerBase
+    public class UsersController : BaseApiController
     {
         private readonly IUserService _userService;
 
@@ -21,7 +21,7 @@ namespace CodeForge.Api.Controllers
         }
 
         // --- GET ALL USERS (GET /api/user)
-        [Authorize]
+        // [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetUsersAsync()
         {

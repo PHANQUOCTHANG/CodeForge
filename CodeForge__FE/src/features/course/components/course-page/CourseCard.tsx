@@ -1,20 +1,21 @@
 import React from "react";
-import { Rate, Popover } from "antd";
+import { Rate, Popover, Progress } from "antd";
 import { useNavigate } from "react-router-dom";
 import type { Course } from "@/features/course/types";
+import { Play } from "lucide-react";
 
 interface Props {
   course: Course;
   formatPrice: (price?: number) => string;
   calculateDiscount: (price?: number, discount?: number) => number;
 }
-
 const CourseCard: React.FC<Props> = ({
   course,
   formatPrice,
   calculateDiscount,
 }) => {
   const navigate = useNavigate();
+  console.log(course.price);
 
   const title = <span className="course-page__popup--title">Khóa học</span>;
 
@@ -28,13 +29,23 @@ const CourseCard: React.FC<Props> = ({
       </ul>
       <div dangerouslySetInnerHTML={{ __html: course.description! }} />
       <div className="course-page__popup--action" style={{ marginTop: 10 }}>
-        {course.price === 0 ? (
-          <button className="btn btn-primary">Đăng ký miễn phí</button>
+        {!course.isEnrolled ? (
+          <>
+            {course.price == 0 && (
+              <button className="btn btn-primary">Đăng ký miễn phí</button>
+            )}
+            {course.price != 0 && (
+              <button className="btn-buy-now">Mua ngay</button>
+            )}
+          </>
         ) : (
-          <div>
-            <button className="btn btn-primary">Mua ngay</button>
-            <button className="btn btn-primary">Thêm vào giỏ hàng</button>
-          </div>
+          <button
+            className="btn-continue"
+            onClick={() => navigate(`/courses/${course.slug}`)}
+          >
+            <Play size={20} />
+            Tiếp tục học
+          </button>
         )}
       </div>
     </div>
@@ -67,25 +78,34 @@ const CourseCard: React.FC<Props> = ({
 
           <div className="course-card__footer">
             <div className="course-card__price-section">
-              <div className="course-card__price">
-                {course.price === 0
-                  ? "Miễn phí"
-                  : formatPrice(
-                      calculateDiscount(course.price, course.discount)
-                    )}
-              </div>
-              {course.discount > 0 && (
-                <div>
-                  <span className="course-card__original-price">
-                    {formatPrice(course.price)}
-                  </span>
-                  <span className="course-card__discount">
-                    -{course.discount}%
-                  </span>
-                </div>
+              {course.isEnrolled ? (
+                <div className="course-card__price">Đã đăng ký</div>
+              ) : (
+                <>
+                  <div className="course-card__price">
+                    {course.price <= 0
+                      ? "Miễn phí"
+                      : formatPrice(
+                          calculateDiscount(course.price, course.discount)
+                        )}
+                  </div>
+                  {course.discount > 0 && (
+                    <div>
+                      <span className="course-card__original-price">
+                        {formatPrice(course.price)}
+                      </span>
+                      <span className="course-card__discount">
+                        -{course.discount}%
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
+          {course.isEnrolled && (
+            <Progress percent={course.progress} status="active" />
+          )}
         </div>
       </div>
     </Popover>

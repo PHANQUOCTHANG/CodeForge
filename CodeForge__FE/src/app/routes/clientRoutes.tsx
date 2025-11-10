@@ -1,3 +1,8 @@
+import {
+  PaymentProcessing,
+  PaymentResult,
+  PaymentReturn,
+} from "@/features/payment";
 import { ClientLayout } from "@/layouts";
 import {
   HomePage,
@@ -22,5 +27,6 @@ export const clientRouters = {
     { path: "practice/:slug", element: <PracticeDetailPage /> },
     { path: "community", element: <CommunityPage /> },
     { path: "about", element: <AboutPage /> },
+
   ],
 };

@@ -1,0 +1,106 @@
+/* ========================================
+   Biến (Variables)
+   ======================================== */
+$color-text-primary: #4b5563;
+$color-text-secondary: #9ca3af;
+$color-white: #fff;
+$color-bg-light: #f9fafb;
+$gradient-bg: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+$gradient-btn: linear-gradient(90deg, #1479ff, #0d62d8);
+$gradient-btn-hover: linear-gradient(90deg, #0d62d8, #0046b3);
+$shadow-large: 0 6px 30px rgba(0, 0, 0, 0.1);
+$radius-large: 20px;
+$radius-medium: 10px;
+
+/* ========================================
+   Block: payment-processing
+   (Trang chờ xác minh giao dịch)
+   ======================================== */
+.payment-processing {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: $gradient-bg;
+
+  // Element: Khối box trắng ở giữa
+  &__box {
+    background: $color-white;
+    padding: 3rem;
+    border-radius: $radius-large;
+    box-shadow: $shadow-large;
+    text-align: center;
+    max-width: 420px;
+  }
+
+  // Element: Logo quay tròn
+  &__logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem auto;
+    background: url("/assets/vnpay-logo.png") center/contain no-repeat;
+    animation: spin 3s linear infinite;
+  }
+
+  // Element: Chữ chính (thay cho <p> tag)
+  &__text {
+    margin-top: 1rem;
+    font-size: 1.05rem;
+    color: $color-text-primary;
+  }
+
+  // Element: Chữ ghi chú (thay cho .note)
+  &__note {
+    margin-top: 0.5rem;
+    color: $color-text-secondary;
+    font-size: 0.9rem;
+  }
+}
+
+/* ========================================
+   Block: payment-result
+   (Trang kết quả thanh toán)
+   ======================================== */
+.payment-result {
+  background-color: $color-bg-light;
+  min-height: 100vh;
+  padding: 4rem 2rem;
+
+  // Bạn có thể ghi đè class của Ant Design tại đây nếu muốn
+  // ví dụ:
+  // .ant-result-title {
+  //  font-size: 2rem;
+  // }
+}
+
+/* ========================================
+   Block: payment-btn
+   (Nút bấm thanh toán có thể tái sử dụng)
+   ======================================== */
+.payment-btn {
+  background: $gradient-btn;
+  border: none;
+  font-weight: 600;
+  color: $color-white;
+  border-radius: $radius-medium;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background: $gradient-btn-hover;
+    color: $color-white; // Đảm bảo màu chữ không đổi
+  }
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

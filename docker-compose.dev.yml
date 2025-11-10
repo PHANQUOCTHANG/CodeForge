@@ -25,7 +25,17 @@ services:
       Jwt__Key: ${JWT_KEY}
       Jwt__Issuer: ${JWT_ISSUER}
       Jwt__Audience: ${JWT_AUDIENCE}
+      RapidApiKey : ${RapidApiKey}
       FrontendUrl: ${FrontendUrl}
+      VNPaySettings__TmnCode: ${VNPaySettings__TmnCode}
+      VNPaySettings__HashSecret: ${VNPaySettings__HashSecret}
+      VNPaySettings__BaseUrl: ${VNPaySettings__BaseUrl}
+      VNPaySettings__ReturnUrl: ${VNPaySettings__ReturnUrl}
+      VNPaySettings__IpnUrl: ${VNPaySettings__IpnUrl}
+      VNPaySettings__Command: ${VNPaySettings__Command}
+      VNPaySettings__CurrCode: ${VNPaySettings__CurrCode}
+      VNPaySettings__Version: ${VNPaySettings__Version}
+      VNPaySettings__Locale: ${VNPaySettings__Locale}
     ports:
       - "5000:8080"
     volumes:

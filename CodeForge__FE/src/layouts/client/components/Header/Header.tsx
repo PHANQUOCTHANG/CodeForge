@@ -1,23 +1,21 @@
-import { Link, useLocation } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import "./Header.scss";
 import { AnimatePresence, motion } from "framer-motion";
-
-import { use, useEffect, useState } from "react";
+import { useState } from "react";
 import {
   X,
   Home,
   Menu,
-  User,
   CircleUserRound,
   BookText,
   NotebookPen,
   LogIn,
-  LogOut,
   UserRoundPen,
 } from "lucide-react";
-import { Avatar, Dropdown, Popover, type MenuProps } from "antd";
+import { Avatar, Popover, Tooltip } from "antd";
 import CustomButton from "@/common/components/Ui/Button/CustomButton";
 import { useAppSelector } from "@/app/store/store";
+
 const navItems = [
   { label: "Home", icon: Home, path: "/" },
   { label: "Courses", icon: BookText, path: "/courses" },
@@ -29,6 +27,7 @@ const navItems = [
   { label: "About", icon: UserRoundPen, path: "/about" },
   // { label: "Log out", icon: LogOut, path: "/log-out" },
 ];
+
 const content = (
   <div className="userContent">
     <ul>
@@ -42,11 +41,12 @@ const content = (
 const Header = () => {
   const { user } = useAppSelector((state) => state.auth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const location = useLocation();
+
   return (
     <>
       <motion.div className="header" initial={{ y: -100 }} animate={{ y: 0 }}>
         <div className="header__container">
+          {/* Logo */}
           <Link className="header__logo" to="/">
             <motion.div
               whileHover={{ scale: 1.1, rotateY: 180 }}
@@ -73,9 +73,11 @@ const Header = () => {
               LEARN
             </motion.span>
           </Link>
+
+          {/* Navbar (Desktop) */}
           <nav className="header__nav">
             {navItems.map((item, index) => {
-              if (item.label == "Login" || item.label == "Register") return;
+              if (item.label === "Login" || item.label === "Register") return;
               return (
                 <motion.div
                   key={item.label}
@@ -84,43 +86,50 @@ const Header = () => {
                   transition={{ delay: 0.1 + index * 0.05 }}
                   whileHover={{ y: -2 }}
                 >
-                  <Link
+                  <NavLink
                     to={item.path}
-                    className={`header__link${
-                      location.pathname === item.path
-                        ? " header__link--active"
-                        : ""
-                    }`}
+                    end={false}
+                    className={({ isActive }) =>
+                      `header__link${isActive ? " header__link--active" : ""}`
+                    }
                   >
-                    {item.label}
-
-                    {/* underline animation */}
-                    <motion.div
-                      className="header__underline"
-                      initial={{
-                        width: location.pathname === item.path ? "100%" : "0%",
-                      }}
-                      animate={{
-                        width: location.pathname === item.path ? "100%" : "0%",
-                      }}
-                      whileHover={{ width: "100%" }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </Link>
+                    {({ isActive }) => (
+                      <>
+                        {item.label}
+                        <motion.div
+                          className="header__underline"
+                          initial={{ width: 0, opacity: 0 }}
+                          animate={{
+                            width: isActive ? "100%" : 0,
+                            opacity: isActive ? 1 : 0,
+                          }}
+                          transition={{
+                            duration: 0.3,
+                            ease: "easeInOut",
+                          }}
+                        />
+                      </>
+                    )}
+                  </NavLink>
                 </motion.div>
               );
             })}
           </nav>
+
+          {/* User / Menu */}
           <motion.div className="header__more">
             <div className="header__actions">
               {user ? (
-                <>
-                  <Popover placement="bottomRight" content={content}>
-                    <div className="user__avartar">
+                <Popover placement="bottomRight" content={content}>
+                  <Tooltip placement="left" title={user.email}>
+                    <div
+                      className="user__avartar"
+                      style={{ cursor: "pointer" }}
+                    >
                       <Avatar size="default" icon={<CircleUserRound />} />
                     </div>
-                  </Popover>
-                </>
+                  </Tooltip>
+                </Popover>
               ) : (
                 <>
                   <CustomButton className="btn--login" variant="login">
@@ -132,6 +141,7 @@ const Header = () => {
                 </>
               )}
 
+              {/* Mobile Menu Toggle */}
               <CustomButton
                 variant="menu"
                 className="btn--register"
@@ -148,7 +158,7 @@ const Header = () => {
           </motion.div>
         </div>
       </motion.div>
-      {/* //Mobile */}
+
       {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
@@ -161,7 +171,10 @@ const Header = () => {
           >
             <nav className="header-mobile__nav">
               {navItems.map((item, index) => {
-                if (user && (item.label == "Login" || item.label == "Register"))
+                if (
+                  user &&
+                  (item.label === "Login" || item.label === "Register")
+                )
                   return;
                 const Icon = item.icon;
                 return (
@@ -172,18 +185,19 @@ const Header = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <Link
+                    <NavLink
                       to={item.path}
-                      className={`header-mobile__link${
-                        location.pathname === item.path
-                          ? " header-mobile__link--active"
-                          : ""
-                      }`}
+                      end={false}
+                      className={({ isActive }) =>
+                        `header-mobile__link${
+                          isActive ? " header-mobile__link--active" : ""
+                        }`
+                      }
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <Icon className="header-mobile__icon" />
                       <span className="header-mobile__label">{item.label}</span>
-                    </Link>
+                    </NavLink>
                   </motion.div>
                 );
               })}
@@ -194,4 +208,5 @@ const Header = () => {
     </>
   );
 };
+
 export default Header;

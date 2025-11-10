@@ -1,20 +1,23 @@
-
-using CodeForge.Api.DTOs;
 using CodeForge.Core.Entities;
 
 namespace CodeForge.Core.Interfaces.Repositories
 {
     public interface IModuleRepository
     {
-        Task<List<Module>> GetAllAsync();
         Task<Module?> GetByIdAsync(Guid moduleId);
+        Task<List<Module>> GetByCourseIdAsync(Guid courseId);
+        Task<Module> AddAsync(Module module);
+        Task<Module> UpdateAsync(Module module);
+        Task DeleteAsync(Module module);
 
-        Task<Module?> UpdateAsync(UpdateModuleDto updateModuleDto);
-        Task<Module> CreateAsync(CreateModuleDto createModuleDto);
+        /// <summary>
+        /// Lấy CourseId từ ModuleId (Dùng để kiểm tra quyền).
+        /// </summary>
+        Task<Guid?> GetCourseIdByModuleIdAsync(Guid moduleId);
 
-        Task<bool> DeleteAsync(Guid moduleId);
-
-        Task<bool> ExistsByTitle(string title);
+        /// <summary>
+        /// Lấy ModuleId và CourseId từ LessonId (Dùng để kiểm tra quyền).
+        /// </summary>
+        Task<(Guid? ModuleId, Guid? CourseId)> GetModuleAndCourseIdsByLessonIdAsync(Guid lessonId);
     }
-
 }

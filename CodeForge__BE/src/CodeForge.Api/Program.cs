@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CodeForge.Api.Middleware;
 using System.Text.Json.Serialization;
+using CodeForge.Core.Settings;
 
 namespace CodeForge
 {
@@ -26,7 +27,10 @@ namespace CodeForge
                 });
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            // Cấu hình vnpay Settings từ appsettings.json
 
+            builder.Services.Configure<VNPaySettings>(builder.Configuration.GetSection("VNPaySettings"));
+            builder.Services.AddHttpContextAccessor();
             // Đăng ký DbContext
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));

@@ -1,18 +1,17 @@
-using CodeForge.Api.DTOs;
-using CodeForge.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using CodeForge.Core.Interfaces.Repositories;
-using Microsoft.AspNetCore.Authorization; // Giả định Module DTOs nằm ở đây
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using CodeForge.Core.Services;
+using CodeForge.Application.DTOs.Modules;
+using CodeForge.Api.DTOs.Response;
+using CodeForge.Api.DTOs;
 
 namespace CodeForge.Api.Controllers
 {
-    // ✅ Đổi tên class sang PascalCase (ModuleController) theo chuẩn C#
     [ApiController]
-    [Route("api/[Controller]")]
-    public class ModulesController : ControllerBase
+    [Route("api/[controller]")]
+    [Authorize] // 🛡️ Yêu cầu xác thực cho tất cả
+    public class ModulesController : BaseApiController
     {
         private readonly IModuleService _moduleService;
 
@@ -21,76 +20,84 @@ namespace CodeForge.Api.Controllers
             _moduleService = moduleService;
         }
 
-        // ============================
-        // GET ALL MODULES (GET /api/module)
-        // ============================
-        [HttpGet]
-        public async Task<IActionResult> GetAllModuleAsync()
-        {
-            // Service trả về List<ModuleDto>
-            var result = await _moduleService.GetAllModuleAsync();
-
-            // ✅ Bọc dữ liệu và trả về 200 OK
-            return Ok(ApiResponse<List<ModuleDto>>.Success(result, "Modules retrieved successfully."));
-        }
-
-        // ============================
-        // GET MODULE BY ID (GET /api/module/{moduleId})
-        // ============================
+        /// <summary>
+        /// Lấy chi tiết một chương học (bao gồm các bài học).
+        /// (Yêu cầu đã đăng ký khóa học).
+        /// </summary>
         [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetModuleByIdAsync([FromRoute] Guid moduleId)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            // Service sẽ ném NotFoundException nếu không tìm thấy
-            var result = await _moduleService.GetModuleByIdAsync(moduleId);
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
 
-            // ✅ Bọc dữ liệu và trả về 200 OK
-            return Ok(ApiResponse<ModuleDto>.Success(result, "Module retrieved successfully."));
+            var module = await _moduleService.GetByIdAsync(id, userId.Value);
+            return Ok(ApiResponse<ModuleDto>.Success(module, "Lấy chi tiết chương học thành công."));
         }
 
-        // ============================
-        // UPDATE MODULE (PATCH /api/module/update)
-        // ============================
-        [Authorize]
-        [HttpPatch("update")]
-        public async Task<IActionResult> UpdateModuleAsync([FromBody] UpdateModuleDto updateModuleDto)
+        /// <summary>
+        /// Lấy tất cả chương học (và bài học) của một khóa học.
+        /// (Yêu cầu đã đăng ký khóa học).
+        /// </summary>
+        [HttpGet("course/{courseId:guid}")]
+        public async Task<IActionResult> GetByCourseId(Guid courseId)
         {
-            // Service sẽ ném NotFoundException hoặc ConflictException
-            var result = await _moduleService.UpdateModuleAsync(updateModuleDto);
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
 
-            // ✅ Thao tác cập nhật trả về 200 OK
-            return Ok(ApiResponse<ModuleDto>.Success(result, "Module updated successfully."));
+            var modules = await _moduleService.GetByCourseIdAsync(courseId, userId.Value);
+            return Ok(ApiResponse<List<ModuleDto>>.Success(modules, "Lấy danh sách chương học thành công."));
         }
 
-        // ============================
-        // CREATE MODULE (POST /api/module/create)
-        // ============================
-        [Authorize]
+        /// <summary>
+        /// Tạo một chương học mới.
+        /// (Yêu cầu quyền sở hữu khóa học / Teacher / Admin).
+        /// </summary>
         [HttpPost("create")]
-        public async Task<IActionResult> CreateModuleAsync([FromBody] CreateModuleDto createModuleDto)
+        // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
+        public async Task<IActionResult> Create([FromBody] CreateModuleDto dto)
         {
-            // Service sẽ ném ConflictException nếu tên bị trùng
-            var result = await _moduleService.CreateModuleAsync(createModuleDto);
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
 
-            // ✅ Chuẩn RESTful: Dùng CreatedAtAction để trả về 201 Created
+            var newModule = await _moduleService.CreateAsync(dto, userId.Value);
+
             return CreatedAtAction(
-                nameof(GetModuleByIdAsync),
-                new { moduleId = result.ModuleId }, // Giả định ModuleDto có thuộc tính Id
-                ApiResponse<ModuleDto>.Created(result, "Module created successfully.")
+                nameof(GetById),
+                new { id = newModule.ModuleId },
+                ApiResponse<ModuleDto>.Created(newModule, "Tạo chương học thành công.")
             );
         }
 
-        // ============================
-        // DELETE MODULE (DELETE /api/module/{moduleId})
-        // ============================
-        [Authorize]
-        [HttpDelete("{id:guid}")] // ✅ Đã sửa endpoint cho phù hợp với /api/module/{moduleId}
-        public async Task<IActionResult> DeleteModuleAsync([FromRoute] Guid moduleId)
+        /// <summary>
+        /// Cập nhật thông tin một chương học.
+        /// (Yêu cầu quyền sở hữu khóa học / Teacher / Admin).
+        /// </summary>
+        [HttpPut("update")] // Dùng PUT hoặc PATCH
+        // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
+        public async Task<IActionResult> Update([FromBody] UpdateModuleDto dto)
         {
-            // Service sẽ ném NotFoundException nếu không tìm thấy
-            await _moduleService.DeleteModuleAsync(moduleId);
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
 
-            // ✅ Chuẩn RESTful: Dùng NoContent để trả về 204 No Content
-            return NoContent();
+            var updatedModule = await _moduleService.UpdateAsync(dto, userId.Value);
+            return Ok(ApiResponse<ModuleDto>.Success(updatedModule, "Cập nhật chương học thành công."));
         }
+
+        /// <summary>
+        /// Xóa một chương học.
+        /// (Yêu cầu quyền sở hữu khóa học / Teacher / Admin).
+        /// </summary>
+        [HttpDelete("{id:guid}")]
+        // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
+
+            await _moduleService.DeleteAsync(id, userId.Value);
+            return NoContent(); // 204 No Content là chuẩn cho Delete
+        }
+
+
     }
 }

@@ -1,4 +1,3 @@
-// features/auth/components/register-form/RegisterForm.tsx
 import React from "react";
 import { Form, Input, Button } from "antd";
 import { Controller, useForm } from "react-hook-form";

@@ -2,7 +2,7 @@ export const calculateDiscount = (
   price?: number,
   discount?: number
 ): number => {
-  if (!price || !discount || discount === 0) return 0;
+  if (price === undefined || discount === undefined) return 0;
   return Math.round(price - (price * discount) / 100);
 };
 

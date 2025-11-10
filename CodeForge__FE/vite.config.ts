@@ -19,9 +19,15 @@ export default defineConfig({
       },
     },
   },
-
   server: {
     host: true, // cho phép truy cập từ ngoài container
     port: 3000, // đổi port thành 3000
+    watch: {
+      usePolling: true,
+    },
+    headers: {
+      "Content-Security-Policy":
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.dailymotion.com https://player.twitch.tv https://drive.google.com https://www.facebook.com https://*.cloudflare.com https://*.r2.dev;",
+    },
   },
 });

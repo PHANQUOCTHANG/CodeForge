@@ -1,70 +1,37 @@
-import { lazy, Suspense } from "react";
 import type { RouteObject } from "react-router";
 import AdminLayout from "@/layouts/admin/AdminLayout";
-
-// ✅ Lazy import các page
-const Dashboard = lazy(() => import("@/pages/admin/Dashboard/Dashboard"));
-const Users = lazy(() => import("@/pages/admin/Users/UsersManagement"));
-const Assignments = lazy(() => import("@/pages/admin/ExercisesManagement/ExercisesManagement"));
-const Submissions = lazy(() => import("@/pages/admin/SubmissionsManagement/SubmissionsManagement"));
-const Settings = lazy(() => import("@/pages/admin/CoursesManagement/CoursesManagement"));
+import {
+  CourseManagementPage,
+  Dashboard,
+  SubmissionsManagement,
+  UsersManagement,
+} from "@/pages";
 
 // ✅ Route config
-export const adminRoutes: RouteObject = {
+export const adminRouters: RouteObject = {
   path: "/admin",
-  element: (
-    <Suspense fallback={<div>Loading...</div>}>
-      <AdminLayout />
-    </Suspense>
-  ),
+  element: <AdminLayout />,
   children: [
     {
       index: true,
-      element: (
-        <Suspense fallback={<div>Loading Dashboard...</div>}>
-          <Dashboard />
-        </Suspense>
-      ),
+      element: <Dashboard />,
     },
     {
       path: "dashboard",
-      element: (
-        <Suspense fallback={<div>Loading Dashboard...</div>}>
-          <Dashboard />
-        </Suspense>
-      ),
+      element: <Dashboard />,
     },
     {
       path: "users",
-      element: (
-        <Suspense fallback={<div>Loading Users...</div>}>
-          <Users />
-        </Suspense>
-      ),
+      element: <UsersManagement />,
     },
-    {
-      path: "assignments",
-      element: (
-        <Suspense fallback={<div>Loading Assignments...</div>}>
-          <Assignments />
-        </Suspense>
-      ),
-    },
+
     {
       path: "submissions",
-      element: (
-        <Suspense fallback={<div>Loading Submissions...</div>}>
-          <Submissions />
-        </Suspense>
-      ),
+      element: <SubmissionsManagement />,
     },
     {
       path: "Courses",
-      element: (
-        <Suspense fallback={<div>Loading Courses...</div>}>
-          <Settings />
-        </Suspense>
-      ),
+      element: <CourseManagementPage />,
     },
   ],
 };

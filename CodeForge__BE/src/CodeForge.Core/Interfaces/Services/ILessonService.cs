@@ -1,16 +1,25 @@
-using CodeForge.Api.DTOs;
-using CodeForge.Core.Entities;
+using CodeForge.Application.DTOs.Lessons;
+using CodeForge.Application.DTOs.Response;
 
-namespace CodeForge.Core.Interfaces.Services
+namespace CodeForge.Core.Services
 {
     public interface ILessonService
     {
-        // ✅ Mới: Trả về kiểu dữ liệu chính khi thành công, ném Exception khi lỗi
-        Task<LessonDto> CreateLessonAsync(CreateLessonDto createLessonDto);
-        Task<bool> DeleteLessonAsync(Guid lessonId);
-        Task<List<LessonDto>> GetAllLessonAsync();
-        Task<LessonDto> GetLessonByIdAsync(Guid lessonId);
-        Task<LessonDto> UpdateLessonAsync(UpdateLessonDto updateLessonDto);
-    }
+        /// <summary>
+        /// Lấy chi tiết bài học.
+        /// </summary>
+        Task<LessonDto> GetLessonDetailAsync(Guid lessonId, Guid userId);
 
+        /// <summary>
+        /// Lấy danh sách bài học (tóm tắt) của một module.
+        /// </summary>
+        Task<List<LessonDto>> GetLessonsByModuleAsync(Guid moduleId, Guid userId);
+
+        /// <summary>
+        /// Tạo bài học mới (bao gồm cả nội dung).
+        /// </summary>
+        Task<LessonDto> CreateLessonAsync(CreateLessonDto createDto, Guid userId);
+
+        // ... Các phương thức Update/Delete
+    }
 }

@@ -8,7 +8,7 @@
     padding: 0 1.5rem;
   }
 
-  @media (min-width: 1024px) {  
+  @media (min-width: 1024px) {
     padding: 0 2rem;
   }
 }
@@ -27,40 +27,47 @@
   top: 0;
   z-index: 10;
 
-  &__content { // Element: practice-header__content
+  &__content {
+    // Element: practice-header__content
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 1rem 0;
   }
 
-  &__title { // Element: practice-header__title
+  &__title {
+    // Element: practice-header__title
     font-size: 1.5rem;
     font-weight: 700;
     color: #111827; // $color-gray-900
     margin: 0;
   }
 
-  &__stats { // Element: practice-header__stats
+  &__stats {
+    // Element: practice-header__stats
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-size: 0.875rem;
 
-    &-label { // Element: practice-header__stats-label
+    &-label {
+      // Element: practice-header__stats-label
       color: #4b5563; // $color-gray-600
     }
 
-    &-value { // Element: practice-header__stats-value
+    &-value {
+      // Element: practice-header__stats-value
       color: #4b5563; // $color-gray-600
 
-      &--solved { // Modifier: practice-header__stats-value--solved
+      &--solved {
+        // Modifier: practice-header__stats-value--solved
         font-weight: 600;
         color: #16a34a; // $color-green
       }
     }
 
-    &-separator { // Element: practice-header__stats-separator
+    &-separator {
+      // Element: practice-header__stats-separator
       color: #9ca3af; // $color-gray-400
     }
   }
@@ -78,7 +85,8 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
-  &__card { // Element: practice-stats-cards__card
+  &__card {
+    // Element: practice-stats-cards__card
     background-color: #ffffff; // $color-white
     border-radius: 0.5rem; // $border-radius
     padding: 1.5rem;
@@ -86,26 +94,30 @@
     border: 1px solid #e5e7eb; // $color-gray-200
   }
 
-  &__content { // Element: practice-stats-cards__content
+  &__content {
+    // Element: practice-stats-cards__content
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
 
-  &__label { // Element: practice-stats-cards__label
+  &__label {
+    // Element: practice-stats-cards__label
     font-size: 0.875rem;
     color: #4b5563; // $color-gray-600
     margin: 0 0 0.25rem 0;
   }
 
-  &__value { // Element: practice-stats-cards__value
+  &__value {
+    // Element: practice-stats-cards__value
     font-size: 1.5rem;
     font-weight: 700;
     color: #111827; // $color-gray-900
     margin: 0;
   }
 
-  &__total { // Element: practice-stats-cards__total
+  &__total {
+    // Element: practice-stats-cards__total
     font-size: 1.125rem;
     color: #9ca3af; // $color-gray-400
   }
@@ -120,13 +132,15 @@
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 
-  &__wrapper { // Element: practice-filters__wrapper
+  &__wrapper {
+    // Element: practice-filters__wrapper
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
 
-  &__search { // Element: practice-filters__search
+  &__search {
+    // Element: practice-filters__search
     width: 50%;
     position: relative;
 
@@ -134,7 +148,8 @@
       width: 100%;
     }
 
-    &-icon { // Element: practice-filters__search-icon
+    &-icon {
+      // Element: practice-filters__search-icon
       position: absolute;
       left: 0.75rem;
       top: 50%;
@@ -144,7 +159,8 @@
       color: #9ca3af; // $color-gray-400
     }
 
-    &-input { // Element: practice-filters__search-input
+    &-input {
+      // Element: practice-filters__search-input
       width: 100%;
       height: 2.75rem;
       padding-left: 2.5rem;
@@ -166,7 +182,8 @@
     }
   }
 
-  &__row { // Element: practice-filters__row
+  &__row {
+    // Element: practice-filters__row
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -176,7 +193,8 @@
     }
   }
 
-  &__select { // Element: practice-filters__select
+  &__select {
+    // Element: practice-filters__select
     width: 100%;
     height: 2.75rem;
     padding: 0 1rem;
@@ -211,11 +229,13 @@
   border: 1px solid #e5e7eb; // $color-gray-200
   overflow: hidden;
 
-  &__container { // Element: practice-problem-list__container
+  &__container {
+    // Element: practice-problem-list__container
     overflow-x: auto;
   }
 
-  &__table { // Element: practice-problem-list__table
+  &__table {
+    // Element: practice-problem-list__table
     width: 100%;
     border-collapse: collapse;
 
@@ -224,7 +244,8 @@
       border-bottom: 1px solid #e5e7eb; // $color-gray-200
 
       tr {
-        th { // Element: practice-problem-list__th
+        th {
+          // Element: practice-problem-list__th
           padding: 0.75rem 1.5rem;
           text-align: left;
           font-size: 0.75rem;
@@ -235,13 +256,15 @@
         }
       }
 
-      &__th--status { // Modifier: practice-problem-list__th--status
+      &__th--status {
+        // Modifier: practice-problem-list__th--status
         width: 3rem;
       }
     }
 
     tbody {
-      tr { // Element: practice-problem-list__row
+      tr {
+        // Element: practice-problem-list__row
         border-bottom: 1px solid #e5e7eb; // $color-gray-200
         transition: all 0.2s ease; // $transition
         cursor: pointer;
@@ -250,7 +273,8 @@
           background-color: #f9fafb; // $color-gray-50
         }
 
-        td { // Element: practice-problem-list__td
+        td {
+          // Element: practice-problem-list__td
           padding: 1rem 1.5rem;
         }
       }

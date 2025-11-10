@@ -1,10 +1,15 @@
+
 using AutoMapper;
 using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Request;
 using CodeForge.Api.DTOs.Request.Auth;
 using CodeForge.Api.DTOs.Request.Course;
+using CodeForge.Api.DTOs.Request.Enrollment;
 using CodeForge.Api.DTOs.Request.User;
 using CodeForge.Api.DTOs.Response;
-using CodeForge.Application.DTOs.Courses;
+
+using CodeForge.Application.DTOs.Modules;
+using CodeForge.Application.DTOs.Response;
 using CodeForge.Core.Entities;
 
 
@@ -25,6 +30,7 @@ namespace CodeForge.Core.Mappings
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false));
             CreateMap<UpdateProblemDto, Problem>();
+            CreateMap<Problem, UpdateProblemDto>();
 
             //Course
             CreateMap<Course, CourseDto>()
@@ -51,15 +57,46 @@ namespace CodeForge.Core.Mappings
             CreateMap<UpdateModuleDto, Module>();
 
             //lesson
-            CreateMap<Lesson, LessonDto>();
-
+            CreateMap<Lesson, LessonDto>()
+            .ForMember(
+                dest => dest.VideoContent, // Tên DTO
+                opt => opt.MapFrom(src => src.LessonVideo) // Tên Entity
+            )
+            .ForMember(
+                dest => dest.TextContent, // Tên DTO
+                opt => opt.MapFrom(src => src.LessonText) // Tên Entity
+            )
+            .ForMember(
+                dest => dest.QuizContent, // Tên DTO
+                opt => opt.MapFrom(src => src.LessonQuiz) // Tên Entity
+            );
+            // (CodingProblem không cần vì tên đã giống nhau)
+            // Đảm bảo bạn CŨNG CÓ map cho các DTO con (nếu chưa có)
+            CreateMap<LessonVideo, LessonVideoDto>();
+            CreateMap<LessonText, LessonTextDto>();
+            CreateMap<LessonQuiz, LessonQuizDto>();
+            CreateMap<QuizQuestion, QuizQuestionDto>();
+            //Enrollment
+            CreateMap<Enrollment, EnrollmentDto>();
+            //Progress
+            CreateMap<Progress, ProgressDto>();
+            CreateMap<UpdateProgressRequestDto, Progress>();
+            //Enrollment
+            CreateMap<Enrollment, EnrollmentDto>();
+            CreateMap<EnrollmentRequestDto, Enrollment>();
             //problem
             CreateMap<Problem, ProblemDto>();
-            //TestCase
+
             //Module 
             CreateMap<TestCase, TestCaseDto>();
+
+            // TestCase 
             CreateMap<CreateTestCaseDto, TestCase>();
             CreateMap<UpdateTestCaseDto, TestCase>();
+
+            // Submission 
+            CreateMap<CreateSubmissionDto, Submission>();
+            CreateMap<Submission, SubmissionDto>();
         }
     }
 }
