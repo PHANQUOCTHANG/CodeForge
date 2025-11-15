@@ -2,6 +2,7 @@ import type { RouteObject } from "react-router";
 import AdminLayout from "@/layouts/admin/AdminLayout";
 import {
   CourseManagementPage,
+  CourseEditorPage,
   Dashboard,
   SubmissionsManagement,
   UsersManagement,
@@ -30,8 +31,21 @@ export const adminRouters: RouteObject = {
       element: <SubmissionsManagement />,
     },
     {
-      path: "Courses",
-      element: <CourseManagementPage />,
+      path: "courses",
+      children: [
+        {
+          index: true,
+          element: <CourseManagementPage />,
+        },
+        {
+          path: "new",
+          element: <CourseEditorPage />,
+        },
+        {
+          path: ":id/edit",
+          element: <CourseEditorPage />,
+        },
+      ],
     },
   ],
 };

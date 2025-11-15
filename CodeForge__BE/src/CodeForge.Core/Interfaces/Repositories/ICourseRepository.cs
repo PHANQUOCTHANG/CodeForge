@@ -8,7 +8,7 @@ namespace CodeForge.Core.Interfaces.Repositories
     {
         //
         Task<(IEnumerable<Course> Data, int TotalItems)> GetPagedCoursesAsync(
-            int page, int pageSize, string? search);
+            int page, int pageSize, string? search, string? level);
         Task<List<Course>> GetAllAsync(QueryParameters query);
         Task<Dictionary<Guid, double>> GetUserCourseProgressAsync(Guid userId);
         Task<Course?> GetByIdAsync(Guid courseId);
@@ -16,11 +16,11 @@ namespace CodeForge.Core.Interfaces.Repositories
 
         Task<Course?> UpdateAsync(UpdateCourseDto updateCourseDto);
         Task<Course> CreateAsync(CreateCourseDto createCourseDto);
-        Task<List<Guid>> GetUserEnrolledCourseIdsAsync(Guid userId);
         Task<bool> DeleteAsync(Guid courseId);
 
         Task<bool> ExistsByTitleAsync(string title);
         Task<bool> ExistsBySlugAsync(string slug);
+        Task UpdateCourseOnlyAsync(Course course);
     }
 
 }

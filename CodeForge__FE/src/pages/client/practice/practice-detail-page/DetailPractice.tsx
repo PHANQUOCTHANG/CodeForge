@@ -3,25 +3,28 @@ import Editor from "@monaco-editor/react";
 import "./DetailPractice.scss";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "@/common/helper/Loading";
-import practiceService from "@/features/practice/services/practiceService";
+
 import type { CodingProblem } from "@/features";
-import type {
-  TestResult,
-  TestCase,
-  Language,
-  SubmitResult,
-} from "@/features/practice/types";
+
 import { ArrowLeft } from "lucide-react";
-import { generateFunctionTemplate } from "@/features/practice/utils/generateFunctionTemplate";
+
+import SubmitModal from "@/features/practice/components/submit-modal/SubmitModal";
+import ResultDetailsRaw from "@/features/practice/components/result-detail/ResultDetail";
+import { Spin } from "antd";
+import SubmissionsTab from "@/features/practice/components/submission/SubmissionTab";
+import practiceService from "@/features/practice/services/practiceService";
 import {
   clampValue,
   parseTestCaseInput,
   readNumber,
 } from "@/features/practice/utils";
-import SubmitModal from "@/features/practice/components/submit-modal/SubmitModal";
-import ResultDetailsRaw from "@/features/practice/components/result-detail/ResultDetail";
-import { Spin } from "antd";
-import SubmissionsTab from "@/features/practice/components/submission/SubmissionTab";
+import type {
+  Language,
+  SubmitResult,
+  TestCase,
+  TestResult,
+} from "@/features/practice/types";
+import { generateFunctionTemplate } from "@/features/practice/utils/generateFunctionTemplate";
 
 // Ép kiểu tạm để tránh xung đột kiểu khi linter chưa cập nhật cache type
 const ResultDetails = ResultDetailsRaw as unknown as React.FC<any>;
@@ -153,7 +156,7 @@ const DetailPractice: React.FC = () => {
         }
         await fetchTestCases(problemId);
         setLoading(false);
-      } catch (err) { 
+      } catch (err) {
         console.error("Fetch data failed: ", err);
       }
     };
@@ -612,9 +615,12 @@ const DetailPractice: React.FC = () => {
               </div>
             )}
 
-            {activeTab == "submissions" && <SubmissionsTab problemId={problem.problemId} userId="f452f361-bcde-405a-afe0-3d404e37d319"></SubmissionsTab>}
-
-
+            {activeTab == "submissions" && (
+              <SubmissionsTab
+                problemId={problem.problemId}
+                userId="f452f361-bcde-405a-afe0-3d404e37d319"
+              ></SubmissionsTab>
+            )}
           </div>
         </div>
 

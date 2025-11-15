@@ -9,11 +9,8 @@ import { useCourseDetail } from "@/features";
 import { Button, Result, Spin } from "antd";
 import { AxiosError } from "axios"; // Import AxiosError type
 import NotFound from "@/pages/not-found/NotFound";
-import { useAppSelector } from "@/app/store/store";
 
 const CourseLearningPage = () => {
-  const { isToggleUpdate } = useAppSelector((state) => state.lessonUpdate);
-  console.log(isToggleUpdate);
   const { slug, moduleId, lessonId } = useParams<{
     slug: string;
     moduleId: string;
@@ -69,14 +66,14 @@ const CourseLearningPage = () => {
     isLoading: isLoadingCourse,
     isError: isErrorCourse,
     error: errorCourse, // Get the detailed error object
-  } = useCourseDetail(slug, isToggleUpdate);
+  } = useCourseDetail(slug);
 
   const {
     data: lesson,
     isLoading: isLoadingLesson,
     isError: isErrorLesson,
     error: errorLesson, // Get the detailed error object
-  } = useCourseLesson(lessonId, isToggleUpdate);
+  } = useCourseLesson(lessonId);
 
   // --- Render Logic with Error Handling ---
 

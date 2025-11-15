@@ -5,9 +5,14 @@ const url = "/course";
 
 export const courseApi = {
   // 🧠 Lấy danh sách có phân trang
-  getPaged: async (page: number, pageSize: number, search?: string) => {
+  getPaged: async (
+    page: number,
+    pageSize: number,
+    search?: string,
+    level: string
+  ) => {
     // ⚙️ Xử lý param để không gửi search rỗng
-    const params: Record<string, any> = { page, pageSize };
+    const params: Record<string, any> = { page, pageSize, level };
     if (search && search.trim() !== "" && search !== '""') {
       params.search = search.trim();
     }

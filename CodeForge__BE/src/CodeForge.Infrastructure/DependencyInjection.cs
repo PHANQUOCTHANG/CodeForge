@@ -19,11 +19,12 @@ namespace CodeForge.Infrastructure
             services.AddScoped<IUserService, UserService>();
             //refresh toke
             services.AddScoped<ITokenService, TokenService>();
-
+            //Course Categpry
+            services.AddScoped<ICourseCategoryRepository, CourseCategoryRepository>();
+            services.AddScoped<ICourseCategoryService, CourseCategoryService>();
             //course.
             services.AddScoped<ICourseRepository, CourseRepository>();
             services.AddScoped<ICourseService, CourseService>();
-
             //auth.
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IAuthService, AuthService>();
@@ -60,6 +61,10 @@ namespace CodeForge.Infrastructure
             // Submission .
             services.AddScoped<ISubmissionRepository, SubmissionRepository>();
             services.AddScoped<ISubmissionService, SubmissionService>();
+            //Course review
+            services.AddScoped<ICourseReviewRepository, CourseReviewRepository>();
+            services.AddScoped<ICourseReviewService, CourseReviewService>();
+
             return services;
         }
     }

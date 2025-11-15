@@ -13,16 +13,16 @@ import type { LessonDto } from "@/features/course/types";
 import { useUpdateProgress } from "@/features/progress/hooks/useUpdateProgress";
 import { openNotification } from "@/common/helper/notification";
 import { Result } from "antd";
-import { useDispatch } from "react-redux";
-import { setLessonUpdated } from "@/features/progress";
+import { useQueryClient } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 
 interface Props {
   lesson: LessonDto;
 }
 
 const QuizContent: React.FC<Props> = ({ lesson }) => {
-  const dispatch = useDispatch();
-
+  const { slug } = useParams();
+  const queryClient = useQueryClient();
   const { updateProgress, isCompleted } = useUpdateProgress();
   const [selectedAnswers, setSelectedAnswers] = useState<
     Record<string, number>
@@ -129,7 +129,9 @@ const QuizContent: React.FC<Props> = ({ lesson }) => {
 
       if (finalScore >= 70 && !isCompleted) {
         await updateProgress(lesson.lessonId, "completed");
-        dispatch(setLessonUpdated());
+        // 🔥 Đánh dấu cache 'lessons' là cũ → React Query sẽ tự refetch
+        queryClient.invalidateQueries(["course", slug]);
+        queryClient.invalidateQueries(["lessons", lesson.lessonId]);
       }
 
       setSubmitted(true);

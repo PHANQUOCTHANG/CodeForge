@@ -20,7 +20,7 @@ namespace CodeForge.Infrastructure.Repositories
             _mapper = mapper;
         }
         public async Task<(IEnumerable<Course> Data, int TotalItems)> GetPagedCoursesAsync(
-            int page, int pageSize, string? search)
+            int page, int pageSize, string? search, string? level)
         {
             var query = _context.Courses
                 .Include(c => c.Category)
@@ -29,7 +29,8 @@ namespace CodeForge.Infrastructure.Repositories
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.Title.Contains(search));
-
+            if (!string.IsNullOrWhiteSpace(level) && level != "all")
+                query = query.Where(c => c.Level.Contains(level));
             var totalItems = await query.CountAsync();
 
             var data = await query
@@ -72,9 +73,6 @@ namespace CodeForge.Infrastructure.Repositories
             var course = await _context.Courses
                 .Include(c => c.Category)
                 .Include(c => c.User)
-                .Include(c => c.Reviews)
-                    .ThenInclude(r => r.User)
-
                 // 1. Sắp xếp Modules và Lessons ngay tại đây (trong SQL)
                 //    thay vì sắp xếp trong RAM.
                 .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
@@ -90,13 +88,6 @@ namespace CodeForge.Infrastructure.Repositories
             // 3. Toàn bộ code sắp xếp bằng tay ở dưới có thể xóa đi,
             //    vì database đã làm việc đó cho bạn.
             return course;
-        }
-        public async Task<List<Guid>> GetUserEnrolledCourseIdsAsync(Guid userId)
-        {
-            return await _context.Enrollments
-                .Where(e => e.UserId == userId)
-                .Select(e => e.CourseId)
-                .ToListAsync();
         }
 
         public async Task<Course> CreateAsync(CreateCourseDto createCourseDto)
@@ -121,10 +112,16 @@ namespace CodeForge.Infrastructure.Repositories
             int limit = query.Limit, page = query.Page;
             return await _context.Courses.Include(u => u.User).Skip(limit * (page - 1)).Take(limit).ToListAsync();
         }
-
+        // Hàm cập nhật đơn giản
+        public async Task UpdateCourseOnlyAsync(Course course)
+        {
+            _context.Courses.Update(course);
+            await _context.SaveChangesAsync();
+        }
         public async Task<Course?> GetByIdAsync(Guid courseId)
         {
-            return await _context.Courses.FindAsync(courseId);
+            return await _context.Courses
+            .FirstOrDefaultAsync(c => c.CourseId == courseId);
         }
 
         public async Task<Course?> UpdateAsync(UpdateCourseDto updateCourseDto)

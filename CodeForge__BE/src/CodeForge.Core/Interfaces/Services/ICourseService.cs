@@ -10,7 +10,7 @@ namespace CodeForge__BE.src.CodeForge.Core.Interfaces.Services
     public interface ICourseService
     {
         Task<PaginationResult<object>> GetPagedCoursesAsync(
-            Guid? userId, int page, int pageSize, string? search);
+            Guid? userId, int page, int pageSize, string? search, string? level);
         Task<List<CourseDto>> GetAllCourseAsync(QueryParameters query);
         Task<CourseDto> GetCourseByIdAsync(Guid courseId);
         Task<CourseDetailDto?> GetCourseDetailBySlugAsync(string slug, Guid? userId);

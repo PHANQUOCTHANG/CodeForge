@@ -171,9 +171,7 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
             <div className="course-card__price">Đã đăng ký</div>
           ) : (
             <div className="course-card__price">
-              {course.price <= 0 && (
-                <span className="btn btn-primary">Miễn phí</span>
-              )}
+              {course.price <= 0 && <span>Miễn phí</span>}
               {course.price > 0 && (
                 <>
                   {course.discount <= 0 ? (
@@ -200,9 +198,17 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
           {!course.isEnrolled ? (
             <div className="course-card__actions">
               {course.price === 0 ? (
-                <button className="btn btn-primary">Đăng ký miễn phí</button>
+                <PaymentButton
+                  courseId={course.courseId}
+                  title="Đăng ký miễn phí"
+                  method="free"
+                />
               ) : (
-                <PaymentButton courseId={course.courseId} />
+                <PaymentButton
+                  courseId={course.courseId}
+                  title="Mua"
+                  method="payment"
+                />
               )}
             </div>
           ) : (

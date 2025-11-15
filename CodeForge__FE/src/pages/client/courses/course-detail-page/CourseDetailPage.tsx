@@ -23,7 +23,8 @@ const CourseDetailPage: React.FC = () => {
     isError,
     error,
   } = useCourseDetail(slug);
-  const reviews: Review[] = course?.reviews || [];
+  console.log(course);
+
   const [activeTab, setActiveTab] = useState<
     "overview" | "curriculum" | "reviews"
   >("overview");
@@ -38,9 +39,8 @@ const CourseDetailPage: React.FC = () => {
       });
     }
   };
-  console.log(course);
   const finalPrice = calculateDiscount(course?.price, course?.discount);
-  console.log(course?.price, course?.discount, finalPrice);
+
   return (
     <>
       {/* Course Grid */}
@@ -116,7 +116,7 @@ const CourseDetailPage: React.FC = () => {
                       />
                       <CourseReviews
                         reviewsRef={reviewsRef}
-                        reviews={reviews}
+                        course={course}
                         totalRatings={course.totalRatings}
                         rating={course.rating}
                       />

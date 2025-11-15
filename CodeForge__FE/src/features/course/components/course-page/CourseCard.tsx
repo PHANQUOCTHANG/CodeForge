@@ -15,7 +15,6 @@ const CourseCard: React.FC<Props> = ({
   calculateDiscount,
 }) => {
   const navigate = useNavigate();
-  console.log(course.price);
 
   const title = <span className="course-page__popup--title">Khóa học</span>;
 
@@ -32,10 +31,20 @@ const CourseCard: React.FC<Props> = ({
         {!course.isEnrolled ? (
           <>
             {course.price == 0 && (
-              <button className="btn btn-primary">Đăng ký miễn phí</button>
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate(`/courses/${course.slug}`)}
+              >
+                Đăng ký miễn phí
+              </button>
             )}
             {course.price != 0 && (
-              <button className="btn-buy-now">Mua ngay</button>
+              <button
+                onClick={() => navigate(`/courses/${course.slug}`)}
+                className="btn-buy-now"
+              >
+                Mua ngay
+              </button>
             )}
           </>
         ) : (

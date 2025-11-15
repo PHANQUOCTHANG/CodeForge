@@ -16,28 +16,30 @@ namespace CodeForge__BE.src.CodeForge.Core.Services
     public class CourseService : ICourseService
     {
         private readonly ICourseRepository _courseRepository;
+        private readonly IEnrollmentRepository _enrollmentRepository;
         private readonly IProgressService _progressService;
         private readonly IMapper _mapper;
 
-        public CourseService(ICourseRepository courseRepository, IProgressService progressService, IMapper mapper)
+        public CourseService(ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository, IProgressService progressService, IMapper mapper)
         {
             _courseRepository = courseRepository;
+            _enrollmentRepository = enrollmentRepository;
             _progressService = progressService;
             _mapper = mapper;
         }
 
         // --- GET Paged --- (Không cần sửa)
         public async Task<PaginationResult<object>> GetPagedCoursesAsync(
-            Guid? userId, int page, int pageSize, string? search)
+            Guid? userId, int page, int pageSize, string? search, string? level)
         {
-            var (courses, totalItems) = await _courseRepository.GetPagedCoursesAsync(page, pageSize, search);
+            var (courses, totalItems) = await _courseRepository.GetPagedCoursesAsync(page, pageSize, search, level);
 
             var result = _mapper.Map<IEnumerable<CourseDto>>(courses);
 
             if (userId.HasValue)
             {
                 // Phải chạy tuần tự, KHÔNG song song, vì dùng chung DbContext
-                var enrolledIds = await _courseRepository.GetUserEnrolledCourseIdsAsync(userId.Value);
+                var enrolledIds = await _enrollmentRepository.GetUserEnrolledCourseIdsAsync(userId.Value);
                 var progressDict = await _courseRepository.GetUserCourseProgressAsync(userId.Value);
 
                 foreach (var dto in result)
@@ -64,7 +66,7 @@ namespace CodeForge__BE.src.CodeForge.Core.Services
             if (userId.HasValue)
             {
                 // Phải chạy tuần tự, KHÔNG song song, vì dùng chung DbContext
-                var enrolledIds = await _courseRepository.GetUserEnrolledCourseIdsAsync(userId.Value);
+                var enrolledIds = await _enrollmentRepository.GetUserEnrolledCourseIdsAsync(userId.Value);
                 result.IsEnrolled = enrolledIds.Contains(result.CourseId);
                 if (result.IsEnrolled)
                 {

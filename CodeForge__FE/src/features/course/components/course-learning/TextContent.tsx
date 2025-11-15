@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { LessonDto } from "@/features/course/types";
 import { useUpdateProgress } from "@/features/progress/hooks/useUpdateProgress";
-import { Spin } from "antd";
-import { useDispatch } from "react-redux";
-import { setLessonUpdated } from "@/features/progress/slices/lessonUpdateSlice";
+import { useQueryClient } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 
 interface TextContentProps {
   lesson: LessonDto;
@@ -13,8 +12,9 @@ interface TextContentProps {
 const COMPLETION_TIME = 10;
 
 const TextContent: React.FC<TextContentProps> = ({ lesson }) => {
-  const dispatch = useDispatch();
-  const { updateProgress, isUpdating } = useUpdateProgress();
+  const queryClient = useQueryClient();
+  const { slug } = useParams();
+  const { updateProgress } = useUpdateProgress();
   // 💡 Dùng state để theo dõi thời gian và buộc re-render
   const [timeElapsed, setTimeElapsed] = useState(0);
   // 💡 Dùng ref để lưu trữ ID của interval, không gây re-render
@@ -73,7 +73,8 @@ const TextContent: React.FC<TextContentProps> = ({ lesson }) => {
     updateProgress(lesson.lessonId, "completed")
       .then(() => {
         // Sau khi update thành công (hoặc ít nhất là đã gọi API), thông báo cho Redux
-        dispatch(setLessonUpdated());
+        queryClient.invalidateQueries(["course", slug]);
+        queryClient.invalidateQueries(["lessons", lesson.lessonId]);
       })
       .catch((err) => {
         console.error("❌ Failed to update progress:", err);
@@ -85,7 +86,8 @@ const TextContent: React.FC<TextContentProps> = ({ lesson }) => {
     alreadyCompleted,
     lesson.lessonId,
     updateProgress,
-    dispatch,
+    queryClient,
+    slug,
   ]);
 
   // 🧱 Render nội dung
@@ -100,11 +102,11 @@ const TextContent: React.FC<TextContentProps> = ({ lesson }) => {
       <div className="lesson-content__progress-info mb-2">
         {alreadyCompleted ? (
           <p className="text-green-500 font-semibold">
-            ✅ **Đã hoàn thành bài học!**
+            ✅ Đã hoàn thành bài học!
           </p>
         ) : (
           <p>
-            ⏳ Đang đọc... (**{timeElapsed}**/{COMPLETION_TIME}s)
+            ⏳ Đang đọc... ({timeElapsed}/{COMPLETION_TIME}s)
           </p>
         )}
       </div>
@@ -114,12 +116,6 @@ const TextContent: React.FC<TextContentProps> = ({ lesson }) => {
         // Thận trọng với dangerouslySetInnerHTML, đảm bảo nguồn nội dung là an toàn
         dangerouslySetInnerHTML={{ __html: lesson.textContent.content }}
       />
-
-      {isUpdating && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-          <Spin tip="Đang lưu tiến độ..." />
-        </div>
-      )}
     </div>
   );
 };

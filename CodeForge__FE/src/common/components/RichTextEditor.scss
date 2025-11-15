@@ -1,0 +1,236 @@
+.rich-text-editor-container {
+  .editor-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #262626;
+    font-size: 14px;
+
+    .required-star {
+      color: #ff4d4f;
+      margin-left: 4px;
+    }
+  }
+
+  .editor-wrapper {
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    overflow: hidden;
+    background: white;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: #40a9ff;
+    }
+
+    &:focus-within {
+      border-color: #1890ff;
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+    }
+
+    // CKEditor styles
+    :global(.ck-editor__main) {
+      min-height: 300px;
+
+      :global(.ck-content) {
+        padding: 12px;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #262626;
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+          margin: 12px 0 8px;
+          font-weight: 600;
+          line-height: 1.4;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+
+        h2 {
+          font-size: 20px;
+        }
+
+        h3 {
+          font-size: 18px;
+        }
+
+        p {
+          margin: 8px 0;
+        }
+
+        ul,
+        ol {
+          margin: 12px 0;
+          padding-left: 24px;
+
+          li {
+            margin: 4px 0;
+          }
+        }
+
+        blockquote {
+          border-left: 4px solid #1890ff;
+          margin: 12px 0;
+          padding: 12px;
+          background: #f0f5ff;
+          font-style: italic;
+          color: #666;
+        }
+
+        code {
+          background: #f5f5f5;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-family: "Monaco", "Courier New", monospace;
+          font-size: 13px;
+          color: #d63384;
+        }
+
+        pre {
+          background: #f5f5f5;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          padding: 12px;
+          overflow-x: auto;
+          margin: 12px 0;
+
+          code {
+            background: none;
+            padding: 0;
+            color: #333;
+          }
+        }
+
+        a {
+          color: #1890ff;
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+
+        img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 4px;
+          margin: 12px 0;
+        }
+
+        table {
+          border-collapse: collapse;
+          width: 100%;
+          margin: 12px 0;
+
+          th,
+          td {
+            border: 1px solid #d9d9d9;
+            padding: 8px 12px;
+            text-align: left;
+          }
+
+          th {
+            background: #fafafa;
+            font-weight: 600;
+          }
+        }
+      }
+    }
+
+    :global(.ck-toolbar) {
+      background: #fafafa;
+      border-bottom: 1px solid #d9d9d9;
+      padding: 8px;
+
+      :global(.ck-toolbar__separator) {
+        background: #d9d9d9;
+        height: 20px;
+        margin: 0 4px;
+      }
+
+      :global(.ck-button) {
+        color: #262626;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+
+        &:hover:not(.ck-disabled) {
+          background: #e6f7ff;
+          border-color: #1890ff;
+          color: #1890ff;
+        }
+
+        &:focus:not(.ck-disabled) {
+          background: #e6f7ff;
+          box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+        }
+      }
+
+      :global(.ck-button.ck-on) {
+        background: #e6f7ff;
+        color: #1890ff;
+        border-color: #1890ff;
+      }
+
+      :global(.ck-dropdown__button) {
+        border-radius: 4px;
+      }
+    }
+  }
+
+  .upload-progress {
+    padding: 20px;
+    text-align: center;
+    background: #f0f5ff;
+    border: 1px dashed #1890ff;
+    border-radius: 6px;
+    margin-bottom: 12px;
+
+    :global(.ant-spin-nested-loading) {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    :global(.ant-progress) {
+      margin-top: 12px;
+      width: 100%;
+    }
+  }
+
+  .editor-info {
+    margin-top: 8px;
+    color: #8c8c8c;
+
+    small {
+      font-size: 12px;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .rich-text-editor-container {
+    .editor-wrapper {
+      :global(.ck-editor__main) {
+        min-height: 250px;
+      }
+
+      :global(.ck-toolbar) {
+        padding: 6px;
+
+        :global(.ck-button) {
+          padding: 6px 8px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import api from "@/api/axios";
 
 export const paymentApi = {
-  createVnpayPayment: async (courseId: string) => {
+  getEnollment: async (courseId: string) => {
     const res = await api.post("/enrollments/enroll", { courseId });
     return res.data; // { paymentUrl: string, paymentId: string }
   },

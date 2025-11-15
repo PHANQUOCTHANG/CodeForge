@@ -1,21 +1,12 @@
 import React, { Suspense } from "react";
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store/store";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RouterProvider } from "react-router-dom";
 import { Spin } from "antd";
 import { router } from "./routes/router";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
-    },
-  },
-});
+import { queryClient } from "@/shared/lib/react-query";
 
 // ✅ Gom các provider
 export const AppProviders: React.FC<{ children: React.ReactNode }> = ({

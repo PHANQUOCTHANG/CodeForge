@@ -30,19 +30,11 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
         // ✅ Public endpoint - No Authorize attribute needed
         public async Task<IActionResult> GetCoursePagedAsync([FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
-            [FromQuery] string? search = null)
+            [FromQuery] string? search = null, [FromQuery] string? level = null)
         {
-            Guid? userId = null;
-
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (idClaim != null && Guid.TryParse(idClaim.Value, out var parsed))
-                    userId = parsed;
-            }
-            Console.WriteLine($"User ID: {userId}");
+            var userId = GetUserId();
             // Service returns PaginationResult<object> (assuming this handles success structure internally)
-            var result = await _courseService.GetPagedCoursesAsync(userId, page, pageSize, search);
+            var result = await _courseService.GetPagedCoursesAsync(userId, page, pageSize, search, level);
 
             // If PaginationResult is your success wrapper, just return Ok(result).
             // If not, you should wrap it:
@@ -54,15 +46,7 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
         // ✅ Public endpoint - No Authorize attribute needed
         public async Task<IActionResult> GetBySlug(string slug)
         {
-            Guid? userId = null;
-
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (idClaim != null && Guid.TryParse(idClaim.Value, out var parsed))
-                    userId = parsed;
-            }
-            Console.WriteLine($"User ID: {userId}");
+            var userId = GetUserId();
             var result = await _courseService.GetCourseDetailBySlugAsync(slug, userId);
 
             // ✅ IMPROVEMENT: Check for null and return 404 (NotFoundException should be thrown in service, 

@@ -1,3 +1,5 @@
+import type { TestCase } from "@/features/practice/types";
+
 export interface Course {
   courseID: string;
   title: string;
@@ -113,12 +115,6 @@ export interface LessonQuizDto {
 /**
  * @description DTO cho một Test Case của bài code
  */
-export interface TestCaseDto {
-  testCaseId: string;
-  input: string;
-  expectedOutput: string;
-  isHidden: boolean;
-}
 
 /**
  * @description DTO chi tiết cho nội dung bài học CODING
@@ -135,7 +131,8 @@ export interface ProblemDto {
   initialCode?: string; // Code mẫu
   solution?: string; // Code giải pháp
   functionName?: string; // Tên hàm cần implement
-  testCases: TestCaseDto[];
+  testCases: TestCase[];
+  slug: string;
 }
 
 // --- 2. DTO Chi tiết của BÀI HỌC (Lesson) ---
@@ -155,7 +152,7 @@ export interface LessonDto {
   videoContent: LessonVideoDto | null;
   textContent: LessonTextDto | null;
   quizContent: LessonQuizDto | null;
-  codingProblem: ProblemDto | null;
+  codingProblem: CodingProblem | null;
 }
 
 // --- 3. DTO Khung sườn (Outline) cho Sidebar ---
@@ -371,3 +368,4 @@ export interface CourseDetail {
   isEnrolled: boolean;
   progress: number;
 }
+export type CourseLevel = "beginner" | "intermediate" | "advanced";

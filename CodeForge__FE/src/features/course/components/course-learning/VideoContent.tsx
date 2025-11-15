@@ -8,9 +8,9 @@ import React, {
 import { useUpdateProgress } from "@/features/progress/hooks/useUpdateProgress";
 import type { LessonDto } from "@/features/course/types";
 import { Result } from "antd";
-import { useDispatch } from "react-redux";
-import { setLessonUpdated } from "@/features/progress";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 interface Props {
   lesson: LessonDto;
 }
@@ -59,7 +59,8 @@ const extractTwitchId = (url: string): string | null => {
 
 // --- Component ---
 const VideoContent: React.FC<Props> = ({ lesson }) => {
-  const dispatch = useDispatch();
+  const { slug } = useParams();
+  const queryClient = useQueryClient();
   const { updateProgress, isCompleted, isUpdating } = useUpdateProgress();
 
   const [localCompleted, setLocalCompleted] = useState(false);
@@ -120,13 +121,11 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
     setLocalCompleted(true);
     setWatchedPercentage(100);
 
-    console.log(`✅ [COMPLETE] Lesson ID: ${lessonId}`);
     setDebugInfo(`✅ Đã đánh dấu hoàn thành!`);
 
     updateProgress(lessonId, "completed")
       .then(() => {
-        console.log("✅ API Updated successfully");
-        dispatch(setLessonUpdated());
+        queryClient.invalidateQueries(["course", slug]);
       })
       .catch((err) => {
         console.error("❌ API Failed:", err);
@@ -135,11 +134,12 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
         setDebugInfo(`❌ Lỗi: ${err.message}`);
       });
   }, [
+    lessonId,
     hasMarkedComplete,
     isLessonCompleted,
-    lessonId,
     updateProgress,
-    dispatch,
+    queryClient,
+    slug,
   ]);
 
   const trackProgress = useCallback(
@@ -153,12 +153,8 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
         duration
       )}s (${pct.toFixed(1)}%)`;
       setDebugInfo(info);
-      console.log(`[TRACK] ${info}`);
 
       if (pct >= PROGRESS_THRESHOLD && !hasMarkedComplete) {
-        console.log(
-          `🎯 [THRESHOLD] ${pct.toFixed(2)}% >= ${PROGRESS_THRESHOLD}%`
-        );
         markLessonAsComplete();
       }
     },
@@ -184,7 +180,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
           setEmbedUrl(
             `https://www.youtube.com/embed/${id}?enablejsapi=1&autoplay=0&modestbranding=1&rel=0&origin=${window.location.origin}`
           );
-          console.log(`🎬 [YOUTUBE] Video ID: ${id}`);
           return;
         }
       }
@@ -196,7 +191,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
           setEmbedUrl(
             `https://player.vimeo.com/video/${id}?api=1&player_id=vimeo-player&dnt=1`
           );
-          console.log(`🎬 [VIMEO] Video ID: ${id}`);
           return;
         }
       }
@@ -224,7 +218,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
       if (videoUrl.match(/\.(mp4|webm|ogg|mov|avi|m4v|mkv)(\?.*)?$/i)) {
         setVideoType("native");
         setEmbedUrl(videoUrl);
-        console.log(`🎬 [NATIVE] Video URL: ${videoUrl}`);
         return;
       }
 
@@ -259,7 +252,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
     const handleLoadedMetadata = () => {
       if (video.duration) {
         videoDuration.current = video.duration;
-        console.log(`📹 [NATIVE] Duration: ${video.duration}s`);
       }
     };
 
@@ -270,7 +262,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
     };
 
     const handleEnded = () => {
-      console.log("🏁 [NATIVE] Video ended");
       if (video.duration) {
         trackProgress(video.duration, video.duration);
       }
@@ -278,7 +269,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
     };
 
     const startTracking = () => {
-      console.log("▶️ [NATIVE] Play - Starting tracking");
       if (trackingInterval.current) clearInterval(trackingInterval.current);
       trackingInterval.current = setInterval(() => {
         if (!video.paused && !video.ended && video.duration) {
@@ -288,7 +278,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
     };
 
     const stopTracking = () => {
-      console.log("⏸️ [NATIVE] Pause - Stopping tracking");
       if (trackingInterval.current) {
         clearInterval(trackingInterval.current);
         trackingInterval.current = null;
@@ -352,8 +341,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
 
       if (!data || !data.event) return;
 
-      console.log(`📨 [MESSAGE] Event: ${data.event}`, data);
-
       // YouTube
       if (videoType === "youtube") {
         // ✅ Thêm log cho mọi state change
@@ -366,11 +353,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
             "3": "buffering",
             "5": "cued",
           };
-          console.log(
-            `▶️ [YOUTUBE STATE] ${states[data.info] || data.info} (${
-              data.info
-            })`
-          );
         }
 
         const isInfoDelivery = data.event === "infoDelivery" && data.info;
@@ -387,7 +369,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
           if (dur && dur > 0) {
             videoDuration.current = dur;
             if (!hasStartedTracking) {
-              console.log(`📹 [YOUTUBE] Duration: ${dur}s`);
               hasStartedTracking = true;
             }
           }
@@ -397,7 +378,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
         }
 
         if (isPlaying && !trackingInterval.current) {
-          console.log("▶️ [YOUTUBE] Playing - Starting interval");
           trackingInterval.current = setInterval(() => {
             iframeRef.current?.contentWindow?.postMessage(
               '{"event":"command","func":"getCurrentTime","args":""}',
@@ -413,13 +393,11 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
         }
 
         if ((isPausedOrBuffering || isEnded) && trackingInterval.current) {
-          console.log("⏸️ [YOUTUBE] Paused/Ended - Stopping interval");
           clearInterval(trackingInterval.current);
           trackingInterval.current = null;
         }
 
         if (isEnded && videoDuration.current) {
-          console.log("🏁 [YOUTUBE] Video ended");
           trackProgress(videoDuration.current, videoDuration.current);
           markLessonAsComplete();
         }
@@ -440,13 +418,11 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
         }
 
         if (data.event === "ended" && videoDuration.current) {
-          console.log("🏁 [VIMEO] Video ended");
           trackProgress(videoDuration.current, videoDuration.current);
           markLessonAsComplete();
         }
 
         if (data.event === "ready" && iframeRef.current) {
-          console.log("✅ [VIMEO] Player ready");
           const events = ["play", "pause", "ended", "timeupdate"];
           events.forEach((evt) => {
             iframeRef.current?.contentWindow?.postMessage(
@@ -473,7 +449,6 @@ const VideoContent: React.FC<Props> = ({ lesson }) => {
 
     // ✅ FIX: Khởi tạo YouTube API đúng cách
     if (videoType === "youtube" && iframeRef.current) {
-      console.log("🔌 [YOUTUBE] Initializing API...");
       // Gửi nhiều lần để đảm bảo YouTube nhận được
       const initYT = () => {
         iframeRef.current?.contentWindow?.postMessage(

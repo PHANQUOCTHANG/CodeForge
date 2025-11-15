@@ -45,7 +45,6 @@ const PaymentProcessing: React.FC = () => {
         // Giả sử API trả về { status: "Succeeded" | "Failed" | "Pending" }
         const res = await paymentApi.checkPaymentStatus(paymentId);
         const status = res.data.status; // (Hoặc res.data.status, tùy API của bạn)
-        console.log(res);
         if (status && status !== "Pending") {
           // Đã có kết quả (Succeeded hoặc Failed)
           if (intervalIdRef.current) clearInterval(intervalIdRef.current);
