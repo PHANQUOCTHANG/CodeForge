@@ -15,6 +15,7 @@ import {
   CommentOutlined,
   ShareAltOutlined,
 } from "@ant-design/icons";
+import { motion } from "framer-motion";
 import "./CommunityPage.scss";
 
 const { TextArea } = Input;
@@ -29,8 +30,7 @@ const posts = [
     time: "2 hours ago",
     content:
       "Just completed my first React project! 🚀 A todo-app with full CRUD operations. The useState and useEffect hooks finally clicked for me.",
-    image:
-      "/src/assets/img/CommunityPage1.jpg",
+    image: "/src/assets/img/CommunityPage1.jpg",
     tags: ["React", "Beginner", "Project"],
     likes: 24,
     comments: 8,
@@ -57,8 +57,7 @@ const posts = [
     time: "6 hours ago",
     content:
       "Spent the weekend learning CSS Grid and I’m blown away! 🎨 Finally understand how to create complex layouts without floats.",
-    image:
-      "/src/assets/img/CommunityPage2.jpg",
+    image: "/src/assets/img/CommunityPage2.jpg",
     tags: ["CSS", "Grid", "Layout"],
     likes: 28,
     comments: 10,
@@ -68,7 +67,13 @@ const posts = [
 
 const CommunityPage: React.FC = () => {
   return (
-    <div className="community-container" style={{ display: "flex", gap: "24px", padding: "40px" }}>
+    <motion.div
+      className="community-container"
+      style={{ display: "flex", gap: "24px", padding: "40px" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* LEFT CONTENT */}
       <div className="main-content" style={{ flex: 3 }}>
         <Card>
@@ -80,129 +85,200 @@ const CommunityPage: React.FC = () => {
           <Divider />
 
           {/* Create Post */}
-          <Card bordered={true} style={{ marginBottom: "20px" }}>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <Avatar size={48} src="/src/assets/img/avatar1.jpg" />
-              <div style={{ flex: 1 }}>
-                <TextArea
-                  rows={3}
-                  placeholder="Share your coding journey, ask questions, or celebrate wins! ✨"
-                  style={{ marginBottom: "10px" }}
-                />
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <Tag color="blue">#javascript</Tag>
-                    <Tag color="green">#help</Tag>
-                    <Tag color="orange">#project</Tag>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card bordered={true} style={{ marginBottom: "20px" }}>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <Avatar size={48} src="/src/assets/img/avatar1.jpg" />
+                <div style={{ flex: 1 }}>
+                  <TextArea
+                    rows={3}
+                    placeholder="Share your coding journey, ask questions, or celebrate wins! ✨"
+                    style={{ marginBottom: "10px" }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <Tag color="blue">#javascript</Tag>
+                      <Tag color="green">#help</Tag>
+                      <Tag color="orange">#project</Tag>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      style={{
+                        backgroundColor: "#1890ff",
+                        border: "none",
+                        color: "#fff",
+                        padding: "4px 12px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <PlusOutlined /> Post
+                    </motion.button>
                   </div>
-                  <Button type="primary" icon={<PlusOutlined />}>
-                    Post
-                  </Button>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </motion.div>
 
           {/* Posts List */}
           <List
             dataSource={posts}
-            renderItem={(post) => (
-              <Card key={post.id} style={{ marginBottom: "20px" }}>
-                <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-                  <Avatar size={48} src={post.avatar} />
-                  <div>
-                    <strong>{post.author}</strong>{" "}
-                    <Tag color="geekblue">{post.role}</Tag>
-                    <div style={{ color: "#888", fontSize: "12px" }}>{post.time}</div>
-                  </div>
-                </div>
-                <p>{post.content}</p>
-                {post.image && (
-                  <img
-                    src={post.image}
-                    alt="post"
-                    className="post-image"
+            renderItem={(post, index) => (
+              <motion.div
+                key={post.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Card style={{ marginBottom: "20px" }}>
+                  <div
                     style={{
-                      width: "50%",
-                      borderRadius: "10px",
+                      display: "flex",
+                      gap: "10px",
                       marginBottom: "10px",
                     }}
-                  />
-                )}
-                <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
-                  {post.tags.map((tag) => (
-                    <Tag key={tag}>{tag}</Tag>
-                  ))}
-                </div>
-                <div className="interaction-bar" style={{ display: "flex", gap: "16px", color: "#888" }}>
-                  <span>
-                    <LikeOutlined /> {post.likes}
-                  </span>
-                  <span>
-                    <CommentOutlined /> {post.comments}
-                  </span>
-                  <span>
-                    <ShareAltOutlined /> {post.shares}
-                  </span>
-                </div>
-              </Card>
+                  >
+                    <Avatar size={48} src={post.avatar} />
+                    <div>
+                      <strong>{post.author}</strong>{" "}
+                      <Tag color="geekblue">{post.role}</Tag>
+                      <div style={{ color: "#888", fontSize: "12px" }}>
+                        {post.time}
+                      </div>
+                    </div>
+                  </div>
+                  <p>{post.content}</p>
+                  {post.image && (
+                    <motion.img
+                      src={post.image}
+                      alt="post"
+                      className="post-image"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5 }}
+                      style={{
+                        width: "50%",
+                        borderRadius: "10px",
+                        marginBottom: "10px",
+                      }}
+                      whileHover={{ scale: 1.05 }}
+                    />
+                  )}
+                  <div
+                    style={{ display: "flex", gap: "8px", marginBottom: "10px" }}
+                  >
+                    {post.tags.map((tag) => (
+                      <Tag key={tag}>{tag}</Tag>
+                    ))}
+                  </div>
+                  <div
+                    className="interaction-bar"
+                    style={{ display: "flex", gap: "16px", color: "#888" }}
+                  >
+                    <span>
+                      <LikeOutlined /> {post.likes}
+                    </span>
+                    <span>
+                      <CommentOutlined /> {post.comments}
+                    </span>
+                    <span>
+                      <ShareAltOutlined /> {post.shares}
+                    </span>
+                  </div>
+                </Card>
+              </motion.div>
             )}
           />
 
-          <Button block>Load More Posts</Button>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button block style={{ marginTop: "10px" }}>
+              Load More Posts
+            </Button>
+          </motion.div>
         </Card>
       </div>
 
       {/* RIGHT SIDEBAR */}
-      <div className="sidebar" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div
+        className="sidebar"
+        style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px" }}
+      >
         <Input.Search placeholder="Search community..." allowClear />
 
-        <Card title="🔥 Trending Topics">
-          <ul>
-            <li>#react-hooks — 156 posts</li>
-            <li>#python-tips — 87 posts</li>
-            <li>#css-grid — 47 posts</li>
-            <li>#javascript-es6 — 41 posts</li>
-          </ul>
-        </Card>
+        <motion.div
+          whileHover={{ translateY: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.15)" }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card title="🔥 Trending Topics">
+            <ul>
+              <li>#react-hooks — 156 posts</li>
+              <li>#python-tips — 87 posts</li>
+              <li>#css-grid — 47 posts</li>
+              <li>#javascript-es6 — 41 posts</li>
+            </ul>
+          </Card>
+        </motion.div>
 
-        <Card title="📅 Upcoming Events">
-          <p>
-            <strong>JavaScript Study Group</strong> <br />
-            Tomorrow • 7 PM
-          </p>
-          <Button size="small">Join</Button>
-          <Divider />
-          <p>
-            <strong>Python Web Dev Workshop</strong> <br />
-            Saturday • 9 AM
-          </p>
-          <Button size="small">Join</Button>
-        </Card>
+        <motion.div
+          whileHover={{ translateY: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.15)" }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card title="📅 Upcoming Events">
+            <p>
+              <strong>JavaScript Study Group</strong> <br />
+              Tomorrow • 7 PM
+            </p>
+            <Button size="small">Join</Button>
+            <Divider />
+            <p>
+              <strong>Python Web Dev Workshop</strong> <br />
+              Saturday • 9 AM
+            </p>
+            <Button size="small">Join</Button>
+          </Card>
+        </motion.div>
 
-        <Card title="🏆 Top Contributors">
-          <ul>
-            <li>Alex Chen (+103)</li>
-            <li>Sarah Kim (+92)</li>
-            <li>Jordan Lee (+80)</li>
-            <li>Yoo (+45)</li>
-            <li>Chris Park (+40)</li>
-          </ul>
-        </Card>
+        <motion.div
+          whileHover={{ translateY: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.15)" }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card title="🏆 Top Contributors">
+            <ul>
+              <li>Alex Chen (+103)</li>
+              <li>Sarah Kim (+92)</li>
+              <li>Jordan Lee (+80)</li>
+              <li>Yoo (+45)</li>
+              <li>Chris Park (+40)</li>
+            </ul>
+          </Card>
+        </motion.div>
 
-        <Card title="💡 Community Actions">
-          <Button block>Find Study Buddies</Button>
-          <Button block>Create Event</Button>
-          <Button block>Ask Question</Button>
-        </Card>
+        <motion.div
+          whileHover={{ translateY: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.15)" }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card title="💡 Community Actions">
+            <Button block>Find Study Buddies</Button>
+            <Button block>Create Event</Button>
+            <Button block>Ask Question</Button>
+          </Card>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
