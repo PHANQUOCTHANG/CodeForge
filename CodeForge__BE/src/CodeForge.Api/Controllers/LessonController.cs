@@ -11,7 +11,11 @@ namespace CodeForge.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+<<<<<<< HEAD
     // [Authorize] 
+=======
+    [Authorize] // 🛡️ Yêu cầu xác thực
+>>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
     public class LessonsController : BaseApiController
     {
         private readonly ILessonService _lessonService;
@@ -21,6 +25,7 @@ namespace CodeForge.Api.Controllers
             _lessonService = lessonService;
         }
 
+<<<<<<< HEAD
         // [HttpGet] 
         // public async Task<IActionResult> GetAllLesson () {
         //     var lessons = await _lessonService.
@@ -28,6 +33,8 @@ namespace CodeForge.Api.Controllers
         //     return Ok(ApiResponse<List<LessonDto>>.Success(lessons, "Lấy bài học thành công."));
         // }
 
+=======
+>>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
         /// <summary>
         /// Lấy chi tiết một bài học (Người dùng phải đăng ký khóa học).
         /// </summary>

@@ -131,7 +131,11 @@ const practiceService = {
 
   getAllProblem: async () => {
     try {
+<<<<<<< HEAD
       const res = await api.get("api/problems");
+=======
+      const res = await api.get("/problems");
+>>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
       return res.data.data; // chỉ trả về phần cần dùng
     } catch (error: any) {
       console.error("Lỗi khi gọi API /api/problems:", error.message);
@@ -154,7 +158,11 @@ const practiceService = {
 
   getProblemBySlug: async (slug: string) => {
     try {
+<<<<<<< HEAD
       const res = await api.get(`api/problems/${slug}`);
+=======
+      const res = await api.get(`/problems/${slug}`);
+>>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
       return res;
     } catch (error: any) {
       throw new Error(error.message);
@@ -163,7 +171,11 @@ const practiceService = {
 
   getTestCaseOfProblem: async (problemId: string) => {
     try {
+<<<<<<< HEAD
       const res = await api.get(`api/testcases/${problemId}`);
+=======
+      const res = await api.get(`/testcases/${problemId}`);
+>>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
       return res;
     } catch (error: any) {
       throw new Error(error.message);
@@ -171,7 +183,11 @@ const practiceService = {
   },
   runTest: async (data: any) => {
     try {
+<<<<<<< HEAD
       const res = await api.post(`api/problems/run-problem`, data);
+=======
+      const res = await api.post(`/problems/run-problem`, data);
+>>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
       return res;
     } catch (error: any) {
       throw new Error(error.message);
@@ -180,24 +196,35 @@ const practiceService = {
 
   submitProblem: async (data: any) => {
     try {
+<<<<<<< HEAD
       const res = await api.post(`api/problems/submit`, data);
+=======
+      const res = await api.post(`/problems/submit`, data);
+>>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
       return res;
     } catch (error: any) {
       throw new Error(error.message);
     }
   },
 
+<<<<<<< HEAD
   getSubmissionsById: async (
     problemId: string | null,
     userId: string | null
   ) => {
     try {
       const res = await api.get(`api/submissions/${problemId}/${userId}`);
+=======
+  getSubmissionsById: async (problemId: string, userId: string) => {
+    try {
+      const res = await api.get(`/submissions/${problemId}/${userId}`);
+>>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
       return res;
     } catch (error: any) {
       throw new Error(error.message);
     }
   },
+<<<<<<< HEAD
 
   // getAllLesson: async () => {
   //   try {
@@ -208,6 +235,8 @@ const practiceService = {
   //     throw error;
   //   }
   // }
+=======
+>>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
 };
 
 export default practiceService;
