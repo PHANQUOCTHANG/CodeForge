@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, CheckCircle2, Circle } from "lucide-react";
+import { Pagination } from "antd";
 import "./PracticePage.scss";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "@/common/helper/Loading";
 import { openNotification } from "@/common/helper/Alert";
 import practiceService from "@/features/practice/services/practiceService";
@@ -10,39 +11,69 @@ interface Problem {
   problemId: number;
   title: string;
   slug: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+  difficulty: "Dễ" | "Trung Bình" | "Khó";
   status?: "solved" | "attempted";
   tags: string;
   acceptance?: number;
 }
 
+// Constants
+const PAGE_SIZE = 10;
+const STATUS_SOLVED = "SOLVED";
+const STATUS_ATTEMPTED = "ATTEMPTED";
+
 const ProblemsPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [difficultyFilter, setDifficultyFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [tagFilter, setTagFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState(
+    () => searchParams.get("search") || ""
+  );
+  const [difficultyFilter, setDifficultyFilter] = useState(
+    () => searchParams.get("difficulty") || "all"
+  );
+  const [statusFilter, setStatusFilter] = useState(
+    () => searchParams.get("status") || "all"
+  );
+  const [tagFilter, setTagFilter] = useState(
+    () => searchParams.get("tag") || "all"
+  );
 
   const [loading, setLoading] = useState(true);
   const [problems, setProblems] = useState<Problem[]>([]);
+  const [currentPage, setCurrentPage] = useState(() => {
+    const pageFromUrl = searchParams.get("page");
+    return pageFromUrl ? parseInt(pageFromUrl, 10) : 1;
+  });
+  const [pageSize] = useState(PAGE_SIZE);
 
   useEffect(() => {
-    const getProblem = async () => {
+    const loadProblems = async () => {
       try {
         const data = await practiceService.getAllProblem();
         setProblems(data);
-      } catch (error: any) {
+      } catch (error) {
+        console.error("Failed to load problems:", error);
         openNotification("error", "Lỗi khi tải danh sách bài tập", "");
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchData = async () => {
-      await getProblem();
-      setLoading(false);
-    };
-    fetchData();
+    loadProblems();
   }, []);
+
+  // Update URL when filters/search change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set("search", searchTerm);
+    if (difficultyFilter !== "all") params.set("difficulty", difficultyFilter);
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    if (tagFilter !== "all") params.set("tag", tagFilter);
+
+    navigate(`?${params.toString()}`, { replace: true });
+    setCurrentPage(1);
+  }, [searchTerm, difficultyFilter, statusFilter, tagFilter, navigate]);
 
   const allTags = [
     ...new Set(
@@ -56,13 +87,16 @@ const ProblemsPage = () => {
     const matchesSearch =
       problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       problem.problemId.toString().includes(searchTerm);
+
     const matchesDifficulty =
       difficultyFilter === "all" || problem.difficulty === difficultyFilter;
+
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "solved" && problem.status === "solved") ||
       (statusFilter === "attempted" && problem.status === "attempted") ||
       (statusFilter === "todo" && !problem.status);
+
     const problemTags = problem.tags
       ? problem.tags.split(",").map((tag) => tag.trim().toLowerCase())
       : [];
@@ -72,12 +106,18 @@ const ProblemsPage = () => {
     return matchesSearch && matchesDifficulty && matchesStatus && matchesTag;
   });
 
-  const getStatusIcon = (status: string) => {
-    if (status === "SOLVED")
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedProblems = filteredProblems.slice(
+    startIndex,
+    startIndex + pageSize
+  );
+
+  const getStatusIcon = (status?: string) => {
+    if (status === STATUS_SOLVED)
       return (
         <CheckCircle2 className="practice-problem-list__status-icon practice-problem-list__status-icon--solved" />
       );
-    if (status === "ATTEMPTED")
+    if (status === STATUS_ATTEMPTED)
       return (
         <Circle className="practice-problem-list__status-icon practice-problem-list__status-icon--attempted" />
       );
@@ -86,28 +126,44 @@ const ProblemsPage = () => {
     );
   };
 
+  const buildQueryParams = (page?: number) => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set("search", searchTerm);
+    if (difficultyFilter !== "all") params.set("difficulty", difficultyFilter);
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    if (tagFilter !== "all") params.set("tag", tagFilter);
+    if (page) params.set("page", page.toString());
+    return params;
+  };
+
   const stats = {
     solved: problems.filter((p) => p.status === "solved").length,
     attempted: problems.filter((p) => p.status === "attempted").length,
     total: problems.length,
     easy: problems.filter(
-      (p) => p.difficulty === "Easy" && p.status === "solved"
+      (p) => p.difficulty === "Dễ" && p.status === "solved"
     ).length,
     medium: problems.filter(
-      (p) => p.difficulty === "Medium" && p.status === "solved"
+      (p) => p.difficulty === "Trung Bình" && p.status === "solved"
     ).length,
     hard: problems.filter(
-      (p) => p.difficulty === "Hard" && p.status === "solved"
+      (p) => p.difficulty === "Khó" && p.status === "solved"
     ).length,
   };
 
-  const totalEasy = problems.filter((p) => p.difficulty === "Easy").length;
-  const totalMedium = problems.filter((p) => p.difficulty === "Medium").length;
-  const totalHard = problems.filter((p) => p.difficulty === "Hard").length;
+  const totals = {
+    easy: problems.filter((p) => p.difficulty === "Dễ").length,
+    medium: problems.filter((p) => p.difficulty === "Trung Bình").length,
+    hard: problems.filter((p) => p.difficulty === "Khó").length,
+  };
 
-  // handle problem
   const handleProblem = (slug: string) => {
     navigate(`${slug}`);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    navigate(`?${buildQueryParams(page).toString()}`);
   };
 
   return (
@@ -115,99 +171,89 @@ const ProblemsPage = () => {
       {loading && <Loading />}
       <div className="practice-problems-page">
         <div className="practice-container">
-          {/* Practice Statistics Cards (practice-stats-cards) */}
           <div className="practice-stats-cards">
-            {/* ... Stats cards (Easy) ... */}
             <div className="practice-stats-cards__card">
               <div className="practice-stats-cards__content">
-                <p className="practice-stats-cards__label">Easy</p>
+                <p className="practice-stats-cards__label">Dễ</p>
                 <p className="practice-stats-cards__value">
                   {stats.easy}
                   <span className="practice-stats-cards__total">
                     {" "}
-                    / {totalEasy}
+                    / {totals.easy}
                   </span>
                 </p>
               </div>
             </div>
 
-            {/* ... Stats cards (Medium) ... */}
             <div className="practice-stats-cards__card">
               <div className="practice-stats-cards__content">
-                <p className="practice-stats-cards__label">Medium</p>
+                <p className="practice-stats-cards__label">Trung Bình</p>
                 <p className="practice-stats-cards__value">
                   {stats.medium}
                   <span className="practice-stats-cards__total">
                     {" "}
-                    / {totalMedium}
+                    / {totals.medium}
                   </span>
                 </p>
               </div>
             </div>
 
-            {/* ... Stats cards (Hard) ... */}
             <div className="practice-stats-cards__card">
               <div className="practice-stats-cards__content">
-                <p className="practice-stats-cards__label">Hard</p>
+                <p className="practice-stats-cards__label">Khó</p>
                 <p className="practice-stats-cards__value">
                   {stats.hard}
                   <span className="practice-stats-cards__total">
                     {" "}
-                    / {totalHard}
+                    / {totals.hard}
                   </span>
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Practice Filters (practice-filters) */}
           <div className="practice-filters">
             <div className="practice-filters__wrapper">
-              {/* Search Input */}
               <div className="practice-filters__search">
                 <Search className="practice-filters__search-icon" />
                 <input
                   type="text"
-                  placeholder="Search problems..."
+                  placeholder="Tìm kiếm bài tập..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="practice-filters__search-input"
                 />
               </div>
 
-              {/* Filter Selects Row */}
               <div className="practice-filters__row">
-                {/* Difficulty Filter */}
                 <select
                   value={difficultyFilter}
                   onChange={(e) => setDifficultyFilter(e.target.value)}
                   className="practice-filters__select"
                 >
-                  <option value="all">All Difficulties</option>
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
+                  <option value="all">Tất Cả Độ Khó</option>
+                  <option value="Dễ">Dễ</option>
+                  <option value="Trung Bình">Trung Bình</option>
+                  <option value="Khó">Khó</option>
                 </select>
 
-                {/* Status Filter */}
-                <select
+                {/* <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="practice-filters__select"
                 >
-                  <option value="all">All Status</option>
-                  <option value="solved">Solved</option>
-                  <option value="attempted">Attempted</option>
-                  <option value="todo">To Do</option>
-                </select>
+                  <option value="all">Tất Cả Trạng Thái</option>
+                  <option value="solved">Đã Giải</option>
+                  <option value="attempted">Đã Thử</option>
+                  <option value="todo">Chưa Làm</option>
+                </select> */}
 
-                {/* Tag Filter */}
                 <select
                   value={tagFilter}
                   onChange={(e) => setTagFilter(e.target.value)}
                   className="practice-filters__select"
                 >
-                  <option value="all">All Tags</option>
+                  <option value="all">Tất Cả Thẻ</option>
                   {allTags.map((tag) => (
                     <option key={tag} value={tag}>
                       {tag}
@@ -218,31 +264,30 @@ const ProblemsPage = () => {
             </div>
           </div>
 
-          {/* Practice Problem List (practice-problem-list) */}
           <div className="practice-problem-list">
             <div className="practice-problem-list__container">
               <table className="practice-problem-list__table">
                 <thead>
                   <tr>
                     <th className="practice-problem-list__th practice-problem-list__th--status">
-                      Status
+                      Trạng Thái
                     </th>
                     <th className="practice-problem-list__th practice-problem-list__th--title">
-                      Title
+                      Tên Bài Tập
                     </th>
                     <th className="practice-problem-list__th practice-problem-list__th--difficulty">
-                      Difficulty
+                      Độ Khó
                     </th>
                     <th className="practice-problem-list__th practice-problem-list__th--acceptance">
-                      Acceptance
+                      Tỉ Lệ Đạt
                     </th>
                     <th className="practice-problem-list__th practice-problem-list__th--tags">
-                      Tags
+                      Thẻ
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredProblems.map((problem, index) => (
+                  {paginatedProblems.map((problem, index) => (
                     <tr
                       key={problem.problemId}
                       className="practice-problem-list__row"
@@ -254,7 +299,7 @@ const ProblemsPage = () => {
                       <td className="practice-problem-list__td practice-problem-list__td--title">
                         <div className="practice-problem-list__title-wrapper">
                           <span className="practice-problem-list__problem-id">
-                            {index + 1}.
+                            {startIndex + index + 1}.
                           </span>
                           <span className="practice-problem-list__problem-title">
                             {problem.title}
@@ -290,9 +335,21 @@ const ProblemsPage = () => {
               </table>
             </div>
 
+            {filteredProblems.length > 0 && (
+              <div className="practice-problem-list__pagination">
+                <Pagination
+                  current={currentPage}
+                  total={filteredProblems.length}
+                  align="center"
+                  pageSize={pageSize}
+                  onChange={handlePageChange}
+                />
+              </div>
+            )}
+
             {filteredProblems.length === 0 && (
               <div className="practice-problem-list__empty-state">
-                <p>No problems found matching your filters.</p>
+                <p>Không tìm thấy bài tập nào phù hợp với bộ lọc của bạn.</p>
               </div>
             )}
           </div>

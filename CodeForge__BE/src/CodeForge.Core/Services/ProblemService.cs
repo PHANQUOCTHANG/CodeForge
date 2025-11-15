@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using CodeForge.Core.Exceptions;
+using CodeForge.Api.DTOs.Response;
 
 
 namespace CodeForge.Core.Service
@@ -26,7 +27,7 @@ namespace CodeForge.Core.Service
         // --- CREATE Problem ---
         public async Task<ProblemDto> CreateProblemAsync(CreateProblemDto createProblemDto)
         {
-            Guid problemId = new Guid();
+            Guid problemId = Guid.NewGuid();
             bool isExistsByTitle = await _problemRepository.ExistsByTitle(createProblemDto.Title ,problemId);
 
             if (isExistsByTitle)
@@ -49,9 +50,9 @@ namespace CodeForge.Core.Service
         }
 
         // --- GET All Problem ---
-        public async Task<List<ProblemDto>> GetAllProblemAsync()
+        public async Task<List<ProblemDto>> GetAllProblemAsync(QueryParameters queryParameters)
         {
-            List<Problem> problems = await _problemRepository.GetAllAsync();
+            List<Problem> problems = await _problemRepository.GetAllAsync(queryParameters);
             return _mapper.Map<List<ProblemDto>>(problems);
         }
 

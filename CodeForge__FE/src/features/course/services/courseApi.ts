@@ -1,6 +1,6 @@
 import api from "@/api/axios";
 import type { PagedResponse } from "@/common/types";
-import type { Course } from "@/features/course/types";
+import type { Course, Lesson } from "@/features/course/types";
 const url = "/course";
 
 export const courseApi = {
@@ -22,6 +22,10 @@ export const courseApi = {
   // 🧠 Lấy 1 khóa học theo ID
   getById: async (id: string) => {
     const res = await api.get<Course>(`/courses/${id}`);
+    return res.data;
+  },
+  getLessonById: async (id: string | undefined) => {
+    const res = await api.get<Lesson>(`/lessons/${id}`);
     return res.data;
   },
   getBySlug: async (slug: string | undefined) => {

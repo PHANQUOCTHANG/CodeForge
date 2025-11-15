@@ -1,15 +1,21 @@
 // store.ts
 
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "../../features/auth/slices/authSlice";
+import authReducer from "@/features/auth/slices/authSlice";
+import lessonUpdateReducer from "@/features/progress/slices/lessonUpdateSlice";
 import { setGlobalAccessToken } from "@/api/axios";
 
 // 1️⃣, 2️⃣ (Giữ nguyên)
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux"; // 👈 Thêm import
+import {
+  type TypedUseSelectorHook,
+  useDispatch,
+  useSelector,
+} from "react-redux"; // 👈 Thêm import
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    lessonUpdate: lessonUpdateReducer,
   },
 });
 

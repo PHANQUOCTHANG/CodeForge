@@ -32,4 +32,6 @@ public static class JwtHelper
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+    // --- Helper ---
+
 }

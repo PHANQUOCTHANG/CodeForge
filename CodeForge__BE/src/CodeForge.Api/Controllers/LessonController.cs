@@ -1,16 +1,18 @@
-using CodeForge.Api.DTOs;
-using CodeForge.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using CodeForge.Core.Services;
+using CodeForge.Application.DTOs.Lessons;
+using CodeForge.Api.DTOs.Response;
+using CodeForge.Api.DTOs;
+using CodeForge.Application.DTOs.Response;
 
 namespace CodeForge.Api.Controllers
 {
     [ApiController]
-    [Route("api/[Controller]")]
-    public class LessonsController : ControllerBase
+    [Route("api/[controller]")]
+    // [Authorize] 
+    public class LessonsController : BaseApiController
     {
         private readonly ILessonService _lessonService;
 
@@ -19,78 +21,60 @@ namespace CodeForge.Api.Controllers
             _lessonService = lessonService;
         }
 
-        // ============================
-        // GET ALL LESSONS (GET /api/lesson)
-        // ============================
-        [HttpGet]
-        // ✅ Kiểu trả về mới: Task<ActionResult<ApiResponse<List<LessonDto>>>> 
-        public async Task<IActionResult> GetAllLessonAsync()
-        {
-            var result = await _lessonService.GetAllLessonAsync();
+        // [HttpGet] 
+        // public async Task<IActionResult> GetAllLesson () {
+        //     var lessons = await _lessonService.
 
-            // Dữ liệu được bọc trong ApiResponse<T>
-            return Ok(ApiResponse<List<LessonDto>>.Success(result, "Lessons retrieved successfully."));
-        }
+        //     return Ok(ApiResponse<List<LessonDto>>.Success(lessons, "Lấy bài học thành công."));
+        // }
 
-        // ============================
-        // GET LESSON BY ID (GET /api/lesson/{lessonId})
-        // ============================
+        /// <summary>
+        /// Lấy chi tiết một bài học (Người dùng phải đăng ký khóa học).
+        /// </summary>
         [HttpGet("{id:guid}")]
-        // ✅ Kiểu trả về mới: Task<ActionResult<ApiResponse<LessonDto>>>
-        public async Task<IActionResult> GetLessonByIdAsync([FromRoute] Guid lessonId)
+        public async Task<IActionResult> GetLessonById(Guid id)
         {
-            // Nếu LessonService ném NotFoundException, Global Handler sẽ trả về 404
-            var result = await _lessonService.GetLessonByIdAsync(lessonId);
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
 
-            return Ok(ApiResponse<LessonDto>.Success(result, "Lesson retrieved successfully."));
+            // Service sẽ ném NotFoundException hoặc ForbiddenException
+            var lesson = await _lessonService.GetLessonDetailAsync(id, userId.Value);
+            return Ok(ApiResponse<LessonDto>.Success(lesson, "Lấy chi tiết bài học thành công."));
         }
 
-        // ============================
-        // UPDATE LESSON (PATCH /api/lesson/update)
-        // ============================
-        [Authorize]
-        [HttpPatch("update")]
-        // ✅ Kiểu trả về mới: Task<ActionResult<ApiResponse<LessonDto>>>
-        public async Task<IActionResult> UpdateLessonAsync([FromBody] UpdateLessonDto updateLessonDto)
+        /// <summary>
+        /// Lấy danh sách các bài học (tóm tắt) thuộc một Module.
+        /// </summary>
+        [HttpGet("module/{moduleId:guid}")]
+        public async Task<IActionResult> GetLessonsByModule(Guid moduleId)
         {
-            // Service sẽ ném NotFoundException hoặc ConflictException nếu cần
-            var result = await _lessonService.UpdateLessonAsync(updateLessonDto);
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
 
-            // Thao tác cập nhật thường trả về 200 OK
-            return Ok(ApiResponse<LessonDto>.Success(result, "Lesson updated successfully."));
+            var lessons = await _lessonService.GetLessonsByModuleAsync(moduleId, userId.Value);
+            return Ok(ApiResponse<List<LessonDto>>.Success(lessons, "Lấy danh sách bài học thành công."));
         }
 
-        // ============================
-        // CREATE LESSON (POST /api/lesson/create)
-        // ============================
-        [Authorize]
+        /// <summary>
+        /// Tạo một bài học mới (Yêu cầu quyền Teacher/Admin).
+        /// </summary>
         [HttpPost("create")]
-        // ✅ Kiểu trả về mới: Task<ActionResult<ApiResponse<LessonDto>>>
-        public async Task<IActionResult> CreateLessonAsync([FromBody] CreateLessonDto createLessonDto)
+        // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
+        public async Task<IActionResult> CreateLesson([FromBody] CreateLessonDto createDto)
         {
-            // Service sẽ ném ConflictException nếu cần
-            var result = await _lessonService.CreateLessonAsync(createLessonDto);
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
 
-            // ✅ Chuẩn RESTful: Dùng CreatedAtAction để trả về 201 Created
+            var newLesson = await _lessonService.CreateLessonAsync(createDto, userId.Value);
+
+            // ✅ RESTful: Trả về 201 Created
             return CreatedAtAction(
-                nameof(GetLessonByIdAsync),
-                new { lessonId = result.LessonId },
-                ApiResponse<LessonDto>.Created(result, "Lesson created successfully.")
+                nameof(GetLessonById),
+                new { id = newLesson.LessonId },
+                ApiResponse<LessonDto>.Created(newLesson, "Tạo bài học thành công.")
             );
         }
 
-        // ============================
-        // DELETE LESSON (DELETE /api/lesson/delete/{lessonId})
-        // ============================
-        [Authorize]
-        [HttpDelete("{id:guid}")] // ✅ Đã sửa endpoint cho phù hợp với /api/lesson/{lessonId}
-        public async Task<IActionResult> DeleteLessonAsync([FromRoute] Guid lessonId)
-        {
-            // Service sẽ ném NotFoundException nếu không tìm thấy
-            await _lessonService.DeleteLessonAsync(lessonId);
 
-            // ✅ Chuẩn RESTful: Dùng NoContent để trả về 204 No Content
-            return NoContent();
-        }
     }
 }

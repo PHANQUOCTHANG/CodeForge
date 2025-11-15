@@ -19,7 +19,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
     { label: "Dashboard", path: "/admin/dashboard", icon: <LayoutDashboard size={20} /> },
     { label: "Học viên", path: "/admin/users", icon: <Users size={20} /> },
     { label: "Khóa học", path: "/admin/courses", icon: <BookOpen size={20} /> },
-    { label: "Bài tập", path: "/admin/assignments", icon: <Code size={20} /> },
+    { label: "Bài tập", path: "/admin/problems", icon: <Code size={20} /> },
     { label: "Bài nộp", path: "/admin/submissions", icon: <FileText size={20} /> },
   ];
 

@@ -1,5 +1,3 @@
-using AutoMapper;
-using CodeForge.Api.DTOs;
 using CodeForge.Core.Entities;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Infrastructure.Data;
@@ -11,56 +9,79 @@ namespace CodeForge.Infrastructure.Repositories
     {
         private readonly ApplicationDbContext _context;
 
-        private readonly IMapper _mapper;
-
-        public LessonRepository(ApplicationDbContext context, IMapper mapper)
+        public LessonRepository(ApplicationDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
-        public async Task<Lesson> CreateAsync(CreateLessonDto createLessonDto)
+        /// <summary>
+        /// Phương thức hỗ trợ ProgressService.
+        /// Tìm bài học, join Module để lấy CourseId.
+        /// </summary>
+        public async Task<Guid?> GetCourseIdByLessonIdAsync(Guid lessonId)
         {
-            Lesson newLesson = _mapper.Map<Lesson>(createLessonDto);
-            _context.Lessons.Add(newLesson);
-            await _context.SaveChangesAsync();
-            return newLesson;
-        }
+            var lesson = await _context.Lessons
+                .Include(l => l.Module)
+                .Where(l => l.LessonId == lessonId)
+                .Select(l => l.Module.CourseId) // Chỉ cần lấy CourseId
 
-        public async Task<bool> DeleteAsync(Guid lessonId)
-        {
-            Lesson? lesson = await _context.Lessons.FindAsync(lessonId);
-            if (lesson == null) return false;
-            _context.Lessons.Remove(lesson);
-            await _context.SaveChangesAsync();
-            return true;
-        }
+                .FirstOrDefaultAsync();
 
-        public async Task<List<Lesson>> GetAllAsync()
-        {
-            return await _context.Lessons.Include(m => m.Module).ToListAsync();
+            return lesson == Guid.Empty ? null : lesson;
         }
 
         public async Task<Lesson?> GetByIdAsync(Guid lessonId)
         {
-            return await _context.Lessons.FindAsync(lessonId);
+            var lesson = await _context.Lessons
+                // Load các thành phần cấp 1
+                .Include(l => l.LessonVideo) // Video (Nếu là bài học Video)
+                .Include(l => l.LessonText)  // Văn bản (Nếu là bài học Text)
+
+                // Tải Quiz và các Câu hỏi lồng nhau
+                .Include(l => l.LessonQuiz)
+                    .ThenInclude(lq => lq.Questions) // ✅ Tải các câu hỏi của Quiz
+
+                .Include(l => l.CodingProblem) // Coding Problem (Nếu là bài học Code)
+
+                // Luôn nên thêm .AsNoTracking() nếu bạn chỉ đọc dữ liệu
+                // Nếu bạn muốn chỉnh sửa Lesson, hãy loại bỏ nó.
+                .AsNoTracking()
+                .FirstOrDefaultAsync(l => l.LessonId == lessonId);
+
+            return lesson;
         }
 
-        public async Task<Lesson?> UpdateAsync(UpdateLessonDto updateLessonDto)
+        public async Task<List<Lesson>> GetByModuleIdAsync(Guid moduleId)
         {
-            Lesson? lesson = await _context.Lessons.FindAsync(updateLessonDto.LessonId);
+            return await _context.Lessons
+                .Where(l => l.ModuleId == moduleId)
+                .OrderBy(l => l.OrderIndex)
+                .AsNoTracking()
+                .ToListAsync();
+        }
 
-            if (lesson == null) return null;
-
-            _mapper.Map(updateLessonDto, lesson);
+        public async Task<Lesson> AddAsync(Lesson lesson)
+        {
+            // Lưu ý: Logic thêm LessonVideo/Text... 
+            // nên được xử lý trong Service sau khi Lesson gốc được tạo.
+            await _context.Lessons.AddAsync(lesson);
             await _context.SaveChangesAsync();
             return lesson;
         }
 
-        public async Task<bool> ExistsByTitle(string title)
+        public async Task<Lesson> UpdateAsync(Lesson lesson)
         {
-            Lesson? lesson = await _context.Lessons.FirstOrDefaultAsync(p => p.Title == title);
-            return lesson != null;
+            _context.Lessons.Update(lesson);
+            await _context.SaveChangesAsync();
+            return lesson;
+        }
+
+        public async Task DeleteAsync(Lesson lesson)
+        {
+            // Cần xử lý xóa các bảng con (Video, Text,...) trước nếu 
+            // không có CASCADE DELETE ở mức database.
+            _context.Lessons.Remove(lesson);
+            await _context.SaveChangesAsync();
         }
     }
 }

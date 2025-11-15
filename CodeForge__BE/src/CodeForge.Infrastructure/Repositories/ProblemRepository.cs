@@ -23,6 +23,7 @@ namespace CodeForge.Infrastructure.Repositories
         {
             createProblemDto.Slug = SlugGenerator.ConvertTitleToSlug(createProblemDto.Title);
             Problem newProblem = _mapper.Map<Problem>(createProblemDto);
+            newProblem.ProblemId = Guid.NewGuid(); // ép lại trước khi lưu
             _context.CodingProblems.Add(newProblem);
             await _context.SaveChangesAsync();
             return newProblem;
@@ -37,11 +38,12 @@ namespace CodeForge.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<List<Problem>> GetAllAsync()
+        public async Task<List<Problem>> GetAllAsync(QueryParameters queryParameters)
         {
             return await _context.CodingProblems
+                    // .Skip((queryParameters.Page - 1) * queryParameters.Limit)
+                    // .Take(queryParameters.Limit)
                 .Include(l => l.Lesson)
-                .Take(10)
                 .ToListAsync();
         }
 
@@ -51,7 +53,7 @@ namespace CodeForge.Infrastructure.Repositories
         }
 
 
-        public async Task<Problem?> GetBySlugAsync(string slug)
+        public async Task<Problem?> GetBySlugAsync(string slug) 
         {
             return await _context.CodingProblems.FirstOrDefaultAsync(p => p.Slug == slug);
         }

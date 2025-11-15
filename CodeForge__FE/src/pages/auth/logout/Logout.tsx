@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { logout as logoutAction } from "@/features/auth/slices/authSlice";
 import { Spin } from "antd";
 import { useNavigate } from "react-router-dom"; // 💡 IMPORT useNavigate
+import { setGlobalAccessToken } from "@/api";
+import { openNotification } from "@/common/helper/notification";
 
 const Logout = () => {
   const dispatch = useAppDispatch();
@@ -25,14 +27,14 @@ const Logout = () => {
       } finally {
         // 2. Clear the local state (Redux) regardless of API success/failure
         dispatch(logoutAction());
-
+        setGlobalAccessToken(null);
         // 3. Clear loading state
         setIsLoading(false);
-
+        openNotification("success", "Thành công", "Đăng xuất thành công");
         // 4. Redirect the user to the login or home page
         // Use `replace: true` to prevent the user from navigating back to this
         // "Logout" page using the browser's back button.
-        navigate("/login", { replace: true });
+        navigate(-1);
       }
     };
 
