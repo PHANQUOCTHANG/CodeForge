@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Editor from "@monaco-editor/react";
 import "./DetailPractice.scss";
 import { useNavigate, useParams } from "react-router-dom";
@@ -23,21 +23,28 @@ import ResultDetailsRaw from "@/features/practice/components/result-detail/Resul
 import { Spin } from "antd";
 import SubmissionsTab from "@/features/practice/components/submission/SubmissionTab";
 
-// Ép kiểu tạm để tránh xung đột kiểu khi linter chưa cập nhật cache type
+// Type casting for compatibility
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ResultDetails = ResultDetailsRaw as unknown as React.FC<any>;
 
-// Ràng buộc layout và editor
-const DEFAULT_LEFT_WIDTH = 45;
-const DEFAULT_EDITOR_HEIGHT = 65;
-const DEFAULT_THEME = "vs-dark";
-const DEFAULT_LANGUAGE = "cpp";
+// Layout Constants
+const LAYOUT_CONFIG = {
+  DEFAULT_LEFT_WIDTH: 45,
+  DEFAULT_EDITOR_HEIGHT: 65,
+  MIN_PANEL_WIDTH: 20,
+  MAX_PANEL_WIDTH: 80,
+  MIN_EDITOR_HEIGHT: 20,
+  MAX_EDITOR_HEIGHT: 90,
+} as const;
 
-const MIN_PANEL_WIDTH = 20;
-const MAX_PANEL_WIDTH = 80;
-const MIN_EDITOR_HEIGHT = 20;
-const MAX_EDITOR_HEIGHT = 90;
+// UI Constants
+const UI_CONFIG = {
+  DEFAULT_THEME: "vs-dark" as const,
+  DEFAULT_LANGUAGE: "cpp" as const,
+} as const;
 
-// Component chính
+// Hardcoded userId (should be moved to context/state management)
+const DUMMY_USER_ID = "f452f361-bcde-405a-afe0-3d404e37d319";
 const DetailPractice: React.FC = () => {
   const navigate = useNavigate();
   const { slug } = useParams() || "";
@@ -64,10 +71,10 @@ const DetailPractice: React.FC = () => {
 
   // UI State - Layout
   const [leftWidthPercent, setLeftWidthPercent] = useState<number>(() =>
-    readNumber("cf_leftWidthPercent", DEFAULT_LEFT_WIDTH)
+    readNumber("cf_leftWidthPercent", LAYOUT_CONFIG.DEFAULT_LEFT_WIDTH)
   );
   const [editorHeightPercent, setEditorHeightPercent] = useState<number>(() =>
-    readNumber("cf_editorHeightPercent", DEFAULT_EDITOR_HEIGHT)
+    readNumber("cf_editorHeightPercent", LAYOUT_CONFIG.DEFAULT_EDITOR_HEIGHT)
   );
 
   // UI State - Tabs
@@ -78,11 +85,14 @@ const DetailPractice: React.FC = () => {
   // Editor State
   const [theme, setTheme] = useState<"vs" | "vs-dark">(
     () =>
-      (localStorage.getItem("cf_theme") as "vs" | "vs-dark") || DEFAULT_THEME
+      (localStorage.getItem("cf_theme") as "vs" | "vs-dark") ||
+      UI_CONFIG.DEFAULT_THEME
   );
 
-  // Ngôn ngữ lập trình của editor (ưu tiên lấy từ localStorage nếu có)
-  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  // Programming language for editor
+  const [language, setLanguage] = useState<Language>(
+    UI_CONFIG.DEFAULT_LANGUAGE
+  );
   const [code, setCode] = useState<string>("");
 
   // Refs
@@ -103,67 +113,71 @@ const DetailPractice: React.FC = () => {
   );
 
   // Lấy dữ liệu bài toán theo slug
-  const fetchProblem = async () => {
+  const fetchProblem = useCallback(async () => {
     try {
       const response = await practiceService.getProblemBySlug(slug || "");
-      setProblem(response.data.data);
-      return response.data.data?.problemId;
+      const problem = response.data.data;
+      setProblem(problem);
+      return problem?.problemId;
     } catch (error) {
       console.error("Failed to fetch problem:", error);
-      setProblem(null);
+      return null;
     }
-  };
+  }, [slug]);
 
-  const fetchTestCases = async (problemId: string) => {
-    try {
-      const response = await practiceService.getTestCaseOfProblem(problemId);
-      const data = response?.data?.data;
+  const fetchTestCases = useCallback(
+    async (problemId: string) => {
+      try {
+        
+        const response = await practiceService.getTestCaseOfProblem(problemId , );
+        const data = response?.data?.data;
 
-      if (!data) return;
+        if (!data) return;
 
-      const mapped = data.map((item: TestCase, idx: number): TestCase => {
-        return {
-          ...item,
-          input: parseTestCaseInput(item.input),
-          name: `Case ${idx + 1}`,
-        };
-      });
+        const mapped = data.map(
+          (item: TestCase, idx: number): TestCase => ({
+            ...item,
+            input: parseTestCaseInput(item.input),
+            name: `Case ${idx + 1}`,
+          })
+        );
 
-      setTestCases(mapped);
-      setSelectedCaseId((prev) =>
-        prev === null && mapped.length > 0 ? mapped[0].testCaseId : prev
-      );
-    } catch (err) {
-      console.error("Failed to load test cases:", err);
-    }
-  };
+        setTestCases(mapped);
+        if (mapped.length > 0 && !selectedCaseId) {
+          setSelectedCaseId(mapped[0].testCaseId);
+        }
+      } catch (err) {
+        console.error("Failed to load test cases:", err);
+      }
+    },
+    [selectedCaseId]
+  );
 
-  // Lấy bài tập và test case theo slug
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       if (!slug) {
         setLoading(false);
         return;
       }
+
       try {
-        const problemId: string = await fetchProblem();
-        if (!problemId) {
-          setLoading(false);
-          return;
+        const problemId = await fetchProblem();
+        if (problemId) {
+          await fetchTestCases(problemId);
         }
-        await fetchTestCases(problemId);
+      } catch (err) {
+        console.error("Failed to load data:", err);
+      } finally {
         setLoading(false);
-      } catch (err) { 
-        console.error("Fetch data failed: ", err);
       }
     };
-    fetchData();
-  }, [slug]);
+
+    loadData();
+  }, [slug, fetchProblem, fetchTestCases]);
 
   useEffect(() => {
     if (problem) {
-      const newTemplate = generateFunctionTemplate(problem, language);
-      setCode(newTemplate);
+      setCode(generateFunctionTemplate(problem, language));
     }
   }, [problem, language]);
 
@@ -189,8 +203,8 @@ const DetailPractice: React.FC = () => {
       const x = e.clientX - rect.left;
       const percent = clampValue(
         (x / rect.width) * 100,
-        MIN_PANEL_WIDTH,
-        MAX_PANEL_WIDTH
+        LAYOUT_CONFIG.MIN_PANEL_WIDTH,
+        LAYOUT_CONFIG.MAX_PANEL_WIDTH
       );
       setLeftWidthPercent(percent);
     };
@@ -215,8 +229,8 @@ const DetailPractice: React.FC = () => {
       const x = touch.clientX - rect.left;
       const percent = clampValue(
         (x / rect.width) * 100,
-        MIN_PANEL_WIDTH,
-        MAX_PANEL_WIDTH
+        LAYOUT_CONFIG.MIN_PANEL_WIDTH,
+        LAYOUT_CONFIG.MAX_PANEL_WIDTH
       );
       setLeftWidthPercent(percent);
       e.preventDefault();
@@ -249,8 +263,8 @@ const DetailPractice: React.FC = () => {
       const y = e.clientY - rect.top;
       const percent = clampValue(
         (y / rect.height) * 100,
-        MIN_EDITOR_HEIGHT,
-        MAX_EDITOR_HEIGHT
+        LAYOUT_CONFIG.MIN_EDITOR_HEIGHT,
+        LAYOUT_CONFIG.MAX_EDITOR_HEIGHT
       );
       setEditorHeightPercent(percent);
     };
@@ -275,8 +289,8 @@ const DetailPractice: React.FC = () => {
       const y = touch.clientY - rect.top;
       const percent = clampValue(
         (y / rect.height) * 100,
-        MIN_EDITOR_HEIGHT,
-        MAX_EDITOR_HEIGHT
+        LAYOUT_CONFIG.MIN_EDITOR_HEIGHT,
+        LAYOUT_CONFIG.MAX_EDITOR_HEIGHT
       );
       setEditorHeightPercent(percent);
       e.preventDefault();
@@ -302,47 +316,43 @@ const DetailPractice: React.FC = () => {
     };
   }, []);
 
-  // Thay đổi nội dung editor
   const handleEditorChange = (value?: string | null) => {
-    const newValue = value || "";
-    setCode(newValue);
+    setCode(value || "");
   };
 
-  // Chạy code với test case (Run)
   const handleRun = async () => {
     if (!problem) return;
-
-    const submissionPayload = {
-      userId: "f452f361-bcde-405a-afe0-3d404e37d319",
-      problemId: problem.problemId,
-      language,
-      functionName: problem.functionName,
-      code,
-      testCases: testCases.map((t) => t.testCaseId),
-    };
 
     setIsTesting(true);
     setTestcaseTab("result");
 
     try {
-      const response = await practiceService.runTest(submissionPayload);
-      const dataResult = response.data.data;
+      const response = await practiceService.runTest({
+        userId: DUMMY_USER_ID,
+        problemId: problem.problemId,
+        language,
+        functionName: problem.functionName,
+        code,
+        testCases: testCases.map((t) => t.testCaseId),
+      });
 
-      const formattedResults = dataResult.map((item: any, idx: number) => ({
-        testCaseId: item.testCaseId,
-        name: `Case ${idx + 1}`,
-        status: item.status?.description || item.status,
-        actualOutput: item.stdout || item.actualOutput,
-        expectedOutput: item.expectedOutput,
-        passed: item.passed,
-        executionTime: item.time,
-        memoryUsage: (item.memory / 1024).toFixed(2),
-        input: item.input,
-        explain: item.explain,
-      }));
+      const formattedResults = response.data.data.map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (item: any, idx: number) => ({
+          testCaseId: item.testCaseId,
+          name: `Case ${idx + 1}`,
+          status: item.status?.description || item.status,
+          actualOutput: item.stdout || item.actualOutput,
+          expectedOutput: item.expectedOutput,
+          passed: item.passed,
+          executionTime: item.time,
+          memoryUsage: (item.memory / 1024).toFixed(2),
+          input: item.input,
+          explain: item.explain,
+        })
+      );
 
       setTestResults(formattedResults);
-
       if (formattedResults.length > 0) {
         setSelectedCaseId(formattedResults[0].testCaseId);
       }
@@ -354,32 +364,29 @@ const DetailPractice: React.FC = () => {
     }
   };
 
-  // Gửi bài làm (Submit)
   const handleSubmit = async () => {
     if (!problem) {
       alert("Problem data is not loaded");
       return;
     }
 
-    if (!code || code.trim() === "") {
+    if (!code?.trim()) {
       alert("Please write your code before submitting");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const submissionPayload = {
-        userId: "f452f361-bcde-405a-afe0-3d404e37d319",
+      const response = await practiceService.submitProblem({
+        userId: DUMMY_USER_ID,
         problemId: problem.problemId,
         language,
         functionName: problem.functionName,
         code,
-      };
+      });
 
-      const response = await practiceService.submitProblem(submissionPayload);
       const result: SubmitResult = response.data.data;
-
-      // Hiển thị modal kết quả
+      console.log(result) ;
       setModalData({
         isSuccess: !!result.submit,
         passedTests: result.testCasePass ?? 0,
@@ -395,24 +402,26 @@ const DetailPractice: React.FC = () => {
       setShowModal(true);
 
       if (result.resultFail) {
-        setIsTesting(false);
         setTestcaseTab("result");
 
         const dataResult = [];
         dataResult.push(result.resultFail);
 
-        const formattedResults = dataResult.map((item: any, idx: number) => ({
-          testCaseId: item.testCaseId,
-          name: `Case ${idx + 1}`,
-          status: item.status?.description || item.status,
-          actualOutput: item.stdout || item.actualOutput,
-          expectedOutput: item.expectedOutput,
-          passed: item.passed,
-          executionTime: item.time,
-          memoryUsage: (item.memory / 1024).toFixed(2),
-          input: item.input,
-          explain: item.explain,
-        }));
+        const formattedResults = dataResult.map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (item: any, idx: number) => ({
+            testCaseId: item.testCaseId,
+            name: `Case ${idx + 1}`,
+            status: item.status?.description || item.status,
+            actualOutput: item.stdout || item.actualOutput,
+            expectedOutput: item.expectedOutput,
+            passed: item.passed,
+            executionTime: item.time,
+            memoryUsage: (item.memory / 1024).toFixed(2),
+            input: item.input,
+            explain: item.explain,
+          })
+        );
 
         setPassedCount(result.testCasePass);
         setTotalCount(result.totalTestCase);
@@ -458,11 +467,19 @@ const DetailPractice: React.FC = () => {
   const handleDividerKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowLeft") {
       setLeftWidthPercent((p) =>
-        clampValue(p - 2, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH)
+        clampValue(
+          p - 2,
+          LAYOUT_CONFIG.MIN_PANEL_WIDTH,
+          LAYOUT_CONFIG.MAX_PANEL_WIDTH
+        )
       );
     } else if (e.key === "ArrowRight") {
       setLeftWidthPercent((p) =>
-        clampValue(p + 2, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH)
+        clampValue(
+          p + 2,
+          LAYOUT_CONFIG.MIN_PANEL_WIDTH,
+          LAYOUT_CONFIG.MAX_PANEL_WIDTH
+        )
       );
     }
   };
@@ -489,11 +506,19 @@ const DetailPractice: React.FC = () => {
   const handleHDividerKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowUp") {
       setEditorHeightPercent((p) =>
-        clampValue(p - 2, MIN_EDITOR_HEIGHT, MAX_EDITOR_HEIGHT)
+        clampValue(
+          p - 2,
+          LAYOUT_CONFIG.MIN_EDITOR_HEIGHT,
+          LAYOUT_CONFIG.MAX_EDITOR_HEIGHT
+        )
       );
     } else if (e.key === "ArrowDown") {
       setEditorHeightPercent((p) =>
-        clampValue(p + 2, MIN_EDITOR_HEIGHT, MAX_EDITOR_HEIGHT)
+        clampValue(
+          p + 2,
+          LAYOUT_CONFIG.MIN_EDITOR_HEIGHT,
+          LAYOUT_CONFIG.MAX_EDITOR_HEIGHT
+        )
       );
     }
   };
@@ -612,9 +637,12 @@ const DetailPractice: React.FC = () => {
               </div>
             )}
 
-            {activeTab == "submissions" && <SubmissionsTab problemId={problem.problemId} userId="f452f361-bcde-405a-afe0-3d404e37d319"></SubmissionsTab>}
-
-
+            {activeTab == "submissions" && (
+              <SubmissionsTab
+                problemId={problem.problemId}
+                userId="f452f361-bcde-405a-afe0-3d404e37d319"
+              ></SubmissionsTab>
+            )}
           </div>
         </div>
 

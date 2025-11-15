@@ -13,7 +13,7 @@ using CodeForge.Api.DTOs.Response; // Giả định DTOs nằm ở đây
 
 namespace CodeForge.Core.Service
 {
-    public class TestCaseService : ITestCaseService // ITestCaseService phải được cập nhật
+    public class TestCaseService : ITestCaseService 
     {
         private readonly ITestCaseRepository _TestCaseRepository;
         private readonly IMapper _mapper;
@@ -30,6 +30,17 @@ namespace CodeForge.Core.Service
             TestCase testCase = await _TestCaseRepository.CreateAsync(createTestCaseDto);
 
             return _mapper.Map<TestCaseDto>(testCase);
+        }
+
+        public async Task<List<TestCaseDto>> CreateManyTestCaseAsync(List<CreateTestCaseDto> createTestCaseDtos)
+        {
+            List<TestCaseDto> testCaseDtos = new List<TestCaseDto>();
+            foreach (CreateTestCaseDto createTestCaseDto in createTestCaseDtos)
+            {
+                TestCaseDto testCaseDto = await CreateTestCaseAsync(createTestCaseDto);
+                testCaseDtos.Add(testCaseDto);
+            }
+            return testCaseDtos;
         }
 
         // --- DELETE TestCase ---
@@ -61,7 +72,6 @@ namespace CodeForge.Core.Service
         // --- GET TestCase by ID ---
         public async Task<TestCaseDto> GetTestCaseByIdAsync(Guid testCaseId)
         {
-            // Bỏ khối try-catch và ApiResponse<T>
             TestCase? testCase = await _TestCaseRepository.GetByIdAsync(testCaseId);
 
             if (testCase == null)
@@ -80,7 +90,6 @@ namespace CodeForge.Core.Service
 
             if (testCase == null)
             {
-                // Giả định UpdateTestCaseDto có trường ID
                 throw new NotFoundException($"TestCase with ID {updateTestCaseDto.TestCaseId} not found for update.");
             }
 
