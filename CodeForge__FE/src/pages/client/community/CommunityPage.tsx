@@ -120,6 +120,7 @@ const CommunityPage: React.FC = () => {
     "frontend",
     "database",
     "api",
+    "beginner",
   ];
 
   // ===========================
