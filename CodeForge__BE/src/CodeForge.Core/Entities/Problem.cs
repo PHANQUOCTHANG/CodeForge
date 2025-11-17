@@ -21,7 +21,7 @@ namespace CodeForge.Core.Entities
                 public string? Description { get; set; }
 
                 [Required, MaxLength(20)]
-                public string? Difficulty { get; set; } = "Easy";
+                public string? Difficulty { get; set; } = "Dễ";
 
                 [MaxLength(255)]
                 public string? Tags { get; set; }

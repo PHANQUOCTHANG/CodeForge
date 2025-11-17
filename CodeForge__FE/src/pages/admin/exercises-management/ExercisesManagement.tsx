@@ -49,7 +49,7 @@ const stats = [
 
 const exercisesData: Exercise[] = [
   { id: 1, title: 'Thuật toán sắp xếp', course: 'JavaScript Cơ bản', difficulty: 'medium', submissions: 156, avgScore: 85, timeLimit: 30, passRate: 78, color: 'icon-bg-yellow' },
-  { id: 2, title: 'Promise và Async/Await', course: 'JavaScript Nâng cao', difficulty: 'hard', submissions: 89, avgScore: 72, timeLimit: 45, passRate: 65, color: 'icon-bg-pink' },
+  { id: 2, title: 'Promise và Async/Await', course: 'Java Script Nâng cao', difficulty: 'hard', submissions: 89, avgScore: 72, timeLimit: 45, passRate: 65, color: 'icon-bg-pink' },
   { id: 3, title: 'Component trong React', course: 'React cơ bản', difficulty: 'easy', submissions: 234, avgScore: 91, timeLimit: 20, passRate: 89, color: 'icon-bg-teal' },
   { id: 4, title: 'State Management', course: 'React nâng cao', difficulty: 'hard', submissions: 67, avgScore: 68, timeLimit: 60, passRate: 58, color: 'icon-bg-purple' },
   { id: 5, title: 'API Integration', course: 'JavaScript Nâng cao', difficulty: 'medium', submissions: 143, avgScore: 79, timeLimit: 40, passRate: 72, color: 'icon-bg-blue' },

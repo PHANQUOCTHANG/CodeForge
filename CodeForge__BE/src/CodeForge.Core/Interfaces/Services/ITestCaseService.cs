@@ -12,6 +12,8 @@ namespace CodeForge.Core.Interfaces.Services
 
         Task<TestCaseDto> UpdateTestCaseAsync(UpdateTestCaseDto updateTestCaseDto);
         Task<TestCaseDto> CreateTestCaseAsync(CreateTestCaseDto createTestCaseDto);
+
+        Task<List<TestCaseDto>> CreateManyTestCaseAsync(List<CreateTestCaseDto> createTestCaseDtos);
         Task<bool> DeleteTestCaseAsync(Guid testCaseId);
     }
 }

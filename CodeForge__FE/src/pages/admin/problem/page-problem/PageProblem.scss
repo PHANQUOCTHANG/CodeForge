@@ -1,0 +1,452 @@
+// Variables
+$color-primary: #2563eb;
+$color-primary-hover: #1d4ed8;
+$color-bg-primary: #f9fafb;
+$color-bg-white: #ffffff;
+$color-border: #e5e7eb;
+$color-text-primary: #111827;
+$color-text-secondary: #6b7280;
+$color-text-tertiary: #9ca3af;
+
+$color-easy: #15803d;
+$color-easy-bg: #f0fdf4;
+$color-easy-border: #bbf7d0;
+
+$color-medium: #c2410c;
+$color-medium-bg: #fff7ed;
+$color-medium-border: #fed7aa;
+
+$color-hard: #b91c1c;
+$color-hard-bg: #fef2f2;
+$color-hard-border: #fecaca;
+
+$color-gray-bg: #f9fafb;
+$color-gray-border: #d1d5db;
+
+// Block: problem-management
+.problem-management {
+  min-height: 100vh;
+  background-color: $color-bg-primary;
+
+  // Element: header
+  &__header {
+    background-color: $color-bg-white;
+    border-bottom: 1px solid $color-border;
+  }
+
+  &__header-content {
+    // max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  &__header-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: $color-text-primary;
+    margin: 0;
+  }
+
+  &__subtitle {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: $color-text-secondary;
+  }
+
+  &__add-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background-color: $color-primary;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: $color-primary-hover;
+    }
+  }
+
+  // Element: content
+  &__content {
+    // max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  // Element: stats
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  &__stat-card {
+    background-color: $color-bg-white;
+    border: 1px solid $color-border;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+  }
+
+  &__stat-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $color-text-secondary;
+    margin-bottom: 0.25rem;
+  }
+
+  &__stat-value {
+    font-size: 1.875rem;
+    font-weight: 600;
+    color: $color-text-primary;
+  }
+
+  // Element: controls
+  &__controls {
+    background-color: $color-bg-white;
+    border: 1px solid $color-border;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__search-wrapper {
+    flex: 1;
+    position: relative;
+  }
+
+  &__search-icon {
+    position: absolute;
+    left: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $color-text-tertiary;
+  }
+
+  &__search-input {
+    width: 100%;
+    padding: 0.625rem 1rem 0.625rem 2.5rem;
+    border: 1px solid $color-gray-border;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s;
+    width: 70%;
+
+    &:focus {
+      border-color: $color-primary;
+      box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+    }
+  }
+
+  &__filter-select {
+    padding: 0.625rem 1rem;
+    border: 1px solid $color-gray-border;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    background-color: $color-bg-white;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+    width: 10%;
+
+    &:focus {
+      border-color: $color-primary;
+      box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+    }
+  }
+
+  // Element: table
+  &__table-wrapper {
+    background-color: $color-bg-white;
+    border: 1px solid $color-border;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  &__table-head {
+    background-color: $color-gray-bg;
+    border-bottom: 1px solid $color-border;
+  }
+
+  &__table-header {
+    padding: 0.875rem 1.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    // Modifier: right aligned
+    &--right {
+      text-align: right;
+    }
+  }
+
+  &__table-body {
+    // Nested styling for rows
+  }
+
+  &__table-row {
+    border-bottom: 1px solid $color-border;
+    transition: background-color 0.2s;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: $color-gray-bg;
+    }
+  }
+
+  &__table-cell {
+    padding: 1rem 1.5rem;
+  }
+
+  // Element: problem info
+  &__problem-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__problem-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $color-text-primary;
+  }
+
+  &__problem-slug {
+    font-size: 0.75rem;
+    color: $color-text-secondary;
+    font-family: monospace;
+    margin-top: 0.125rem;
+  }
+
+  // Element: difficulty badge
+  &__difficulty-badge {
+    display: inline-flex;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid;
+
+    // Modifier: easy
+    &--easy {
+      color: $color-easy;
+      background-color: $color-easy-bg;
+      border-color: $color-easy-border;
+    }
+
+    // Modifier: medium
+    &--medium {
+      color: $color-medium;
+      background-color: $color-medium-bg;
+      border-color: $color-medium-border;
+    }
+
+    // Modifier: hard
+    &--hard {
+      color: $color-hard;
+      background-color: $color-hard-bg;
+      border-color: $color-hard-border;
+    }
+  }
+
+  // Element: status badge
+  &__status-badge {
+    display: inline-flex;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid;
+
+    // Modifier: solved
+    &--solved {
+      color: #059669;
+      background-color: #ecfdf5;
+      border-color: #a7f3d0;
+    }
+
+    // Modifier: attempted
+    &--attempted {
+      color: #d97706;
+      background-color: #fef3c7;
+      border-color: #fcd34d;
+    }
+
+    // Modifier: not-started
+    &--not-started {
+      color: #6b7280;
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+    }
+  }
+
+  // Element: tags
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  &__tag {
+    display: inline-flex;
+    padding: 0.125rem 0.5rem;
+    background-color: #f3f4f6;
+    color: #374151;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+
+    // Modifier: more indicator
+    &--more {
+      color: $color-text-secondary;
+    }
+  }
+
+  &__cell-text {
+    font-size: 0.875rem;
+    color: $color-text-primary;
+  }
+
+  &__date-text {
+    font-size: 0.875rem;
+    color: $color-text-secondary;
+  }
+
+  // Element: actions
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  &__action-button {
+    padding: 0.5rem;
+    color: $color-text-secondary;
+    background: none;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    // Modifier: edit
+    &--edit:hover {
+      color: $color-primary;
+      background-color: #eff6ff;
+    }
+
+    // Modifier: delete
+    &--delete:hover {
+      color: #dc2626;
+      background-color: #fef2f2;
+    }
+  }
+
+  // Element: pagination
+  &__pagination {
+    background-color: $color-bg-white;
+    border-top: 1px solid $color-border;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__pagination-info {
+    font-size: 0.875rem;
+    color: #374151;
+  }
+
+  &__pagination-bold {
+    font-weight: 500;
+  }
+
+  &__pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__pagination-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    background-color: $color-bg-white;
+    border: 1px solid $color-gray-border;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover:not(:disabled) {
+      background-color: $color-gray-bg;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__pagination-pages {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  &__page-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    border: 1px solid $color-gray-border;
+    background-color: $color-bg-white;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: $color-gray-bg;
+    }
+
+    // Modifier: active page
+    &--active {
+      background-color: $color-primary;
+      color: white;
+      border-color: $color-primary;
+    }
+  }
+
+  &__ellipsis {
+    padding: 0 0.5rem;
+    color: $color-text-secondary;
+  }
+}

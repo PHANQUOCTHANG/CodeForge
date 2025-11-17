@@ -14,8 +14,8 @@ namespace CodeForge.Api.DTOs
         public string? Status { get; set; }
 
         public string? Constraints { get; set; } // "1 <= n <= 10^5"
-        public int TimeLimit { get; set; } = 1000; // (optional)
-        public int MemoryLimit { get; set; } = 256; // (optional)
+        public int TimeLimit { get; set; }// (optional)
+        public int MemoryLimit { get; set; } // (optional)
         public string? Notes { get; set; } // Ghi chú thêm (nếu có)
         public string? Slug { get; set; } = string.Empty;
     }

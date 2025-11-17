@@ -5,7 +5,7 @@ namespace CodeForge.Core.Interfaces.Repositories
 {
     public interface IProblemRepository
     {
-        Task<List<Problem>> GetAllAsync();
+        Task<List<Problem>> GetAllAsync(QueryParameters queryParameters);
         Task<Problem?> GetByIdAsync(Guid problemId);
 
         Task<Problem?> GetBySlugAsync(string slug);

@@ -402,9 +402,9 @@ namespace CodeForge.Core.Service
                     }
                 }
 
-                if (problem.Status != "SOLVED") problem.Status = checkPass ? "SOLVED" : "ATTEMPTED";
-                UpdateProblemDto updateProblemDto = _mapper.Map<UpdateProblemDto>(problem);
-                await _problemRepository.UpdateAsync(updateProblemDto);
+                // if (problem.Status != "SOLVED") problem.Status = checkPass ? "SOLVED" : "ATTEMPTED";
+                // UpdateProblemDto updateProblemDto = _mapper.Map<UpdateProblemDto>(problem);
+                // await _problemRepository.UpdateAsync(updateProblemDto);
 
                 CreateSubmissionDto createSubmissionDto = new CreateSubmissionDto(userId, problemId, userCode, language, status, (int)(time * 1000), memory, countTestCasePassed, testCases.Count);
                 await _submissionRepository.CreateAsync(createSubmissionDto);
