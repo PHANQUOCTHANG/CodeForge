@@ -30,6 +30,9 @@ namespace CodeForge.Infrastructure.Data
         public DbSet<Problem> CodingProblems { get; set; }
         public DbSet<TestCase> TestCases { get; set; }
         public DbSet<Submission> Submissions { get; set; }
+        public DbSet<DiscussionThread> DiscussionThreads { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Profile> Profiles { get; set; }
 
         // =============================
         // 🔹 Cấu hình mối quan hệ và converter
@@ -90,7 +93,32 @@ namespace CodeForge.Infrastructure.Data
                 .IsRequired()
                 .HasMaxLength(450); // Đảm bảo độ dài cho TokenHash
 
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Profile)
+                .WithOne(p => p.User)
+                .HasForeignKey<Profile>(p => p.UserID)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        }
+            modelBuilder.Entity<DiscussionThread>(entity =>
+            {
+                entity.HasKey(t => t.ThreadID);
+
+                // Chỉ định Foreign Key relationship
+                entity.HasOne(t => t.User)
+                    .WithMany()
+                    .HasForeignKey(t => t.UserID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // ✅ CRITICAL: Không để EF tạo shadow property
+                entity.Property(t => t.UserID)
+                    .IsRequired()
+                    .ValueGeneratedNever();  // ✅ Không auto-generate
+
+                // Indexes
+                entity.HasIndex(t => t.UserID);
+                entity.HasIndex(t => t.CreatedAt);
+            });
+        }   
     }
 }
+

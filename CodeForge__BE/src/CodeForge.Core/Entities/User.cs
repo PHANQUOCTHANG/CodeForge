@@ -33,7 +33,9 @@ namespace CodeForge.Core.Entities
                 public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
                 public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
                 public ICollection<Progress> Progresses { get; set; } = new List<Progress>();
-
+                public ICollection<DiscussionThread> DiscussionThreads { get; set; } = new List<DiscussionThread>();
+                public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+                public Profile? Profile { get; set; }
                 public User() { }
 
         }

@@ -2,11 +2,13 @@
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Infrastructure.Repositories;
 using CodeForge.Core.Interfaces.Services;
-using CodeForge__BE.src.CodeForge.Core.Interfaces.Services;
-using CodeForge__BE.src.CodeForge.Core.Services;
 using CodeForge.Core.Service;
 using CodeForge.Core.Services;
+using CodeForge__BE.src.CodeForge.Core.Interfaces.Services;
+using CodeForge__BE.src.CodeForge.Core.Services;
 using CodeForge.Infrastructure.Services;
+using CodeForge.Core.Interfaces;
+using CodeForge.Application.Services;
 
 namespace CodeForge.Infrastructure
 {
@@ -60,6 +62,14 @@ namespace CodeForge.Infrastructure
             // Submission .
             services.AddScoped<ISubmissionRepository, SubmissionRepository>();
             services.AddScoped<ISubmissionService, SubmissionService>();
+
+            // Thread .
+            services.AddScoped<IThreadService, ThreadService>();
+            services.AddScoped<IThreadRepository, ThreadRepository>();
+
+            // Comment .
+            //services.AddScoped<ICommentService, CommentService>();
+
             return services;
         }
     }

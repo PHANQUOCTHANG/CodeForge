@@ -33,7 +33,7 @@ namespace CodeForge
             builder.Services.AddHttpContextAccessor();
             // Đăng ký DbContext
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // AutoMapper
             builder.Services.AddAutoMapper(typeof(MappingProfile));
