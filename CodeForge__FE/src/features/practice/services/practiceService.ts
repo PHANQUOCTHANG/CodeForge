@@ -82,6 +82,38 @@ const practiceService = {
     }
   },
 
+  getAllProblem: async () => {
+    try {
+      const res = await api.get("api/problems");
+      return res.data.data; // chỉ trả về phần cần dùng
+    } catch (error: any) {
+      console.error("Lỗi khi gọi API /api/problems:", error.message);
+      throw error;
+    }
+  },
+
+  deleteProblem: async (problemId: string) => {
+    try {
+      const res = await api.delete(`api/problems/${problemId}`);
+      return res.data;
+    } catch (error: any) {
+      console.error(
+        "Lỗi khi xóa problem:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+
+  getProblemBySlug: async (slug: string) => {
+    try {
+      const res = await api.get(`api/problems/${slug}`);
+      return res;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  },
+
   createTestCase: async (data: any) => {
     data = data.map((item) => {
       const converted = convertInputArrayToObject(item.input);
@@ -129,65 +161,20 @@ const practiceService = {
     }
   },
 
-  getAllProblem: async () => {
+  getTestCaseOfProblem: async (problemId: string, isHidden: boolean | null) => {
     try {
-<<<<<<< HEAD
-      const res = await api.get("api/problems");
-=======
-      const res = await api.get("/problems");
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
-      return res.data.data; // chỉ trả về phần cần dùng
-    } catch (error: any) {
-      console.error("Lỗi khi gọi API /api/problems:", error.message);
-      throw error;
-    }
-  },
-
-  deleteProblem: async (problemId: string) => {
-    try {
-      const res = await api.delete(`api/problems/${problemId}`);
-      return res.data;
-    } catch (error: any) {
-      console.error(
-        "Lỗi khi xóa problem:",
-        error.response?.data || error.message
-      );
-      throw error;
-    }
-  },
-
-  getProblemBySlug: async (slug: string) => {
-    try {
-<<<<<<< HEAD
-      const res = await api.get(`api/problems/${slug}`);
-=======
-      const res = await api.get(`/problems/${slug}`);
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
+      let url = `api/testcases/${problemId}`;
+      if (isHidden) url = `${url}?isHidden=${isHidden}`;
+      const res = await api.get(url);
       return res;
     } catch (error: any) {
       throw new Error(error.message);
     }
   },
 
-  getTestCaseOfProblem: async (problemId: string) => {
-    try {
-<<<<<<< HEAD
-      const res = await api.get(`api/testcases/${problemId}`);
-=======
-      const res = await api.get(`/testcases/${problemId}`);
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
-      return res;
-    } catch (error: any) {
-      throw new Error(error.message);
-    }
-  },
   runTest: async (data: any) => {
     try {
-<<<<<<< HEAD
       const res = await api.post(`api/problems/run-problem`, data);
-=======
-      const res = await api.post(`/problems/run-problem`, data);
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
       return res;
     } catch (error: any) {
       throw new Error(error.message);
@@ -196,47 +183,65 @@ const practiceService = {
 
   submitProblem: async (data: any) => {
     try {
-<<<<<<< HEAD
       const res = await api.post(`api/problems/submit`, data);
-=======
-      const res = await api.post(`/problems/submit`, data);
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
+      console.log(res.data) ;
       return res;
     } catch (error: any) {
       throw new Error(error.message);
     }
   },
 
-<<<<<<< HEAD
   getSubmissionsById: async (
     problemId: string | null,
     userId: string | null
   ) => {
     try {
       const res = await api.get(`api/submissions/${problemId}/${userId}`);
-=======
-  getSubmissionsById: async (problemId: string, userId: string) => {
-    try {
-      const res = await api.get(`/submissions/${problemId}/${userId}`);
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
       return res;
     } catch (error: any) {
       throw new Error(error.message);
     }
   },
-<<<<<<< HEAD
 
-  // getAllLesson: async () => {
-  //   try {
-  //     const res = await api.get("/lessons");
-  //     return res.data.data; // chỉ trả về phần cần dùng
-  //   } catch (error: any) {
-  //     console.error("Lỗi khi gọi API /api/problems:", error.message);
-  //     throw error;
-  //   }
-  // }
-=======
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
+  getAllSubmission: async () => {
+    try {
+      const res = await api.get("api/submissions");
+      return res.data.data; // chỉ trả về phần cần dùng
+    } catch (error: any) {
+      console.error("Lỗi khi gọi API /api/submissions:", error.message);
+      throw error;
+    }
+  },
+
+  getSubmissionById: async (submissionId: string) => {
+    try {
+      const res = await api.get(`api/submissions/${submissionId}`);
+      return res.data.data;
+    } catch (error: any) {
+      console.error("Lỗi khi gọi API /api/submissions/:id:", error.message);
+      throw error;
+    }
+  },
+
+  getUserById: async (userId: string) => {
+    try {
+      const res = await api.get(`api/user/${userId}`);
+      return res.data.data; // chỉ trả về phần cần dùng
+    } catch (error: any) {
+      console.error("Lỗi khi gọi API /api/user:", error.message);
+      throw error;
+    }
+  },
+
+  getProblemById: async (problemId: string) => {
+    try {
+      const res = await api.get(`api/problems/${problemId}`);
+      return res.data.data;
+    } catch (error: any) {
+      console.error("Lỗi khi gọi API /api/problems/:id:", error.message);
+      throw error;
+    }
+  },
 };
 
 export default practiceService;

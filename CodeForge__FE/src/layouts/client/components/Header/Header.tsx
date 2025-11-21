@@ -24,11 +24,8 @@ const navItems = [
   { label: "Community", icon: Home, path: "/community" },
   { label: "Login", icon: LogIn, path: "/login" },
   { label: "Register", icon: UserRoundPen, path: "/register" },
-<<<<<<< HEAD
-=======
   { label: "About", icon: UserRoundPen, path: "/about" },
   // { label: "Log out", icon: LogOut, path: "/log-out" },
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
 ];
 
 const content = (

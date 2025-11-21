@@ -44,7 +44,7 @@ const UI_CONFIG = {
 } as const;
 
 // Hardcoded userId (should be moved to context/state management)
-const DUMMY_USER_ID = "f452f361-bcde-405a-afe0-3d404e37d319";
+const DUMMY_USER_ID = "A0C392F8-ACEA-46AF-8815-316BFDFAB064";
 const DetailPractice: React.FC = () => {
   const navigate = useNavigate();
   const { slug } = useParams() || "";
@@ -128,8 +128,10 @@ const DetailPractice: React.FC = () => {
   const fetchTestCases = useCallback(
     async (problemId: string) => {
       try {
-        
-        const response = await practiceService.getTestCaseOfProblem(problemId , );
+        const response = await practiceService.getTestCaseOfProblem(
+          problemId,
+          true
+        );
         const data = response?.data?.data;
 
         if (!data) return;
@@ -377,16 +379,20 @@ const DetailPractice: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await practiceService.submitProblem({
+      const payload = {
         userId: DUMMY_USER_ID,
         problemId: problem.problemId,
         language,
         functionName: problem.functionName,
         code,
-      });
+      };
+      console.log(payload) ;
+      const response = await practiceService.submitProblem(payload);
+      console.log("Submit");
+      console.log(response);
 
       const result: SubmitResult = response.data.data;
-      console.log(result) ;
+      console.log(result);
       setModalData({
         isSuccess: !!result.submit,
         passedTests: result.testCasePass ?? 0,
@@ -640,7 +646,7 @@ const DetailPractice: React.FC = () => {
             {activeTab == "submissions" && (
               <SubmissionsTab
                 problemId={problem.problemId}
-                userId="f452f361-bcde-405a-afe0-3d404e37d319"
+                userId="A0C392F8-ACEA-46AF-8815-316BFDFAB064"
               ></SubmissionsTab>
             )}
           </div>

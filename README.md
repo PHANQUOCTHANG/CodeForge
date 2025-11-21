@@ -128,7 +128,7 @@ Frontend build xong thành static HTML/JS/CSS → serve bằng nginx.
 
 Backend build .dll và chạy ASP.NET trên base image aspnet:8.0.
 
-DB dùng volume riêng sql_data (không trùng với dev volume).
+DB dùng volume riêng sql_data (không trùng với dev volume).   
 
 Không mount code local → code trong container là build version (an toàn, nhanh, gọn).
 

@@ -94,13 +94,16 @@ namespace CodeForge.Api.Controllers
                 testCases,
                 runProblemDto.ProblemId
             );
-
             return Ok(ApiResponse<object>.Success(result, "Code executed successfully."));
         }
 
         [HttpPost("submit")]
         public async Task<IActionResult> SubmitProblemAsync([FromBody] RunProblemDto runProblemDto)
         {
+             Console.WriteLine("Debug ok") ;
+            Console.WriteLine(runProblemDto.UserId) ;
+            Console.WriteLine(runProblemDto.ProblemId) ;
+            Console.WriteLine(runProblemDto.Code) ;
             if (runProblemDto == null)
             {
                 return BadRequest(ApiResponse<object>.Fail("Invalid request body."));
