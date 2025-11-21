@@ -12,9 +12,9 @@ const languages = [
   {
     label: "JavaScript",
     value: "javascript",
-    sample: `// Example: Print Hello World
+    sample: `// Ví dụ: In ra Hello World
 function greet(name) {
-  return "Hello, " + name + "!";
+  return "Xin chào, " + name + "!";
 }
 
 console.log(greet("CodeForge"));`,
@@ -22,9 +22,9 @@ console.log(greet("CodeForge"));`,
   {
     label: "Python",
     value: "python",
-    sample: `# Example: Print Hello World
+    sample: `# Ví dụ: In ra Hello World
 def greet(name):
-    return f"Hello, {name}!"
+    return f"Xin chào, {name}!"
 
 print(greet("CodeForge"))`,
   },
@@ -35,7 +35,7 @@ print(greet("CodeForge"))`,
 using namespace std;
 
 int main() {
-    cout << "Hello, CodeForge!" << endl;
+    cout << "Xin chào, CodeForge!" << endl;
     return 0;
 }`,
   },
@@ -44,7 +44,7 @@ int main() {
     value: "java",
     sample: `class Main {
   public static void main(String[] args) {
-    System.out.println("Hello, CodeForge!");
+    System.out.println("Xin chào, CodeForge!");
   }
 }`,
   },
@@ -54,7 +54,7 @@ int main() {
     sample: `using System;
 class Program {
   static void Main() {
-    Console.WriteLine("Hello, CodeForge!");
+    Console.WriteLine("Xin chào, CodeForge!");
   }
 }`,
   },
@@ -65,21 +65,21 @@ class Program {
 import "fmt"
 
 func main() {
-  fmt.Println("Hello, CodeForge!")
+  fmt.Println("Xin chào, CodeForge!")
 }`,
   },
   {
     label: "PHP",
     value: "php",
     sample: `<?php
-echo "Hello, CodeForge!";
+echo "Xin chào, CodeForge!";
 ?>`,
   },
   {
     label: "Rust",
     value: "rust",
     sample: `fn main() {
-    println!("Hello, CodeForge!");
+    println!("Xin chào, CodeForge!");
 }`,
   },
 ];
@@ -94,7 +94,6 @@ export function CodeEditor() {
   const [output, setOutput] = useState("");
   const [isCorrect, setIsCorrect] = useState(false);
 
-  // Khi đổi ngôn ngữ -> tự load code mẫu
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = languages.find((item) => item.value === e.target.value);
     if (selected) {
@@ -104,17 +103,17 @@ export function CodeEditor() {
       setIsCorrect(false);
     }
   };
+
   const handleResetCode = () => {
     setOutput("");
     setIsCorrect(false);
   };
-  // Run Code (demo hiển thị output cứng)
+
   const handleRunCode = () => {
-    setOutput(`Running ${language}...\nHello, CodeForge!`);
-    if (code.includes("Hello")) setIsCorrect(true);
+    setOutput(`Đang chạy ${language}...\nXin chào, CodeForge!`);
+    if (code.includes("Xin chào")) setIsCorrect(true);
   };
 
-  // Chuyển theme
   const handleToggleTheme = () => {
     setTheme((prev) => (prev === "vs-dark" ? "vs-light" : "vs-dark"));
   };
@@ -131,8 +130,9 @@ export function CodeEditor() {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6 }}
           >
-            Try Our Interactive Code Editor
+            Thử Trình Biên Tập Mã Tương Tác
           </motion.h2>
+
           <motion.p
             className="code-editor__subtitle"
             initial={{ opacity: 0, y: 24 }}
@@ -140,8 +140,8 @@ export function CodeEditor() {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6 }}
           >
-            Practice coding with instant feedback. Choose a language, edit code,
-            and run it below!
+            Hãy luyện tập viết mã với phản hồi trực tiếp. Chọn ngôn ngữ, chỉnh
+            sửa mã và chạy ngay bên dưới!
           </motion.p>
         </div>
 
@@ -156,37 +156,37 @@ export function CodeEditor() {
             transition={{ duration: 0.6 }}
           >
             <h3 className="code-editor__card-title">
-              Try to run Hello world program
+              Hãy chạy chương trình Hello World
             </h3>
-            <span className="code-editor__badge">Easy</span>
+
+            <span className="code-editor__badge">Dễ</span>
 
             <div className="code-editor__instructions">
-              <h4>Instructions:</h4>
+              <h4>Yêu cầu:</h4>
               <p>
-                Look at the code and press the run code button to see the code
-                results.
-                <code>"Hello, CodeForge!"</code>.
+                Quan sát đoạn mã và nhấn nút chạy để xem kết quả. Kết quả cần
+                hiển thị <code>"Xin chào, CodeForge!"</code>.
               </p>
             </div>
 
             <div className="code-editor__example">
-              <h4>Example:</h4>
+              <h4>Ví dụ:</h4>
               <pre>{`Input: greet("CodeForge") 
-Output: "Hello, CodeForge!"`}</pre>
+Output: "Xin chào, CodeForge!"`}</pre>
             </div>
 
             <div className="code-editor__hints">
-              <h4>Hints:</h4>
+              <h4>Gợi ý:</h4>
               <ul>
-                <li>• Try to understand the structure of each language </li>
-                <li>• Understand how to run code</li>
+                <li>• Quan sát cấu trúc mã của từng ngôn ngữ</li>
+                <li>• Nắm cách chương trình chạy và in kết quả</li>
               </ul>
             </div>
 
             {isCorrect && (
               <div className="code-editor__success">
                 <CheckCircle className="code-editor__success-icon" />
-                <span>Great job! Challenge completed!</span>
+                <span>Tuyệt vời! Bạn đã hoàn thành thử thách!</span>
               </div>
             )}
           </motion.div>
@@ -212,17 +212,19 @@ Output: "Hello, CodeForge!"`}</pre>
                   </option>
                 ))}
               </select>
+
               <CustomButton
                 className="btn btn--primary"
                 onClick={handleResetCode}
               >
-                <RotateCcw className="btn__icon" /> Reset Code
+                <RotateCcw className="btn__icon" /> Làm mới
               </CustomButton>
+
               <CustomButton
                 className="btn btn--primary"
                 onClick={handleRunCode}
               >
-                <Play className="btn__icon" /> Run Code
+                <Play className="btn__icon" /> Chạy mã
               </CustomButton>
 
               <CustomButton
@@ -234,13 +236,13 @@ Output: "Hello, CodeForge!"`}</pre>
                 ) : (
                   <Moon className="btn__icon" />
                 )}
-                Theme
+                Giao diện
               </CustomButton>
             </div>
 
             <div className="code-editor__tabs">
               <CodeXml />
-              <span>Code</span>
+              <span>Mã nguồn</span>
             </div>
 
             <div className="code-editor__textarea-wrapper">
@@ -254,12 +256,13 @@ Output: "Hello, CodeForge!"`}</pre>
             </div>
 
             <div className="code-editor__output">
-              <h4>Output:</h4>
+              <h4>Kết quả:</h4>
+
               {output ? (
                 <pre className="code-editor__output--success">{output}</pre>
               ) : (
                 <div className="code-editor__output--placeholder">
-                  Click "Run Code" to see output
+                  Nhấn "Chạy mã" để xem kết quả
                 </div>
               )}
             </div>

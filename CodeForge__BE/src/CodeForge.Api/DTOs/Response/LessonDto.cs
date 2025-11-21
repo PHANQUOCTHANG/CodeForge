@@ -11,7 +11,7 @@ namespace CodeForge.Application.DTOs.Response
                 public Guid LessonId { get; set; }
                 public Guid ModuleId { get; set; }
                 public string Title { get; set; } = string.Empty;
-
+                public bool IsDeleted { get; set; } = false;
                 /// <summary>
                 /// Loại bài học: "video", "text", "quiz", "coding"
                 /// </summary>

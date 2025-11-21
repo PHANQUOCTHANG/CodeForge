@@ -4,7 +4,7 @@ import LessonSidebar from "@/features/course/components/course-learning/LessonSi
 import LessonHeader from "@/features/course/components/course-learning/LessonHeader";
 import LessonContent from "@/features/course/components/course-learning/LessonContent";
 import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate
-import { useCourseLesson } from "@/features/course/hooks/useCourseLesson";
+import { useLesson } from "@/features/Lesson/hooks/useLesson";
 import { useCourseDetail } from "@/features";
 import { Button, Result, Spin } from "antd";
 import { AxiosError } from "axios"; // Import AxiosError type
@@ -12,12 +12,12 @@ import NotFound from "@/pages/not-found/NotFound";
 
 const CourseLearningPage = () => {
   const { slug, moduleId, lessonId } = useParams<{
-    slug: string;
-    moduleId: string;
-    lessonId: string;
+    slug: string | undefined;
+    moduleId: string | undefined;
+    lessonId: string | undefined;
   }>(); // Assume IDs are always present
   const navigate = useNavigate(); // Hook for navigation
-
+  const hasRequiredParams = !!slug && !!lessonId;
   // --- Resizer Logic (Keep as is) ---
   const [leftWidth, setLeftWidth] = useState(30);
   const [isDragging, setIsDragging] = useState(false);
@@ -73,10 +73,12 @@ const CourseLearningPage = () => {
     isLoading: isLoadingLesson,
     isError: isErrorLesson,
     error: errorLesson, // Get the detailed error object
-  } = useCourseLesson(lessonId);
+  } = useLesson(lessonId);
 
   // --- Render Logic with Error Handling ---
-
+  if (!hasRequiredParams) {
+    return <NotFound />;
+  }
   // 1. Loading State: Show spinner if *either* query is loading
   if (isLoadingCourse || isLoadingLesson) {
     return <Spin tip="Đang tải nội dung khóa học..." fullscreen />;

@@ -21,8 +21,11 @@ const navItems = [
   { label: "Courses", icon: BookText, path: "/courses" },
   { label: "Practice", icon: NotebookPen, path: "/practice" },
   { label: "Contact", icon: Home, path: "/contact" },
+  { label: "Community", icon: Home, path: "/community" },
   { label: "Login", icon: LogIn, path: "/login" },
   { label: "Register", icon: UserRoundPen, path: "/register" },
+  { label: "About", icon: UserRoundPen, path: "/about" },
+  // { label: "Log out", icon: LogOut, path: "/log-out" },
 ];
 
 const content = (
@@ -67,7 +70,7 @@ const Header = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              LEARN
+              FORGE
             </motion.span>
           </Link>
 

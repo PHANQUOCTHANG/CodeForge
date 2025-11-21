@@ -9,18 +9,18 @@ export default function ReasonSection() {
   const reasons = [
     {
       img: img1,
-      heading: "Develop logical thinking and problem solving abilities",
-      text: "Programming helps students practice logical thinking and problem-solving skills systematically and creatively.",
+      heading: "Phát triển tư duy logic và khả năng giải quyết vấn đề",
+      text: "Lập trình giúp học sinh rèn luyện tư duy logic và khả năng giải quyết vấn đề một cách hệ thống và sáng tạo.",
     },
     {
       img: img2,
-      heading: "Participate in large-scale programming competitions",
-      text: "CodeLearn organizes programming competitions that gather hundreds of domestic and foreign teams. Students have the opportunity to compete and gain experience after each competition.",
+      heading: "Tham gia các cuộc thi lập trình quy mô lớn",
+      text: "CodeLearn tổ chức các cuộc thi lập trình thu hút hàng trăm đội trong nước và quốc tế. Học sinh có cơ hội tranh tài và tích lũy kinh nghiệm sau mỗi cuộc thi.",
     },
     {
       img: img3,
-      heading: "Attractive job opportunities in the future",
-      text: "Approaching the language of the 4.0 era helps students open up job opportunities with attractive salaries in the future.",
+      heading: "Cơ hội việc làm hấp dẫn trong tương lai",
+      text: "Tiếp cận ngôn ngữ của thời đại 4.0 giúp học sinh mở ra cơ hội việc làm với mức lương hấp dẫn trong tương lai.",
     },
   ];
 
@@ -35,7 +35,7 @@ export default function ReasonSection() {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            Why should students learn programming early?
+            Vì sao học sinh nên học lập trình từ sớm?
           </motion.h2>
         </div>
 

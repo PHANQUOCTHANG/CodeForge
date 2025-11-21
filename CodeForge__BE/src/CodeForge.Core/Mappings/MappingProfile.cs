@@ -42,14 +42,22 @@ namespace CodeForge.Core.Mappings
 
             CreateMap<CreateCourseDto, Course>()
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false));
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false))
+                // 👇 DÒNG QUAN TRỌNG NHẤT: Bỏ qua Modules để không bị map tự động
+                .ForMember(dest => dest.Modules, opt => opt.Ignore());
 
-            CreateMap<UpdateCourseDto, Course>(); // Không cần .ForMember cho CreatedAt, chỉ cần cập nhật UpdatedAt (Qua AuditableEntity/DbContext)
+            CreateMap<UpdateCourseDto, Course>()
+                .ForMember(dest => dest.CourseId, opt => opt.Ignore())  // Chặn sửa ID
+                .ForMember(dest => dest.Modules, opt => opt.Ignore()) // 👈 QUAN TRỌNG: Tự xử lý list này
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore()); // (Nên thêm) Chặn sửa cờ xóa
 
             // Module
             CreateMap<Module, ModuleDto>();
             CreateMap<CreateModuleDto, Module>();
-            CreateMap<UpdateModuleDto, Module>();
+            CreateMap<UpdateModuleDto, Module>()
+                .ForMember(dest => dest.Lessons, opt => opt.Ignore()); // 👈 QUAN TRỌNG
             //Course Category
             CreateMap<CourseCategory, CategoryDto>();
             CreateMap<CreateCategoryDto, CourseCategory>();
@@ -71,6 +79,20 @@ namespace CodeForge.Core.Mappings
             CreateMap<LessonText, LessonTextDto>();
             CreateMap<LessonQuiz, LessonQuizDto>();
             CreateMap<QuizQuestion, QuizQuestionDto>();
+            // Mapping từ CreateLessonDto sang Lesson và các nội dung lồng nhau
+            CreateMap<CreateLessonDto, Lesson>();
+            CreateMap<CreateLessonVideoDto, LessonVideo>();
+            CreateMap<CreateLessonTextDto, LessonText>();
+            CreateMap<CreateLessonQuizDto, LessonQuiz>();
+            CreateMap<CreateQuizQuestionDto, QuizQuestion>();
+            CreateMap<CreateCodingProblemDto, Problem>();
+            //update Mapping từ UpdateLessonDto sang Lesson và các nội dung lồng nhau
+            CreateMap<UpdateLessonDto, Lesson>();
+            CreateMap<UpdateLessonVideoDto, LessonVideo>();
+            CreateMap<UpdateLessonTextDto, LessonText>();
+            CreateMap<UpdateLessonQuizDto, LessonQuiz>();
+            CreateMap<UpdateQuizQuestionDto, QuizQuestion>();
+            CreateMap<UpdateCodingProblemDto, Problem>();
 
             // =======================================================
             // 4. PROBLEMs & TEST CASES

@@ -12,7 +12,6 @@ import {
   CourseReviews,
   CourseSidebar,
   useCourseDetail,
-  type Review,
 } from "@/features";
 const CourseDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string | undefined }>();
@@ -51,7 +50,7 @@ const CourseDetailPage: React.FC = () => {
         </div>
       ) : isError ? (
         <Empty description={error.message} />
-      ) : course == null || course.length === 0 ? (
+      ) : course == null ? (
         <Empty description="Không có khóa học nào" />
       ) : (
         <div className="course-detail-page">
@@ -107,7 +106,9 @@ const CourseDetailPage: React.FC = () => {
                       <div
                         ref={overviewRef}
                         className="overview-content"
-                        dangerouslySetInnerHTML={{ __html: course.overview }}
+                        dangerouslySetInnerHTML={{
+                          __html: course.overview ?? "",
+                        }}
                       />
 
                       <CourseCurriculum

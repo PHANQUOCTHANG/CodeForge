@@ -393,7 +393,9 @@
   // ============================================
   .course-tabs {
     border-radius: var(--radius-xl);
-
+    position: sticky;
+    top: var(--space-16);
+    z-index: var(--z-sticky);
     background-color: vars.$white;
     display: flex;
     flex-wrap: wrap;

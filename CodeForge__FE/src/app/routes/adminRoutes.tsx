@@ -1,50 +1,63 @@
+// adminRouters.ts (Cách làm sạch sẽ hơn)
+
 import type { RouteObject } from "react-router";
 import AdminLayout from "@/layouts/admin/AdminLayout";
-import {
-  CourseManagementPage,
-  CourseEditorPage,
-  Dashboard,
-  SubmissionsManagement,
-  UsersManagement,
-} from "@/pages";
+import ProtectedRoute from "@/common/components/common/ProtectedRoute";
+import Dashboard from "@/pages/admin/dashboard/Dashboard";
+import { CourseManagementPage, UsersManagement } from "@/pages";
+import SubmissionsManagement from "@/pages/admin/submissions-Management/SubmissionsManagement";
+import ProblemManagement from "@/pages/admin/problem/page-problem/PageProblem";
+import CreateCourseEditor from "@/pages/admin/courses-management/components/new-model/NewCourse";
+import EditCourseEditor from "@/pages/admin/courses-management/components/course-edit/CourseEditorEnhanced";
 
-// ✅ Route config
+// ... (Imports của các trang Admin)
+
 export const adminRouters: RouteObject = {
   path: "/admin",
-  element: <AdminLayout />,
+  // 1. Áp dụng Bảo vệ và yêu cầu quyền 'admin'
+  // element: <ProtectedRoute requiredRole="admin" />,
+
   children: [
     {
-      index: true,
-      element: <Dashboard />,
-    },
-    {
-      path: "dashboard",
-      element: <Dashboard />,
-    },
-    {
-      path: "users",
-      element: <UsersManagement />,
-    },
-
-    {
-      path: "submissions",
-      element: <SubmissionsManagement />,
-    },
-    {
-      path: "courses",
+      // 2. Định nghĩa Layout
+      // Mọi route con sẽ render bên trong AdminLayout
+      element: <AdminLayout />,
       children: [
         {
           index: true,
-          element: <CourseManagementPage />,
+          element: <Dashboard />, // -> Khớp với /admin
         },
         {
-          path: "new",
-          element: <CourseEditorPage />,
+          path: "dashboard",
+          element: <Dashboard />, // -> Khớp với /admin/dashboard
         },
         {
-          path: ":id/edit",
-          element: <CourseEditorPage />,
+          path: "users",
+          element: <UsersManagement />, // -> Khớp với /admin/users
         },
+        // ... (các route con khác tương tự)
+        {
+          path: "submissions",
+          element: <SubmissionsManagement />,
+        },
+        {
+          path: "courses",
+          children: [
+            {
+              index: true,
+              element: <CourseManagementPage />,
+            },
+            {
+              path: "new",
+              element: <CreateCourseEditor />,
+            },
+            {
+              path: "edit/:courseId",
+              element: <EditCourseEditor />,
+            },
+          ],
+        },
+        { path: "problems", element: <ProblemManagement></ProblemManagement> },
       ],
     },
   ],

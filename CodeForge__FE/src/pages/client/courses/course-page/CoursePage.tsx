@@ -3,13 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import limit from "@/common/const/const";
 import banner from "@/assets/img/banner.png";
 import "./CoursePage.scss";
-import {
-  CourseFilters,
-  CourseList,
-  useCourses,
-  type Course,
-  type CourseLevel,
-} from "@/features";
+import { CourseFilters, CourseList, useCourses, type Course } from "@/features";
 import { calculateDiscount, formatPrice } from "@/features";
 
 // ======================
@@ -31,7 +25,8 @@ const CoursePage: React.FC = () => {
     page,
     limit,
     searchTerm,
-    level
+    level,
+    "active"
   );
   useEffect(() => {
     const params: Record<string, string> = {};

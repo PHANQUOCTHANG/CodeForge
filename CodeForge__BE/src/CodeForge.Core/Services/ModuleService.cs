@@ -59,13 +59,13 @@ namespace CodeForge.Core.Services
 
         public async Task<ModuleDto> UpdateAsync(UpdateModuleDto dto, Guid userId)
         {
-            var courseId = await _moduleRepository.GetCourseIdByModuleIdAsync(dto.ModuleId)
+            var courseId = await _moduleRepository.GetCourseIdByModuleIdAsync(dto.ModuleId ?? Guid.Empty)
                 ?? throw new NotFoundException($"Module với ID {dto.ModuleId} không tồn tại.");
 
             // Chỉ chủ sở hữu khóa học mới được sửa
             await CheckCourseOwnershipAsync(courseId, userId);
 
-            var module = await _moduleRepository.GetByIdAsync(dto.ModuleId); // Lấy entity đang được track
+            var module = await _moduleRepository.GetByIdAsync(dto.ModuleId ?? Guid.Empty); // Lấy entity đang được track
             _mapper.Map(dto, module); // Cập nhật entity
 
             var updatedModule = await _moduleRepository.UpdateAsync(module!);

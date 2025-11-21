@@ -48,6 +48,8 @@ namespace CodeForge.Infrastructure
             services.AddScoped<IPaymentService, PaymentService>();
             // vnpay .
             services.AddScoped<IVNPayService, VNPayService>();
+            //photo upload
+            services.AddScoped<IPhotoService, CloudinaryService>();
             // progress .
             services.AddScoped<IProgressRepository, ProgressRepository>();
             services.AddScoped<IProgressService, ProgressService>();

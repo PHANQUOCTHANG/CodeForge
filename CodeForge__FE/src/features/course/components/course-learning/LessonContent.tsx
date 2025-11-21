@@ -6,7 +6,7 @@ import {
   ChevronRight,
   ChevronUp,
 } from "lucide-react";
-import type { CourseDetail, LessonDto } from "@/features/course/types";
+import type { CourseDetail } from "@/features/course/types";
 import {
   CheckCircle,
   Code,
@@ -20,6 +20,7 @@ import TextContent from "@/features/course/components/course-learning/TextConten
 import VideoContent from "@/features/course/components/course-learning/VideoContent";
 import CodeContent from "@/features/course/components/course-learning/CodeContent";
 import QuizContent from "@/features/course/components/course-learning/QuizContent";
+import type { LessonDto } from "@/features/Lesson/types";
 
 const { Panel } = Collapse;
 

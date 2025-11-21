@@ -25,7 +25,7 @@ services:
       Jwt__Key: ${JWT_KEY}
       Jwt__Issuer: ${JWT_ISSUER}
       Jwt__Audience: ${JWT_AUDIENCE}
-      RapidApiKey : ${RapidApiKey}
+      RapidApiKey: ${RapidApiKey}
       FrontendUrl: ${FrontendUrl}
       VNPaySettings__TmnCode: ${VNPaySettings__TmnCode}
       VNPaySettings__HashSecret: ${VNPaySettings__HashSecret}
@@ -36,6 +36,11 @@ services:
       VNPaySettings__CurrCode: ${VNPaySettings__CurrCode}
       VNPaySettings__Version: ${VNPaySettings__Version}
       VNPaySettings__Locale: ${VNPaySettings__Locale}
+      # --- SỬA CÁC DÒNG NÀY ---
+      CloudinarySettings__CloudName: ${CloudName}
+      CloudinarySettings__ApiKey: ${CloudApiKey}
+      CloudinarySettings__ApiSecret: ${CloudApiSecret}
+
     ports:
       - "5000:8080"
     volumes:

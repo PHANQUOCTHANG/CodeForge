@@ -10,7 +10,7 @@ using CodeForge.Api.DTOs.Response;
 namespace CodeForge.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] 
+    [Route("api/[controller]")]
     public class TestCasesController : ControllerBase
     {
         private readonly ITestCaseService _testCaseService;
@@ -25,7 +25,6 @@ namespace CodeForge.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllTestCaseAsync()
         {
-            // Service trả về List<TestCaseDto>
             var result = await _testCaseService.GetAllTestCaseAsync();
 
             return Ok(ApiResponse<List<TestCaseDto>>.Success(result, "Test cases retrieved successfully."));
@@ -33,32 +32,29 @@ namespace CodeForge.Api.Controllers
 
         // --- GET ALL TESTCASES (GET /api/testcase/problemId) ---
         [HttpGet("{problemId:guid}")]
-        public async Task<IActionResult> GetAllTestCaseByProblemIdAsync([FromRoute] Guid problemId)
+        public async Task<IActionResult> GetAllTestCaseByProblemIdAsync([FromRoute] Guid problemId, [FromQuery] bool? isHidden)
         {
-            // Service trả về List<TestCaseDto>
-            var result = await _testCaseService.GetAllTestCaseByProblemIdAsync(true , problemId);
+            var result = await _testCaseService.GetAllTestCaseByProblemIdAsync(isHidden, problemId);
 
             return Ok(ApiResponse<List<TestCaseDto>>.Success(result, "Test cases retrieved successfully."));
         }
-        
+
 
         // --- GET TESTCASE BY ID (GET /api/testcase/{testCaseId}) ---
-        [Authorize]
-        [HttpGet("detail/{id:guid}")] 
+        // [Authorize]
+        [HttpGet("detail/{id:guid}")]
         public async Task<IActionResult> GetTestCaseByIdAsync([FromRoute] Guid testCaseId)
         {
-            // Service ném NotFoundException nếu không tìm thấy
             var result = await _testCaseService.GetTestCaseByIdAsync(testCaseId);
 
             return Ok(ApiResponse<TestCaseDto>.Success(result, "Test case retrieved successfully."));
         }
 
         // --- UPDATE TESTCASE (PATCH /api/testcase/update) ---
-        [Authorize] 
-        [HttpPatch] 
+        // [Authorize]
+        [HttpPatch]
         public async Task<IActionResult> UpdateTestCaseAsync([FromBody] UpdateTestCaseDto updateTestCaseDto)
         {
-            // Service ném NotFoundException/ConflictException
             var result = await _testCaseService.UpdateTestCaseAsync(updateTestCaseDto);
 
             return Ok(ApiResponse<TestCaseDto>.Success(result, "Test case updated successfully."));
@@ -66,25 +62,31 @@ namespace CodeForge.Api.Controllers
 
         // --- CREATE TESTCASE (POST /api/testcase) ---
         // [Authorize] 
-        [HttpPost("create")] 
+        [HttpPost("create")]
         public async Task<IActionResult> CreateTestCaseAsync([FromBody] CreateTestCaseDto createTestCaseDto)
         {
-            // Service ném ConflictException nếu dữ liệu trùng lặp
             var result = await _testCaseService.CreateTestCaseAsync(createTestCaseDto);
 
-            return CreatedAtAction(
-                nameof(GetTestCaseByIdAsync),
-                new { testCaseId = result.TestCaseId }, 
-                ApiResponse<TestCaseDto>.Created(result, "Test case created successfully.")
+            return Ok(
+                ApiResponse<TestCaseDto>.Success(result, "Test case created successfully.")
+            );
+        }
+
+        [HttpPost("createMany")]
+        public async Task<IActionResult> CreateManyTestCaseAsync([FromBody] List<CreateTestCaseDto> createTestCaseDtos)
+        {
+            var result = await _testCaseService.CreateManyTestCaseAsync(createTestCaseDtos);
+
+            return Ok(
+                ApiResponse<List<TestCaseDto>>.Success(result, "Test case created successfully.")
             );
         }
 
         // --- DELETE TESTCASE (DELETE /api/testcase/{testCaseId}) ---
-        [Authorize]
-        [HttpDelete("{id:guid}")] 
+        // [Authorize]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteTestCaseAsync([FromRoute] Guid testCaseId)
         {
-            // Service ném NotFoundException nếu không tìm thấy
             await _testCaseService.DeleteTestCaseAsync(testCaseId);
 
             return NoContent();

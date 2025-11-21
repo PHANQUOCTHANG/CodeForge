@@ -24,11 +24,9 @@ namespace CodeForge.Api.Controllers
 
         // --- GET ALL PROBLEMS (GET /api/problem) ---
         [HttpGet]
-
-        public async Task<IActionResult> GetAllProblemAsync()
+        public async Task<IActionResult> GetAllProblemAsync([FromQuery] QueryParameters queryParameters)
         {
-            // Service trả về List<ProblemDto>
-            var result = await _problemService.GetAllProblemAsync();
+            var result = await _problemService.GetAllProblemAsync(queryParameters);
 
 
             return Ok(ApiResponse<List<ProblemDto>>.Success(result, "Problems retrieved successfully."));
@@ -39,7 +37,6 @@ namespace CodeForge.Api.Controllers
 
         public async Task<IActionResult> GetProblemBySlugAsync([FromRoute] string slug)
         {
-            // Service ném NotFoundException nếu không tìm thấy
             var result = await _problemService.GetProblemBySlugAsync(slug);
 
 
@@ -51,7 +48,6 @@ namespace CodeForge.Api.Controllers
         [HttpPatch("update/{id}")]
         public async Task<IActionResult> UpdateProblemAsync([FromBody] UpdateProblemDto updateProblemDto, [FromRoute] Guid id)
         {
-            // Service ném NotFoundException/ConflictException
             var result = await _problemService.UpdateProblemAsync(updateProblemDto);
 
             return Ok(ApiResponse<ProblemDto>.Success(result, "Problem updated successfully."));
@@ -61,14 +57,10 @@ namespace CodeForge.Api.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateProblemAsync([FromBody] CreateProblemDto createProblemDto)
         {
-            // Service ném ConflictException nếu tiêu đề trùng
             var result = await _problemService.CreateProblemAsync(createProblemDto);
 
-            return CreatedAtAction(
-                nameof(GetProblemBySlugAsync),
-                new { slug = result.Slug },
-                ApiResponse<ProblemDto>.Created(result, "Problem created successfully.")
-            );
+            return Ok(ApiResponse<ProblemDto>.Created(result, "Problem created successfully."));
+
         }
 
         // --- DELETE PROBLEM (DELETE /api/problem/{problemId}) ---

@@ -1,0 +1,148 @@
+/* ================================
+   🌟 COMMUNITY PAGE PROFESSIONAL STYLE
+   ================================ */
+
+.community-container {
+  display: flex;
+  gap: 24px;
+  padding: 40px;
+  background: linear-gradient(180deg, #f8f9fa, #ffffff);
+  min-height: 100vh;
+  animation: fadeIn 0.8s ease;
+}
+
+/* LEFT CONTENT */
+.main-content {
+  flex: 3;
+  animation: slideIn 0.8s ease;
+}
+
+/* CARDS */
+.ant-card {
+  border-radius: 16px !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(6px);
+}
+
+.ant-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+/* CREATE POST AREA */
+textarea.ant-input {
+  border-radius: 8px;
+  resize: none;
+  transition: box-shadow 0.2s ease;
+}
+
+textarea.ant-input:focus {
+  box-shadow: 0 0 8px rgba(24, 144, 255, 0.3);
+}
+
+/* POST IMAGE */
+.post-image {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  margin: 10px 0 16px 0;
+  object-fit: cover;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.post-image:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* AUTHOR SECTION */
+.ant-avatar {
+  border: 2px solid #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.ant-avatar:hover {
+  transform: scale(1.05);
+}
+
+/* TAGS */
+.ant-tag {
+  border-radius: 6px !important;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.ant-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* INTERACTIONS (LIKE, COMMENT, SHARE) */
+.interaction-bar span {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.interaction-bar span:hover {
+  color: #1890ff;
+  transform: translateY(-2px);
+}
+
+/* RIGHT SIDEBAR */
+.sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: slideInRight 0.8s ease;
+}
+
+/* BUTTONS */
+.ant-btn {
+  border-radius: 6px !important;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.ant-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
