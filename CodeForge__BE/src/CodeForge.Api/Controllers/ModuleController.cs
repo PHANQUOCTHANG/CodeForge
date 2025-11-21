@@ -27,10 +27,10 @@ namespace CodeForge.Api.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
 
-            var module = await _moduleService.GetByIdAsync(id, userId.Value);
+
+            var module = await _moduleService.GetByIdAsync(id, userId);
             return Ok(ApiResponse<ModuleDto>.Success(module, "Lấy chi tiết chương học thành công."));
         }
 
@@ -41,10 +41,10 @@ namespace CodeForge.Api.Controllers
         [HttpGet("course/{courseId:guid}")]
         public async Task<IActionResult> GetByCourseId(Guid courseId)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
 
-            var modules = await _moduleService.GetByCourseIdAsync(courseId, userId.Value);
+
+            var modules = await _moduleService.GetByCourseIdAsync(courseId, userId);
             return Ok(ApiResponse<List<ModuleDto>>.Success(modules, "Lấy danh sách chương học thành công."));
         }
 
@@ -56,10 +56,10 @@ namespace CodeForge.Api.Controllers
         // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
         public async Task<IActionResult> Create([FromBody] CreateModuleDto dto)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
 
-            var newModule = await _moduleService.CreateAsync(dto, userId.Value);
+
+            var newModule = await _moduleService.CreateAsync(dto, userId);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -76,10 +76,9 @@ namespace CodeForge.Api.Controllers
         // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
         public async Task<IActionResult> Update([FromBody] UpdateModuleDto dto)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
 
-            var updatedModule = await _moduleService.UpdateAsync(dto, userId.Value);
+            var updatedModule = await _moduleService.UpdateAsync(dto, userId);
             return Ok(ApiResponse<ModuleDto>.Success(updatedModule, "Cập nhật chương học thành công."));
         }
 
@@ -91,10 +90,10 @@ namespace CodeForge.Api.Controllers
         // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
         public async Task<IActionResult> Delete(Guid id)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
 
-            await _moduleService.DeleteAsync(id, userId.Value);
+
+            await _moduleService.DeleteAsync(id, userId);
             return NoContent(); // 204 No Content là chuẩn cho Delete
         }
 

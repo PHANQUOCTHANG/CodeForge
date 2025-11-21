@@ -226,10 +226,10 @@ docker-compose -f docker-compose.prod.yml up --build -d
 
 | Mục đích                    | Lệnh                                                         |
 | --------------------------- | ------------------------------------------------------------ |
-| 🟢 Chạy dev mode            | ``        |
+| 🟢 Chạy dev mode            | ``                                                           |
 | 🔵 Dừng dev mode            | `docker-compose -f docker-compose.dev.yml down`              |
 | 🟠 Xóa toàn bộ (bao gồm DB) | `docker-compose -f docker-compose.dev.yml down -v`           |
-| 🔵 Mở shell FE              | `docker-compose -f docker-compose.dev.yml exec frontend sh`  | 
+| 🔵 Mở shell FE              | `docker-compose -f docker-compose.dev.yml exec frontend sh`  |
 | 🔵 Mở shell BE              | `docker-compose -f docker-compose.dev.yml exec backend bash` |
 | 🟣 Chạy production          | `docker-compose -f docker-compose.prod.yml up --build -d`    |
 | 🔴 Dừng production          | `docker-compose -f docker-compose.prod.yml down`             |

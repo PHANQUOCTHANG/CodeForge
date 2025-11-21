@@ -7,11 +7,11 @@ import authApi from "@/features/auth/services/authApi";
 import type { ApiResponse } from "@/common/types";
 import type { LoginResponse, RegisterRequest } from "@/features/auth/types";
 import { login } from "@/features/auth/slices/authSlice";
-
+import { useQueryClient } from "@tanstack/react-query";
 export const useRegister = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: RegisterRequest) => authApi.register(data),
 
@@ -28,7 +28,7 @@ export const useRegister = () => {
             "Thành công",
             "Tự động đăng nhập thành công!"
           );
-
+          queryClient.invalidateQueries();
           // ✅ 6. Chuyển hướng đến trang chủ
           navigate("/");
         }, 1200);

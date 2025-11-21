@@ -6,6 +6,7 @@ using CodeForge.Core.Entities;
 using CodeForge.Core.Exceptions;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Services;
+using CodeForge.Application.DTOs.Lessons;
 
 namespace CodeForge.Core.Services
 {
@@ -93,11 +94,6 @@ namespace CodeForge.Core.Services
 
         public async Task<LessonDto> CreateLessonAsync(CreateLessonDto createDto, Guid userId)
         {
-            // 1. Kiểm tra quyền: Người dùng có phải là chủ khóa học/admin không?
-            var courseId = await _moduleRepository.GetCourseIdByModuleIdAsync(createDto.ModuleId);
-            // ... (Thêm logic kiểm tra quyền (Authorization) ở đây. 
-            //     Giả sử người dùng có quyền (ví dụ: là teacher của khóa học đó))
-
             // 2. Map và Tạo Lesson chính
             var lesson = _mapper.Map<Lesson>(createDto);
             var newLesson = await _lessonRepository.AddAsync(lesson);

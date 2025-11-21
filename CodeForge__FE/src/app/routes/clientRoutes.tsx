@@ -13,6 +13,8 @@ import {
 } from "@/pages";
 import AboutPage from "@/pages/client/about/AboutPage";
 import CommunityPage from "@/pages/client/community/CommunityPage";
+import AboutPage from "@/pages/client/about/AboutPage";
+import CommunityPage from "@/pages/client/community/CommunityPage";
 export const clientRouters = {
   path: "/",
   element: <ClientLayout />,
@@ -24,16 +26,14 @@ export const clientRouters = {
     },
     { path: "courses/:slug", element: <CourseDetailPage /> },
     { path: "practice", element: <PracticePage /> },
-<<<<<<< HEAD
+
     // { path: "practice/:slug", element: <PracticeDetailPage /> },
     { path: "payment-return", element: <PaymentReturn /> },
     { path: "payment-processing", element: <PaymentProcessing /> },
     { path: "payment-result", element: <PaymentResult /> },
-=======
+
     { path: "practice/:slug", element: <PracticeDetailPage /> },
     { path: "community", element: <CommunityPage /> },
     { path: "about", element: <AboutPage /> },
-
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
   ],
 };

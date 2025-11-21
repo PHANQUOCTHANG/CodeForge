@@ -4,14 +4,19 @@ import { Input, Select } from "antd";
 interface Props {
   searchTerm: string;
   setSearchTerm: (v: string) => void;
+  setLevel: (v: string) => void;
   setPage: (v: number) => void;
 }
 
 const CourseFilters: React.FC<Props> = ({
   searchTerm,
   setSearchTerm,
+  setLevel,
   setPage,
 }) => {
+  const handleLevelChange = (e: any) => {
+    setLevel(e);
+  };
   return (
     <div className="course-page__filters">
       <div className="search-box">
@@ -36,11 +41,12 @@ const CourseFilters: React.FC<Props> = ({
           size="large"
           placeholder="Chọn danh mục"
           style={{ width: 200 }}
+          onChange={handleLevelChange}
           options={[
             { value: "all", label: "Tất cả" },
-            { value: "beginner", label: "Beginner" },
-            { value: "intermediate", label: "Intermediate" },
-            { value: "advanced", label: "Advanced" },
+            { value: "beginner", label: "Cơ bản" },
+            { value: "intermediate", label: "Trung bình" },
+            { value: "advanced", label: "Nâng cao" },
           ]}
         />
       </nav>

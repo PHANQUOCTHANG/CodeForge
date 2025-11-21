@@ -6,12 +6,12 @@ import { Spin } from "antd";
 import { useNavigate } from "react-router-dom"; // 💡 IMPORT useNavigate
 import { setGlobalAccessToken } from "@/api";
 import { openNotification } from "@/common/helper/notification";
-
+import { useQueryClient } from "@tanstack/react-query";
 const Logout = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate(); // 💡 Initialize useNavigate hook
   const [isLoading, setIsLoading] = useState(false);
-
+  const queryClient = useQueryClient();
   useEffect(() => {
     const handleLogout = async () => {
       setIsLoading(true);
@@ -34,6 +34,7 @@ const Logout = () => {
         // 4. Redirect the user to the login or home page
         // Use `replace: true` to prevent the user from navigating back to this
         // "Logout" page using the browser's back button.
+        queryClient.clear(); // ✅ xoá toàn bộ cache
         navigate(-1);
       }
     };
@@ -44,7 +45,7 @@ const Logout = () => {
     return () => {
       // Any cleanup if necessary, though unlikely for a simple logout
     };
-  }, [dispatch, navigate]); // Added navigate to dependency array
+  }, [dispatch, navigate, queryClient]); // Added navigate to dependency array
 
   // --- Render logic ---
 

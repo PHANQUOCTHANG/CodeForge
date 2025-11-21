@@ -54,7 +54,7 @@ const ResultDetails = ({ result, testCase }: ResultDetailsProps) => {
       <div className="result-section">
         <div className="result-label">Expected</div>
         <div className="result-content">
-          <code className="expected-value">{testCase.expectedOutput}</code>
+          <code className="expected-value">{testCase?.expectedOutput}</code>
         </div>
       </div>
     </div>

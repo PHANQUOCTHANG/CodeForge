@@ -10,7 +10,7 @@ namespace CodeForge.Api.DTOs.Response
         public Guid CourseId { get; set; }
         public string Title { get; set; } = string.Empty;
         public int OrderIndex { get; set; }
-
+        public bool IsDeleted { get; set; } = false;
         /// <summary>
         /// Danh sách các bài học thuộc chương này.
         /// </summary>

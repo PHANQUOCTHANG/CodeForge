@@ -5,6 +5,7 @@ import banner from "@/assets/img/banner.png";
 import "./CoursePage.scss";
 import { CourseFilters, CourseList, useCourses, type Course } from "@/features";
 import { calculateDiscount, formatPrice } from "@/features";
+
 // ======================
 // 📘 Component
 // ======================
@@ -12,13 +13,21 @@ const CoursePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = Number(searchParams.get("page")) || 1;
   const searchParam = searchParams.get("search") || "";
+  const levelParam = searchParams.get("level") || "all";
   const [page, setPage] = useState(pageParam);
+  const [level, setLevel] = useState(levelParam);
   const [searchTerm, setSearchTerm] = useState(searchParam);
 
   // ======================
   // 🚀 Fetch Courses (React Query)
   // ======================
-  const { data, isLoading, isError } = useCourses(page, limit, searchTerm);
+  const { data, isLoading, isError } = useCourses(
+    page,
+    limit,
+    searchTerm,
+    level,
+    "active"
+  );
   useEffect(() => {
     const params: Record<string, string> = {};
     if (page > 1) params.page = String(page);
@@ -44,6 +53,7 @@ const CoursePage: React.FC = () => {
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           setPage={setPage}
+          setLevel={setLevel}
         />
 
         {/* Course Grid */}

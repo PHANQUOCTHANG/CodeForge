@@ -42,12 +42,8 @@ namespace CodeForge.Api.Controllers
         public async Task<IActionResult> GetPaymentStatus(string orderId)
         {
             // 1. Lấy UserId từ token (nhờ kế thừa BaseApiController)
-            var userId = GetUserId();
-            if (userId == null)
-            {
-                // Điều này hiếm khi xảy ra nếu có [Authorize], nhưng vẫn check
-                return Unauthorized(ApiResponse<string>.Fail("Token không hợp lệ."));
-            }
+            var userId = GetRequiredUserId();
+
 
             // 2. Tìm thanh toán bằng OrderId
             var payment = await _paymentRepository.GetByOrderIdAsync(orderId);
@@ -61,7 +57,7 @@ namespace CodeForge.Api.Controllers
 
             // 4. KIỂM TRA BẢO MẬT QUAN TRỌNG NHẤT
             // Đảm bảo người dùng A không thể xem đơn hàng của người dùng B
-            if (payment.UserId != userId.Value)
+            if (payment.UserId != userId)
             {
                 _logger.LogWarning("GetPaymentStatus (FORBIDDEN): User {UserId} cố gắng xem thanh toán {OrderId} của User {PaymentUserId}.",
                     userId, orderId, payment.UserId);

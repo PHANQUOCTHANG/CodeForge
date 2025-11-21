@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using CodeForge.Application.DTOs.Lessons;
 
 namespace CodeForge.Application.DTOs.Modules
 {
@@ -13,5 +14,8 @@ namespace CodeForge.Application.DTOs.Modules
 
         [Required]
         public int OrderIndex { get; set; }
+
+        // Danh sách các Lesson
+        public List<CreateLessonDto> Lessons { get; set; } = new List<CreateLessonDto>();
     }
 }

@@ -37,7 +37,11 @@ namespace CodeForge.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            // Tự động thêm "WHERE IsDeleted = 0" vào MỌI câu truy vấn
+            modelBuilder.Entity<Course>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<Module>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<Lesson>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<Problem>().HasQueryFilter(x => !x.IsDeleted);
             // 1️⃣ Lesson <-> LessonVideo
             modelBuilder.Entity<Lesson>()
                 .HasOne(lesson => lesson.LessonVideo)

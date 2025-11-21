@@ -1,6 +1,6 @@
 import { lazy } from "react";
 export const CourseManagementPage = lazy(
-  () => import("./courses-management/CoursesManagement")
+  () => import("./courses-management/course-management-page/CoursesManagement")
 );
 export const Dashboard = lazy(() => import("./dashboard/Dashboard"));
 export const ExerciesManagement = lazy(

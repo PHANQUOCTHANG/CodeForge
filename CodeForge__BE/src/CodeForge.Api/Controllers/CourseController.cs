@@ -30,20 +30,11 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
         // ✅ Public endpoint - No Authorize attribute needed
         public async Task<IActionResult> GetCoursePagedAsync([FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
-            [FromQuery] string? search = null)
+            [FromQuery] string? search = null, [FromQuery] string? level = null, [FromQuery] string? status = null)
         {
-            Guid? userId = null;
-
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (idClaim != null && Guid.TryParse(idClaim.Value, out var parsed))
-                    userId = parsed;
-            }
-            Console.WriteLine($"User ID: {userId}");
+            var userId = GetUserId();
             // Service returns PaginationResult<object> (assuming this handles success structure internally)
-            var result = await _courseService.GetPagedCoursesAsync(userId, page, pageSize, search);
-
+            var result = await _courseService.GetPagedCoursesAsync(userId, page, pageSize, search, level, status);
             // If PaginationResult is your success wrapper, just return Ok(result).
             // If not, you should wrap it:
             return Ok(result);
@@ -54,15 +45,7 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
         // ✅ Public endpoint - No Authorize attribute needed
         public async Task<IActionResult> GetBySlug(string slug)
         {
-            Guid? userId = null;
-
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (idClaim != null && Guid.TryParse(idClaim.Value, out var parsed))
-                    userId = parsed;
-            }
-            Console.WriteLine($"User ID: {userId}");
+            var userId = GetUserId();
             var result = await _courseService.GetCourseDetailBySlugAsync(slug, userId);
 
             // ✅ IMPROVEMENT: Check for null and return 404 (NotFoundException should be thrown in service, 
@@ -79,7 +62,7 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
         }
 
         // --- GET COURSE BY ID (GET /api/course/{courseId}) ---
-        [HttpGet("{id:guid}")]
+        [HttpGet("{courseId:guid}", Name = "GetCourseById")]
         // ✅ Public endpoint - No Authorize attribute needed (Assuming course view is public)
         public async Task<IActionResult> GetCourseByIdAsync([FromRoute] Guid courseId)
         {
@@ -90,41 +73,49 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
             return Ok(ApiResponse<CourseDto>.Success(result, "Course retrieved successfully."));
         }
 
+
+        [Authorize] // Chỉ Admin/Teacher mới được gọi
+        [HttpGet("admin/{courseId:guid}")] // Route: /api/courses/admin/{id}
+        public async Task<IActionResult> GetCourseForAdmin([FromRoute] Guid courseId)
+        {
+            var result = await _courseService.GetCourseForAdminAsync(courseId);
+            return Ok(ApiResponse<CourseDetailDto>.Success(result, "Lấy chi tiết khóa học (bao gồm đã xóa) thành công."));
+        }
         // --- UPDATE COURSE (PATCH /api/course/update) ---
-        [Authorize] // 🛡️ Requires Access Token
-        [HttpPatch("update")]
-        public async Task<IActionResult> UpdateCourseAsync([FromBody] UpdateCourseDto updateCourseDto)
+        [Authorize] // 👈 Thêm phân quyền
+        [HttpPut("{courseId:guid}")]
+        public async Task<IActionResult> UpdateCourseAsync([FromRoute] Guid courseId, [FromBody] UpdateCourseDto updateCourseDto)
         {
             // Service throws NotFoundException/ConflictException.
-            var result = await _courseService.UpdateCourseAsync(updateCourseDto);
-
+            var result = await _courseService.UpdateCourseAsync(courseId, updateCourseDto);
             // ✅ Return 200 OK (Standard for successful update)
             return Ok(ApiResponse<CourseDto>.Success(result, "Course updated successfully."));
         }
 
         // --- CREATE COURSE (POST /api/course/create) ---
-        [Authorize] // 🛡️ Requires Access Token
-        [HttpPost("create")]
+        [Authorize] // 👈 Thêm phân quyền
+        [HttpPost]
         public async Task<IActionResult> CreateCourseAsync([FromBody] CreateCourseDto createCourseDto)
         {
+            var userId = GetRequiredUserId();
             // Service throws ConflictException if title exists.
-            var result = await _courseService.CreateCourseAsync(createCourseDto);
+            var result = await _courseService.CreateCourseAsync(createCourseDto, userId);
 
             // ✅ RESTful: Return 201 Created
-            return CreatedAtAction(
-                nameof(GetCourseByIdAsync),
-                new { courseId = result.CourseId }, // Assumes CourseDto has an Id property
+            return CreatedAtRoute(
+                "GetCourseById",              // 👈 [SỬA] Gọi thẳng tên route
+                new { courseId = result.CourseId }, // 👈 Tham số (đã khớp)
                 ApiResponse<CourseDto>.Created(result, "Course created successfully.")
             );
         }
 
-        // --- DELETE COURSE (DELETE /api/course/delete/{courseId}) ---
-        [Authorize] // 🛡️ Requires Access Token
-        [HttpDelete("{id:guid}")] // ✅ Use route constraint and clean up route
-        public async Task<IActionResult> DeleteCourseAsync([FromRoute] Guid courseId)
+        // --- DELETE COURSE (DELETE /api/courses/{id}) ---
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{courseId:guid}")] // ✅ Use route constraint and clean up route
+        public async Task<IActionResult> DeleteCourseAsync([FromRoute] Guid id)
         {
             // Service throws NotFoundException if not found.
-            await _courseService.DeleteCourseAsync(courseId);
+            await _courseService.DeleteCourseAsync(id);
 
             // ✅ RESTful: Return 204 No Content
             return NoContent();

@@ -3,16 +3,16 @@ import Editor from "@monaco-editor/react";
 import "./DetailPractice.scss";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "@/common/helper/Loading";
-import practiceService from "@/features/practice/services/practiceService";
+
 import type { CodingProblem } from "@/features";
-import type {
-  TestResult,
-  TestCase,
-  Language,
-  SubmitResult,
-} from "@/features/practice/types";
+
 import { ArrowLeft } from "lucide-react";
-import { generateFunctionTemplate } from "@/features/practice/utils/generateFunctionTemplate";
+
+import SubmitModal from "@/features/practice/components/submit-modal/SubmitModal";
+import ResultDetailsRaw from "@/features/practice/components/result-detail/ResultDetail";
+import { Spin } from "antd";
+import SubmissionsTab from "@/features/practice/components/submission/SubmissionTab";
+import practiceService from "@/features/practice/services/practiceService";
 import {
   clampValue,
   parseTestCaseInput,
@@ -56,7 +56,7 @@ const DetailPractice: React.FC = () => {
   const [testResults, setTestResults] = useState<TestResult[] | []>([]);
   const [isTesting, setIsTesting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  console.log("Test Results:", testResults, problem, testCases);
   // Modal State
   const [showModal, setShowModal] = useState(false);
   const [modalData, setModalData] = useState({
@@ -128,8 +128,7 @@ const DetailPractice: React.FC = () => {
   const fetchTestCases = useCallback(
     async (problemId: string) => {
       try {
-        
-        const response = await practiceService.getTestCaseOfProblem(problemId , );
+        const response = await practiceService.getTestCaseOfProblem(problemId);
         const data = response?.data?.data;
 
         if (!data) return;
@@ -386,7 +385,7 @@ const DetailPractice: React.FC = () => {
       });
 
       const result: SubmitResult = response.data.data;
-      console.log(result) ;
+      console.log(result);
       setModalData({
         isSuccess: !!result.submit,
         passedTests: result.testCasePass ?? 0,

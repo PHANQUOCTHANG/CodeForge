@@ -12,5 +12,7 @@ namespace CodeForge.Core.Interfaces.Repositories
 
         // ✅ Chuyển phương thức này TỪ ICourseRepository SANG ĐÂY
         Task<List<Guid>> GetUserEnrolledCourseIdsAsync(Guid userId);
+        Task<Enrollment?> GetPendingEnrollmentAsync(Guid userId, Guid courseId);
+        Task UpdateAsync(Enrollment enrollment);
     }
 }

@@ -1,4 +1,4 @@
-import { TYPE_MAPPING } from "../types";
+import { TYPE_MAPPING } from "@/features/practice/types";
 
 export const readNumber = (key: string, fallback: number): number => {
   try {
@@ -14,7 +14,6 @@ export const convertTypeToJs = (type: string | undefined): string => {
   return TYPE_MAPPING[type.toLowerCase()] || "any";
 };
 
-
 export const parseTestCaseInput = (input: any): any => {
   if (typeof input === "string") {
     try {
@@ -29,4 +28,3 @@ export const parseTestCaseInput = (input: any): any => {
 export const clampValue = (value: number, min: number, max: number): number => {
   return Math.max(min, Math.min(max, value));
 };
-

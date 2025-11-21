@@ -1,6 +1,6 @@
 import type { CodingProblem } from "@/features/course";
-import type { Language } from "../types";
-import { convertTypeToJs } from "../utils/index";
+import type { Language } from "@/features/practice/types";
+import { convertTypeToJs } from "@/features/practice/utils";
 
 // tạo hàm code theo language program và problem .
 export const generateFunctionTemplate = (
@@ -24,7 +24,7 @@ export const generateFunctionTemplate = (
 
   switch (lang) {
     case "cpp":
-return `${returnType} ${functionName}(${parameters}) {
+      return `${returnType} ${functionName}(${parameters}) {
 }`;
 
     case "javascript": {

@@ -8,7 +8,7 @@ export const progressApi = {
   updateLessonProgress: async (data: UpdateLessonProgressDto) => {
     try {
       const response = await api.post("/progress/update", data);
-      console.log(response);
+ 
       return response.data;
     } catch (error) {
       console.error("❌ Failed to update lesson progress:", error);

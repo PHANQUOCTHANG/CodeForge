@@ -41,11 +41,10 @@ namespace CodeForge.Api.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetLessonById(Guid id)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
 
             // Service sẽ ném NotFoundException hoặc ForbiddenException
-            var lesson = await _lessonService.GetLessonDetailAsync(id, userId.Value);
+            var lesson = await _lessonService.GetLessonDetailAsync(id, userId);
             return Ok(ApiResponse<LessonDto>.Success(lesson, "Lấy chi tiết bài học thành công."));
         }
 
@@ -55,10 +54,8 @@ namespace CodeForge.Api.Controllers
         [HttpGet("module/{moduleId:guid}")]
         public async Task<IActionResult> GetLessonsByModule(Guid moduleId)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
-
-            var lessons = await _lessonService.GetLessonsByModuleAsync(moduleId, userId.Value);
+            var userId = GetRequiredUserId();
+            var lessons = await _lessonService.GetLessonsByModuleAsync(moduleId, userId);
             return Ok(ApiResponse<List<LessonDto>>.Success(lessons, "Lấy danh sách bài học thành công."));
         }
 
@@ -69,10 +66,9 @@ namespace CodeForge.Api.Controllers
         // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
         public async Task<IActionResult> CreateLesson([FromBody] CreateLessonDto createDto)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
 
-            var newLesson = await _lessonService.CreateLessonAsync(createDto, userId.Value);
+            var newLesson = await _lessonService.CreateLessonAsync(createDto, userId);
 
             // ✅ RESTful: Trả về 201 Created
             return CreatedAtAction(

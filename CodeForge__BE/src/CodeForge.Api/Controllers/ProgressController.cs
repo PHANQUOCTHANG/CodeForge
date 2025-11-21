@@ -27,8 +27,8 @@ namespace CodeForge.Api.Controllers
         [HttpPost("update")]
         public async Task<IActionResult> UpdateLessonProgress([FromBody] UpdateProgressRequestDto request)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
+
 
             // Validate trạng thái đầu vào
             if (request.Status != "completed" && request.Status != "in_progress")
@@ -38,7 +38,7 @@ namespace CodeForge.Api.Controllers
 
             // Service sẽ ném NotFoundException nếu LessonId không tồn tại 
             // hoặc ConflictException nếu người dùng chưa đăng ký khóa học
-            var progressDto = await _progressService.UpdateProgressAsync(userId.Value, request.LessonId, request.Status);
+            var progressDto = await _progressService.UpdateProgressAsync(userId, request.LessonId, request.Status);
 
             return Ok(ApiResponse<ProgressDto>.Success(progressDto, "Cập nhật tiến độ thành công."));
         }
@@ -50,10 +50,10 @@ namespace CodeForge.Api.Controllers
         [HttpGet("course/{courseId:guid}")]
         public async Task<IActionResult> GetProgressForCourse(Guid courseId)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
 
-            var progressList = await _progressService.GetProgressForCourseAsync(userId.Value, courseId);
+
+            var progressList = await _progressService.GetProgressForCourseAsync(userId, courseId);
             return Ok(ApiResponse<List<ProgressDto>>.Success(progressList, "Lấy chi tiết tiến độ thành công."));
         }
 
@@ -64,11 +64,11 @@ namespace CodeForge.Api.Controllers
         [HttpGet("my-summary")]
         public async Task<IActionResult> GetMyProgressSummary()
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
+
 
             // Service sẽ chạy truy vấn JOIN phức tạp để tính toán %
-            var summary = await _progressService.GetUserProgressSummaryAsync(userId.Value);
+            var summary = await _progressService.GetUserProgressSummaryAsync(userId);
 
             // Trả về Dictionary<Guid, double> (CourseId -> Percentage)
             return Ok(ApiResponse<Dictionary<Guid, double>>.Success(summary, "Lấy tóm tắt tiến độ thành công."));
