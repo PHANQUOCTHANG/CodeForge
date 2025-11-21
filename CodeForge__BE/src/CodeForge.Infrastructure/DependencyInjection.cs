@@ -60,6 +60,12 @@ namespace CodeForge.Infrastructure
             // Submission .
             services.AddScoped<ISubmissionRepository, SubmissionRepository>();
             services.AddScoped<ISubmissionService, SubmissionService>();
+            // Thread .
+            services.AddScoped<IThreadService, ThreadService>();
+            services.AddScoped<IThreadRepository, ThreadRepository>();
+
+            // Comment .
+            //services.AddScoped<ICommentService, CommentService>();
             return services;
         }
     }

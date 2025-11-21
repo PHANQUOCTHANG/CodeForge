@@ -7,10 +7,11 @@ using CodeForge.Api.DTOs.Request.Course;
 using CodeForge.Api.DTOs.Request.Enrollment;
 using CodeForge.Api.DTOs.Request.User;
 using CodeForge.Api.DTOs.Response;
-
+using CodeForge.Api.Helpers;
 using CodeForge.Application.DTOs.Modules;
 using CodeForge.Application.DTOs.Response;
 using CodeForge.Core.Entities;
+using Profile = AutoMapper.Profile;
 
 
 namespace CodeForge.Core.Mappings
@@ -97,6 +98,37 @@ namespace CodeForge.Core.Mappings
             // Submission 
             CreateMap<CreateSubmissionDto, Submission>();
             CreateMap<Submission, SubmissionDto>();
+
+            // Profile
+            CreateMap<ProfileRequestDto, Profile>();
+            CreateMap<Profile, ProfileDto>();
+            CreateMap<Profile, ProfileRequestDto>()
+                .ForAllMembers(opts => opts.Condition((src, dest, value) => value != null));
+            
+            // DiscussionThread
+            CreateMap<DiscussionThread, ThreadDto>()
+                .ForMember(dest => dest.Author, opt => opt.MapFrom(src => 
+                    src.User != null ? src.User.Username : "Unknown"))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => 
+                    src.User != null && src.User.Profile != null 
+                        ? src.User.Profile.Avatar 
+                        : ""))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => 
+                    src.User != null ? src.User.Role : ""))
+                .ForMember(dest => dest.TimeAgo, opt => opt.MapFrom(src => 
+                    TimeAgoHelper.GetTimeAgo(src.CreatedAt)))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => 
+                    src.ImageUrl ?? ""))
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => 
+                    JsonHelper.ParseTags(src.Tags)))
+                .ForMember(dest => dest.Likes, opt => opt.MapFrom(src => 
+                    src.Likes))
+                .ForMember(dest => dest.Shares, opt => opt.MapFrom(src => 
+                    src.Shares))
+                .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => 
+                    src.Comments != null ? src.Comments.Count : 0));
+
+            // Comment
         }
     }
 }

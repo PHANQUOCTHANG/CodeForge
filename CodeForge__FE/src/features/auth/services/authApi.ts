@@ -17,7 +17,7 @@ const authApi = {
   login: async (payload: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
     // Axios được định kiểu sẽ trả về AuthResponse trong res.data
     const res = await api.post<ApiResponse<LoginResponse>>(
-      "/auth/login",
+      "api/Auth/login",
       payload
     );
     // Kiểm tra lỗi (thường là lỗi logic 400/409/500 đã được Global Handler bắt,
@@ -30,7 +30,7 @@ const authApi = {
     payload: RegisterRequest
   ): Promise<ApiResponse<RegisterResponse>> => {
     const res = await api.post<ApiResponse<RegisterResponse>>(
-      "/auth/register",
+      "api/Auth/register",
       payload
     );
 
@@ -39,7 +39,7 @@ const authApi = {
   // 🔄 TÁI KHỞI TẠO PHIÊN (Refresh Token)
   refreshAuth: async (): Promise<ApiResponse<RefreshResponse>> => {
     const res = await api.post<ApiResponse<RefreshResponse>>(
-      "/auth/refresh-token"
+      "api/Auth/refresh-token"
     ); // res.data ở đây là đối tượng ApiResponse
     return res.data;
   },
