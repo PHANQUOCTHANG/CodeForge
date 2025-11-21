@@ -18,14 +18,10 @@ import {
   parseTestCaseInput,
   readNumber,
 } from "@/features/practice/utils";
-import type {
-  Language,
-  SubmitResult,
-  TestCase,
-  TestResult,
-} from "@/features/practice/types";
-import { generateFunctionTemplate } from "@/features/practice/utils/generateFunctionTemplate";
-import test from "node:test";
+import SubmitModal from "@/features/practice/components/submit-modal/SubmitModal";
+import ResultDetailsRaw from "@/features/practice/components/result-detail/ResultDetail";
+import { Spin } from "antd";
+import SubmissionsTab from "@/features/practice/components/submission/SubmissionTab";
 
 // Type casting for compatibility
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
