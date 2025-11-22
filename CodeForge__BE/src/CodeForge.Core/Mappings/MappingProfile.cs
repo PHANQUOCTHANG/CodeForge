@@ -14,6 +14,8 @@ using CodeForge.Api.DTOs.Modules;
 using CodeForge.Api.DTOs.Request.CourseCategory;
 using CodeForge.Api.DTOs.Lessons;
 using CodeForge.Api.DTOs.Request.Language;
+using CodeForge.Application.DTOs.Request.CourseCategory;
+using CodeForge.Api.DTOs.Request; // Giả định DTOs Problem
 
 namespace CodeForge.Core.Mappings
 {
@@ -125,8 +127,8 @@ namespace CodeForge.Core.Mappings
             CreateMap<UpdateTestCaseDto, TestCase>();
 
             // Submission (Tùy chọn: cần thêm DTOs Submission nếu cần)
-            // CreateMap<CreateSubmissionDto, Submission>();
-            // CreateMap<Submission, SubmissionDto>();
+            CreateMap<CreateSubmissionDto, Submission>();
+            CreateMap<Submission, SubmissionDto>();
 
             // =======================================================
             // 5. ENROLLMENT & PROGRESS

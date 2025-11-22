@@ -33,78 +33,97 @@ import type {
 import QuickStats from "@/features/practice/components/add-problem/QuickStats";
 import Loading from "@/common/helper/Loading";
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const DIFFICULTY_OPTIONS: DifficultyOption[] = [
+  { value: "Dễ", label: "Dễ", color: "emerald" },
+  { value: "Trung Bình", label: "Trung Bình", color: "amber" },
+  { value: "Khó", label: "Khó", color: "rose" },
+];
+
+const LESSONS: Lesson[] = [
+  { id: "lesson-001", name: "Giới thiệu về Programming" },
+  { id: "lesson-002", name: "Variables và Data Types" },
+  { id: "lesson-003", name: "Control Flow - If/Else" },
+  { id: "lesson-004", name: "Loops - For và While" },
+  { id: "lesson-005", name: "Functions và Methods" },
+  { id: "lesson-006", name: "Arrays và Lists" },
+  { id: "lesson-007", name: "String Manipulation" },
+  { id: "lesson-008", name: "Object-Oriented Programming" },
+  { id: "lesson-009", name: "Recursion" },
+  { id: "lesson-010", name: "Algorithms - Sorting" },
+];
+
+const RETURN_TYPES = [
+  "void",
+  "int",
+  "long",
+  "float",
+  "double",
+  "boolean",
+  "char",
+  "string",
+  "int[]",
+  "string[]",
+  "vector<int>",
+  "vector<string>",
+  "vector<vector<int>>",
+  "Map<string, int>",
+  "Set<int>",
+  "Object",
+  "any",
+];
+
+const TABS: TabItem[] = [
+  { id: "basic", label: "Thông Tin Cơ Bản", icon: FileText },
+  { id: "function", label: "Chi Tiết Function", icon: Code2 },
+  { id: "limits", label: "Giới Hạn", icon: Settings },
+  { id: "testcases", label: "Các Test Case", icon: TestTube },
+];
+
+const INITIAL_PROBLEM: Problem = {
+  problemId: "",
+  title: "",
+  slug: "",
+  difficulty: "Dễ",
+  status: "NOT_STARTED",
+  description: "",
+  tags: "",
+  functionName: "",
+  parameters: "",
+  returnType: "void",
+  notes: "",
+  constraints: "",
+  timeLimit: 1000,
+  memoryLimit: 256,
+  lessonId: "",
+};
+
+const INITIAL_TEST_CASE: TestCase & { testCaseId?: string } = {
+  testCaseId: "",
+  input: [{ name: "", type: "int", value: "" }],
+  expectedOutput: "",
+  explain: "",
+  isHidden: false,
+};
+
 const EditProblem: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
 
+  // ========================================================================
+  // STATES
+  // ========================================================================
   const [loading, setLoading] = useState(true);
-  const [problem, setProblem] = useState<Problem>({
-    problemId: "",
-    title: "",
-    slug: "",
-    difficulty: "Dễ",
-    status: "NOT_STARTED",
-    description: "",
-    tags: "",
-    functionName: "",
-    parameters: "",
-    returnType: "void",
-    notes: "",
-    constraints: "",
-    timeLimit: 1000,
-    memoryLimit: 256,
-    lessonId: "",
-  });
-
-  const difficultyOptions: DifficultyOption[] = [
-    { value: "Dễ", label: "Dễ", color: "emerald" },
-    { value: "Trung Bình", label: "Trung Bình", color: "amber" },
-    { value: "Khó", label: "Khó", color: "rose" },
-  ];
-
-  const lessons: Lesson[] = [
-    { id: "lesson-001", name: "Giới thiệu về Programming" },
-    { id: "lesson-002", name: "Variables và Data Types" },
-    { id: "lesson-003", name: "Control Flow - If/Else" },
-    { id: "lesson-004", name: "Loops - For và While" },
-    { id: "lesson-005", name: "Functions và Methods" },
-    { id: "lesson-006", name: "Arrays và Lists" },
-    { id: "lesson-007", name: "String Manipulation" },
-    { id: "lesson-008", name: "Object-Oriented Programming" },
-    { id: "lesson-009", name: "Recursion" },
-    { id: "lesson-010", name: "Algorithms - Sorting" },
-  ];
-
-  const returnTypes: string[] = [
-    "void",
-    "int",
-    "long",
-    "float",
-    "double",
-    "boolean",
-    "char",
-    "string",
-    "int[]",
-    "string[]",
-    "vector<int>",
-    "vector<string>",
-    "vector<vector<int>>",
-    "Map<string, int>",
-    "Set<int>",
-    "Object",
-    "any",
-  ];
-
-  const [testCases, setTestCases] = useState<(TestCase & { testCaseId?: string })[]>([
-    {
-      input: [{ name: "", type: "int", value: "" }],
-      expectedOutput: "",
-      explain: "",
-      isHidden: false,
-    },
-  ]);
-
-  const [originalTestCases, setOriginalTestCases] = useState<(TestCase & { testCaseId?: string })[]>([]);
+  const [problem, setProblem] = useState<Problem>(INITIAL_PROBLEM);
+  const [testCases, setTestCases] = useState<
+    (ProblemTestCase & { testCaseId?: string })[]
+  >([INITIAL_TEST_CASE]);
+  const [originalTestCases, setOriginalTestCases] = useState<
+    (ProblemTestCase & { testCaseId?: string })[]
+  >([]);
   const [activeTab, setActiveTab] = useState<string>("basic");
   const [showPreview, setShowPreview] = useState<boolean>(false);
   const [errors, setErrors] = useState<Errors>({});
@@ -115,7 +134,11 @@ const EditProblem: React.FC = () => {
     testCases: ProblemTestCase[];
   } | null>(null);
 
-  // Load problem data on component mount
+  // ========================================================================
+  // EFFECTS
+  // ========================================================================
+
+  /** Tải thông tin bài tập và test cases khi component mount */
   useEffect(() => {
     const loadProblemData = async () => {
       if (!slug) {
@@ -128,27 +151,13 @@ const EditProblem: React.FC = () => {
         const problemRes = await practiceService.getProblemBySlug(slug);
         const problemData = problemRes.data?.data;
 
-        console.log(problemData);
-
         if (problemData) {
-          // Map API response to Problem type, handle both Easy/Medium/Hard and Dễ/Trung Bình/Khó
-          const difficultyMap: Record<string, string> = {
-            Easy: "Dễ",
-            Medium: "Trung Bình",
-            Hard: "Khó",
-            Dễ: "Dễ",
-            "Trung Bình": "Trung Bình",
-            Khó: "Khó",
-          };
-
+          // Ánh xạ độ khó từ API (Easy/Medium/Hard) thành UI (Dễ/Trung Bình/Khó)
           setProblem({
             problemId: problemData.problemId,
             title: problemData.title || "",
             slug: problemData.slug || "",
-            difficulty:
-              difficultyMap[problemData.difficulty] ||
-              problemData.difficulty ||
-              "Dễ",
+            difficulty: problemData.difficulty,
             status: problemData.status || "NOT_STARTED",
             description: problemData.description || "",
             tags: problemData.tags || "",
@@ -161,74 +170,31 @@ const EditProblem: React.FC = () => {
             memoryLimit: problemData.memoryLimit || 256,
             lessonId: problemData.lessonId || "",
           });
-        }
 
-        // Load test cases
-        if (problemData?.problemId) {
-          try {
-            const testCasesRes = await practiceService.getTestCaseOfProblem(
-              problemData.problemId
-            );
-            let testCasesData = testCasesRes.data?.data;
+          // Tải test cases
+          if (problemData?.problemId) {
+            try {
+              const testCasesRes = await practiceService.getTestCaseOfProblem(
+                problemData.problemId,
+                null
+              );
+              let testCasesData = testCasesRes.data?.data;
 
-            console.log("Test cases response:", testCasesRes);
-            console.log("Test cases data:", testCasesData);
-            console.log("Is array?", Array.isArray(testCasesData));
-            console.log("Length:", testCasesData?.length);
+              // Chuyển object thành array nếu cần
+              if (testCasesData && !Array.isArray(testCasesData)) {
+                testCasesData = Object.values(testCasesData);
+              }
 
-            // Convert to array if needed
-            if (testCasesData && !Array.isArray(testCasesData)) {
-              testCasesData = Object.values(testCasesData);
+              if (Array.isArray(testCasesData) && testCasesData.length > 0) {
+                const parsedTestCases = testCasesData.map(
+                  (tc: Record<string, unknown>) => parseTestCase(tc)
+                );
+                setTestCases(parsedTestCases);
+                setOriginalTestCases(parsedTestCases);
+              }
+            } catch (error) {
+              console.error("Lỗi khi tải test cases:", error);
             }
-
-            if (Array.isArray(testCasesData) && testCasesData.length > 0) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const parsedTestCases = testCasesData.map((tc: any) => {
-                let inputArray: Array<{
-                  name: string;
-                  type: string;
-                  value: string;
-                }> = [];
-
-                try {
-                  // Handle both 'Input' and 'input' property names
-                  const inputStr = tc.Input || tc.input;
-                  const inputObj =
-                    typeof inputStr === "string"
-                      ? JSON.parse(inputStr)
-                      : inputStr;
-                  inputArray = Object.entries(inputObj).map(([key, value]) => ({
-                    name: key,
-                    type: typeof value, // Simplified type detection
-                    value: String(value),
-                  }));
-                } catch {
-                  inputArray = [
-                    {
-                      name: "",
-                      type: "string",
-                      value: String(tc.Input || tc.input),
-                    },
-                  ];
-                }
-
-                return {
-                  input: inputArray,
-                  expectedOutput: tc.ExpectedOutput || tc.expectedOutput || "",
-                  explain: tc.Explain || tc.explain || "",
-                  isHidden: tc.IsHidden || tc.isHidden || false,
-                  testCaseId: tc.TestCaseId || tc.testCaseId, // Store testCaseId for tracking
-                };
-              });
-
-              console.log("Parsed test cases:", parsedTestCases);
-              setTestCases(parsedTestCases);
-              setOriginalTestCases(parsedTestCases);
-            }
-          } catch (testCasesError) {
-            console.error("Lỗi khi tải test cases:", testCasesError);
-            console.error("Chi tiết lỗi:", testCasesError);
-            // Continue without test cases if error occurs
           }
         }
       } catch (error) {
@@ -245,12 +211,58 @@ const EditProblem: React.FC = () => {
     loadProblemData();
   }, [slug]);
 
+  // ========================================================================
+  // HELPER FUNCTIONS
+  // ========================================================================
+
+  /** Parse test case từ API response */
+  const parseTestCase = (
+    tc: Record<string, unknown>
+  ): TestCase & { testCaseId?: string } => {
+    let inputArray: Array<{ name: string; type: string; value: string }> = [];
+
+    try {
+      const inputStr = (tc.Input || tc.input) as
+        | string
+        | Record<string, unknown>;
+      const inputObj =
+        typeof inputStr === "string" ? JSON.parse(inputStr) : inputStr;
+      inputArray = Object.entries(inputObj).map(([key, value]) => ({
+        name: key,
+        type: typeof value,
+        value: String(value),
+      }));
+    } catch {
+      inputArray = [
+        { name: "", type: "string", value: String(tc.Input || tc.input) },
+      ];
+    }
+
+    const testCaseId = (tc.TestCaseId || tc.testCaseId) as string;
+    const validTestCaseId =
+      testCaseId &&
+      testCaseId !== "00000000-0000-0000-0000-000000000000" &&
+      testCaseId.trim() !== ""
+        ? testCaseId
+        : "";
+
+    return {
+      input: inputArray,
+      expectedOutput: (tc.ExpectedOutput || tc.expectedOutput || "") as string,
+      explain: (tc.Explain || tc.explain || "") as string,
+      isHidden: (tc.IsHidden || tc.isHidden || false) as boolean,
+      testCaseId: validTestCaseId,
+    };
+  };
+
+  /** Xử lý thay đổi thông tin bài tập */
   const handleProblemChange = (
     field: keyof Problem,
     value: string | number
   ) => {
     setProblem({ ...problem, [field]: value });
 
+    // Tự động sinh slug từ title
     if (field === "title") {
       const newSlug = (value as string)
         .toLowerCase()
@@ -261,25 +273,21 @@ const EditProblem: React.FC = () => {
       setProblem((prev) => ({ ...prev, slug: newSlug }));
     }
 
+    // Xóa error khi user sửa field
     if (errors[field]) {
       setErrors({ ...errors, [field]: "" });
     }
   };
 
+  /** Xác thực form */
   const validateForm = (): boolean => {
     const newErrors: Errors = {};
 
-    if (!problem.title.trim()) {
-      newErrors.title = "Tiêu đề là bắt buộc";
-    }
-
-    if (!problem.functionName.trim()) {
+    if (!problem.title.trim()) newErrors.title = "Tiêu đề là bắt buộc";
+    if (!problem.functionName.trim())
       newErrors.functionName = "Tên hàm là bắt buộc";
-    }
-
-    if (!problem.description.trim()) {
+    if (!problem.description.trim())
       newErrors.description = "Mô tả là bắt buộc";
-    }
 
     const validTestCases = testCases.filter(
       (tc) => tc.input.some((v) => v.name && v.value) && tc.expectedOutput
@@ -289,6 +297,7 @@ const EditProblem: React.FC = () => {
       newErrors.testCases = "Cần ít nhất 1 test case hợp lệ";
     }
 
+    // Xác thực từng test case
     testCases.forEach((tc, index) => {
       const hasAnyVariable = tc.input.some((v) => v.name || v.value);
       if (hasAnyVariable) {
@@ -309,6 +318,7 @@ const EditProblem: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  /** Hiển thị notification */
   const showNotificationMessage = (
     message: string,
     type: "success" | "error" = "success"
@@ -317,6 +327,87 @@ const EditProblem: React.FC = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
+  /** Xóa test case qua callback từ TestCaseTab */
+  const handleTestCaseDelete = async (testCaseId: string) => {
+    console.log(testCaseId);
+    // Kiểm tra testCaseId hợp lệ (không phải GUID rỗng)
+    if (
+      testCaseId &&
+      testCaseId !== "00000000-0000-0000-0000-000000000000" &&
+      testCaseId.trim() !== ""
+    ) {
+      try {
+        await practiceService.deleteTestCase(testCaseId);
+        showNotificationMessage("✓ Đã xóa test case thành công!");
+      } catch (error) {
+        console.error("Lỗi khi xóa test case:", error);
+        showNotificationMessage("Lỗi khi xóa test case", "error");
+      }
+    }
+  };
+
+  /** Auto-save khi cập nhật test case */
+  const handleTestCaseUpdate = async (
+    updatedTestCases: (ProblemTestCase & { testCaseId?: string })[]
+  ) => {
+    // Chỉ update những test case đã tồn tại (có testCaseId hợp lệ)
+    for (let i = 0; i < originalTestCases.length; i++) {
+      const original = originalTestCases[i];
+      const current = updatedTestCases[i];
+
+      if (!current || !current.testCaseId) {
+        continue;
+      }
+
+      // Kiểm tra testCaseId hợp lệ
+      if (
+        current.testCaseId === "00000000-0000-0000-0000-000000000000" ||
+        current.testCaseId.trim() === ""
+      ) {
+        continue;
+      }
+
+      // So sánh chỉ dữ liệu, không so sánh testCaseId
+      const originalData = {
+        input: original.input,
+        expectedOutput: original.expectedOutput,
+        isHidden: original.isHidden,
+        explain: original.explain,
+      };
+
+      const currentData = {
+        input: current.input,
+        expectedOutput: current.expectedOutput,
+        isHidden: current.isHidden,
+        explain: current.explain,
+      };
+
+      if (JSON.stringify(originalData) !== JSON.stringify(currentData)) {
+        try {
+          console.log("Updating test case:", current.testCaseId);
+          await practiceService.updateTestCase(current.testCaseId, {
+            problemId: problem.problemId,
+            input: current.input,
+            expectedOutput: current.expectedOutput,
+            isHidden: current.isHidden,
+            explain: current.explain,
+          });
+          // Cập nhật originalTestCases để lần sau không update lại
+          setOriginalTestCases((prev) => {
+            const newOriginal = [...prev];
+            newOriginal[i] = current;
+            return newOriginal;
+          });
+          showNotificationMessage("✓ Đã cập nhật test case thành công!");
+        } catch (error) {
+          console.error("Lỗi khi cập nhật test case:", error);
+          showNotificationMessage("Lỗi khi cập nhật test case", "error");
+        }
+      }
+    }
+  };
+
+  /** Submit form - cập nhật bài tập */
   const handleSubmit = async () => {
     if (!validateForm()) {
       showNotificationMessage(
@@ -327,11 +418,9 @@ const EditProblem: React.FC = () => {
     }
 
     const data = generateSubmitData();
-    console.log("Data to update:", data.problem);
-    console.log("TestCases of data:", data.testCases);
 
     try {
-      // Update problem
+      // Cập nhật thông tin bài tập
       const updatedProblem = await practiceService.updateProblem(
         problem.problemId || "",
         data.problem
@@ -339,75 +428,94 @@ const EditProblem: React.FC = () => {
       const problemId =
         updatedProblem?.problemId ?? updatedProblem?.ProblemId ?? null;
 
-      // Handle test cases: update existing, delete removed, create new
+      // Xử lý test cases
       if (problemId) {
-        // 1. Delete test cases that were removed
-        // If testCases.length < originalTestCases.length, some were deleted
-        if (testCases.length < originalTestCases.length) {
-          for (let i = testCases.length; i < originalTestCases.length; i++) {
-            const deletedTestCase = originalTestCases[i];
-            if (deletedTestCase.testCaseId) {
-              try {
-                await practiceService.deleteTestCase(deletedTestCase.testCaseId);
-                console.log(`Deleted test case: ${deletedTestCase.testCaseId}`);
-              } catch (e) {
-                console.error(
-                  `Failed to delete test case ${deletedTestCase.testCaseId}:`,
-                  e
-                );
-              }
-            }
+        // 1. Xử lý test cases: Nếu có testcaseId thì UPDATE, không có thì CREATE
+        const updatePromises: Promise<void>[] = [];
+        const createTestCases: Array<{
+          problemId: string;
+          input: (typeof testCases)[0]["input"];
+          expectedOutput: string;
+          isHidden: boolean;
+          explain: string;
+        }> = [];
+
+        for (let i = 0; i < testCases.length; i++) {
+          const testCase = testCases[i];
+
+          // Bỏ qua test case không hợp lệ
+          if (
+            !Array.isArray(testCase.input) ||
+            !testCase.input.some((v) => v.name && v.value) ||
+            !testCase.expectedOutput
+          ) {
+            continue;
+          }
+
+          // Nếu có testcaseId hợp lệ: UPDATE
+          if (
+            testCase.testCaseId &&
+            testCase.testCaseId !== "00000000-0000-0000-0000-000000000000" &&
+            testCase.testCaseId.trim() !== ""
+          ) {
+            updatePromises.push(
+              (async () => {
+                try {
+                  await practiceService.updateTestCase(testCase.testCaseId!, {
+                    problemId,
+                    input: testCase.input,
+                    expectedOutput: testCase.expectedOutput,
+                    isHidden: testCase.isHidden,
+                    explain: testCase.explain,
+                  });
+                } catch (error) {
+                  console.error(
+                    `Lỗi khi cập nhật test case ${testCase.testCaseId}:`,
+                    error
+                  );
+                  throw error;
+                }
+              })()
+            );
+          } else {
+            // Nếu không có testcaseId hợp lệ: Thêm vào danh sách CREATE
+            createTestCases.push({
+              problemId,
+              input: testCase.input,
+              expectedOutput: testCase.expectedOutput,
+              isHidden: testCase.isHidden,
+              explain: testCase.explain,
+            });
           }
         }
 
-        // 2. Update existing test cases that were modified
-        for (let i = 0; i < Math.min(originalTestCases.length, testCases.length); i++) {
-          const current = testCases[i];
-          const testCaseId = current.testCaseId;
-
-          console.log(`Test case ${i}: ID = ${testCaseId}`);
-
-          // Only update if it has an ID (meaning it was from API)
-          if (testCaseId) {
-            try {
-              await practiceService.updateTestCase(testCaseId, {
-                input: current.input,
-                expectedOutput: current.expectedOutput,
-                isHidden: current.isHidden,
-                explain: current.explain,
-              });
-              console.log(`Updated test case: ${testCaseId}`);
-            } catch (e) {
-              console.error(`Failed to update test case ${testCaseId}:`, e);
-            }
+        // Thực hiện các update song song
+        if (updatePromises.length > 0) {
+          try {
+            await Promise.all(updatePromises);
+            console.log(`✓ Cập nhật ${updatePromises.length} test case`);
+          } catch (error) {
+            console.error("Lỗi khi cập nhật test cases:", error);
+            showNotificationMessage("Lỗi khi cập nhật test case", "error");
           }
         }
 
-        // 3. Create new test cases
-        const newTestCases = testCases.filter(
-          (tc, index) => index >= originalTestCases.length && !tc.testCaseId
-        );
-
-        if (newTestCases.length > 0) {
-          const testCasePayload = newTestCases.map((tc) => ({
-            problemId,
-            input: tc.input,
-            expectedOutput: tc.expectedOutput,
-            isHidden: tc.isHidden,
-            explain: tc.explain,
-          }));
-
-          await practiceService.createTestCase(testCasePayload);
-          console.log(`Created ${newTestCases.length} new test cases`);
+        // Tạo test cases mới
+        if (createTestCases.length > 0) {
+          try {
+            await practiceService.createTestCase(createTestCases);
+            console.log(`✓ Tạo ${createTestCases.length} test case mới`);
+          } catch (error) {
+            console.error("Lỗi khi tạo test case mới:", error);
+            showNotificationMessage("Lỗi khi tạo test case mới", "error");
+          }
         }
-
-        setSubmittedData({
-          problem: updatedProblem,
-          testCases: data.testCases,
-        });
-      } else {
-        setSubmittedData({ problem: updatedProblem, testCases: [] });
       }
+
+      setSubmittedData({
+        problem: updatedProblem,
+        testCases: data.testCases,
+      });
 
       setShowResultModal(true);
       showNotificationMessage("✓ Dữ liệu đã cập nhật thành công!");
@@ -417,12 +525,14 @@ const EditProblem: React.FC = () => {
     }
   };
 
+  /** Copy JSON vào clipboard */
   const copyToClipboard = () => {
     const data = generateSubmitData();
     navigator.clipboard.writeText(JSON.stringify(data, null, 2));
     showNotificationMessage("Đã copy JSON vào clipboard!");
   };
 
+  /** Download JSON */
   const downloadJSON = () => {
     const data = generateSubmitData();
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -437,19 +547,12 @@ const EditProblem: React.FC = () => {
     showNotificationMessage("Đã tải xuống file JSON!");
   };
 
+  /** Tạo dữ liệu submit - convert độ khó từ Việt sang Anh */
   const generateSubmitData = () => {
-    // Convert Vietnamese difficulty back to English for API
-    const difficultyMapReverse: Record<string, string> = {
-      Dễ: "Easy",
-      "Trung Bình": "Medium",
-      Khó: "Hard",
-    };
-
     return {
       problem: {
         ...problem,
-        difficulty:
-          difficultyMapReverse[problem.difficulty] || problem.difficulty,
+        difficulty: problem.difficulty,
         lessonId: problem.lessonId === "" ? null : problem.lessonId,
         tags: problem.tags,
       },
@@ -467,30 +570,30 @@ const EditProblem: React.FC = () => {
     };
   };
 
+  /** Làm mới form */
   const clearDraft = () => {
     if (confirm("Bạn có chắc muốn xóa tất cả thay đổi?")) {
       window.location.reload();
     }
   };
 
+  /** Lấy màu sắc tương ứng với độ khó */
   const getDifficultyColor = (diff: string): string => {
-    const option = difficultyOptions.find((opt) => opt.value === diff);
+    const option = DIFFICULTY_OPTIONS.find((opt) => opt.value === diff);
     return option ? option.color : "slate";
   };
 
-  const tabs: TabItem[] = [
-    { id: "basic", label: "Thông Tin Cơ Bản", icon: FileText },
-    { id: "function", label: "Chi Tiết Function", icon: Code2 },
-    { id: "limits", label: "Giới Hạn", icon: Settings },
-    { id: "testcases", label: "Các Test Case", icon: TestTube },
-  ];
-
+  /** Tính số test case hợp lệ */
   const validTestCasesCount = testCases.filter(
     (tc) =>
       Array.isArray(tc.input) &&
       tc.input.some((v) => v.name && v.value) &&
       tc.expectedOutput
   ).length;
+
+  // ========================================================================
+  // RENDER
+  // ========================================================================
 
   if (loading) {
     return <Loading />;
@@ -516,10 +619,10 @@ const EditProblem: React.FC = () => {
         setShowResultModal={setShowResultModal}
         submittedData={submittedData}
         getDifficultyColor={getDifficultyColor}
-        lessons={lessons}
+        lessons={LESSONS}
         copyToClipboard={copyToClipboard}
         downloadJSON={downloadJSON}
-      ></FormResultModal>
+      />
 
       <div className="container">
         {/* Header */}
@@ -582,7 +685,7 @@ const EditProblem: React.FC = () => {
 
         {/* Navigation Tabs */}
         <div className="tabs">
-          {tabs.map((tab) => {
+          {TABS.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
@@ -607,22 +710,22 @@ const EditProblem: React.FC = () => {
                 handleProblemChange={handleProblemChange}
                 errors={errors}
                 getDifficultyColor={getDifficultyColor}
-                difficultyOptions={difficultyOptions}
-                lessons={lessons}
-              ></BasicInfoTab>
+                difficultyOptions={DIFFICULTY_OPTIONS}
+                lessons={LESSONS}
+              />
 
               <FunctionDetailTab
                 activeTab={activeTab}
                 problem={problem}
                 handleProblemChange={handleProblemChange}
-                returnTypes={returnTypes}
-              ></FunctionDetailTab>
+                returnTypes={RETURN_TYPES}
+              />
 
               <LimitTab
                 activeTab={activeTab}
                 problem={problem}
                 handleProblemChange={handleProblemChange}
-              ></LimitTab>
+              />
 
               <TestCaseTab
                 activeTab={activeTab}
@@ -630,8 +733,10 @@ const EditProblem: React.FC = () => {
                 testCases={testCases}
                 setTestCases={setTestCases}
                 errors={errors}
-                returnTypes={returnTypes}
-              ></TestCaseTab>
+                returnTypes={RETURN_TYPES}
+                onTestCaseUpdate={handleTestCaseUpdate}
+                onTestCaseDelete={handleTestCaseDelete}
+              />
 
               {/* Action Buttons */}
               <div className="form-actions">
@@ -692,7 +797,7 @@ const EditProblem: React.FC = () => {
             <QuickStats
               problem={problem}
               validTestCasesCount={validTestCasesCount}
-            ></QuickStats>
+            />
           </div>
         </div>
       </div>

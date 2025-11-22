@@ -2,16 +2,16 @@
 
 import type { RouteObject } from "react-router";
 import AdminLayout from "@/layouts/admin/AdminLayout";
-import ProtectedRoute from "@/common/components/common/ProtectedRoute";
-import Dashboard from "@/pages/admin/dashboard/Dashboard";
-import { CourseManagementPage, UsersManagement } from "@/pages";
-import SubmissionsManagement from "@/pages/admin/submissions-Management/SubmissionsManagement";
+import {
+  CourseManagementPage,
+  Dashboard,
+  SubmissionsManagement,
+  UsersManagement,
+} from "@/pages";
 import ProblemManagement from "@/pages/admin/problem/page-problem/PageProblem";
 import CreateCourseEditor from "@/pages/admin/courses-management/components/new-model/NewCourse";
 import EditCourseEditor from "@/pages/admin/courses-management/components/course-edit/CourseEditorEnhanced";
 import CategoryManagement from "@/pages/admin/categories-management/CategoryManagement";
-
-// ... (Imports của các trang Admin)
 
 export const adminRouters: RouteObject = {
   path: "/admin",

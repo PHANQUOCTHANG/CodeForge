@@ -1,4 +1,3 @@
-// CodingProblemForm.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -21,6 +20,7 @@ import LimitTab from "@/features/practice/components/add-problem/LimitTab";
 import BasicInfoTab from "@/features/practice/components/add-problem/BasicInfoTab";
 import TestCaseTab from "@/features/practice/components/add-problem/TestCaseTab";
 import FormResultModal from "@/features/practice/components/add-problem/FormResultModal";
+import QuickStats from "@/features/practice/components/add-problem/QuickStats";
 import type {
   DifficultyOption,
   Errors,
@@ -28,13 +28,12 @@ import type {
   Problem,
   ProblemTestCase,
   TabItem,
-  TestCase,
   Notification,
 } from "@/features/practice/types/problem";
-import QuickStats from "@/features/practice/components/add-problem/QuickStats";
 
-const CodingProblemForm: React.FC = ({ problemId }) => {
+const AddProblem: React.FC = () => {
   const [problem, setProblem] = useState<Problem>({
+    problemId: "",
     title: "",
     slug: "",
     difficulty: "Dễ",
@@ -90,7 +89,9 @@ const CodingProblemForm: React.FC = ({ problemId }) => {
     "any",
   ];
 
-  const [testCases, setTestCases] = useState<TestCase[]>([
+  const [testCases, setTestCases] = useState<
+    (ProblemTestCase & { testCaseId?: string })[]
+  >([
     {
       input: [{ name: "", type: "int", value: "" }],
       expectedOutput: "",
@@ -111,7 +112,10 @@ const CodingProblemForm: React.FC = ({ problemId }) => {
 
   const navigate = useNavigate();
 
-  // Auto-save to localStorage
+  // ============================================================================
+  // EFFECTS
+  // ============================================================================
+
   useEffect(() => {
     const savedData = localStorage.getItem("codingProblemDraft");
     if (savedData) {
@@ -125,6 +129,7 @@ const CodingProblemForm: React.FC = ({ problemId }) => {
     }
   }, []);
 
+  /** Auto-save dữ liệu vào localStorage sau 1s */
   useEffect(() => {
     const timer = setTimeout(() => {
       localStorage.setItem(
@@ -134,6 +139,10 @@ const CodingProblemForm: React.FC = ({ problemId }) => {
     }, 1000);
     return () => clearTimeout(timer);
   }, [problem, testCases]);
+
+  // ============================================================================
+  // HANDLERS
+  // ============================================================================
 
   const handleProblemChange = (
     field: keyof Problem,
@@ -214,15 +223,13 @@ const CodingProblemForm: React.FC = ({ problemId }) => {
     }
 
     const data = generateSubmitData();
-    console.log("Data to submit:", data.problem);
-    console.log("TestCase of data:", data.testCases);
 
-    // 1) Create problem first and get created id
+    // Tạo bài toán trước để lấy ID
     const createdProblem = await practiceService.createProblem(data.problem);
     const problemId =
       createdProblem?.problemId ?? createdProblem?.ProblemId ?? null;
 
-    // 2) Prepare test case DTOs with ProblemId
+    // Nếu có test case hợp lệ, tạo chúng với problemId
     if (
       problemId &&
       Array.isArray(data.testCases) &&
@@ -237,10 +244,8 @@ const CodingProblemForm: React.FC = ({ problemId }) => {
       }));
 
       await practiceService.createTestCase(testCasePayload);
-      // set submittedData to include created problem id and original testcases
       setSubmittedData({ problem: createdProblem, testCases: data.testCases });
     } else {
-      // no testcases to create - still set submitted data with problem
       setSubmittedData({ problem: createdProblem, testCases: [] });
     }
     setShowResultModal(true);
@@ -518,4 +523,4 @@ const CodingProblemForm: React.FC = ({ problemId }) => {
   );
 };
 
-export default CodingProblemForm;
+export default AddProblem;

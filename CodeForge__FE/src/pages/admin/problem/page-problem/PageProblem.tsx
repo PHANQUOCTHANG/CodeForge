@@ -133,7 +133,7 @@ const ProblemManagement: React.FC = () => {
     },
     {
       label: "Trung Bình",
-      value: problems.filter((p) => p.difficulty === "Trung bình").length,
+      value: problems.filter((p) => p.difficulty === "Trung Bình").length,
     },
     {
       label: "Khó",

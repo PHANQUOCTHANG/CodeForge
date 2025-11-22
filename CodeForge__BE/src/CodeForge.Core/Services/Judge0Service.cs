@@ -23,7 +23,7 @@ namespace CodeForge.Core.Service
 
         private const string BaseUrl = "https://judge0-ce.p.rapidapi.com/submissions";
         private const string RapidApiHost = "judge0-ce.p.rapidapi.com";
-        private static readonly string RapidApiKey = Environment.GetEnvironmentVariable("RapidApiKey");
+        private static readonly string RapidApiKey = Environment.GetEnvironmentVariable("RapidApiKey") ?? "";
 
 
         private static readonly Regex NameColonTypePattern = new(@"^(\w+)\s*:\s*(.+)$", RegexOptions.Compiled);
@@ -329,11 +329,14 @@ namespace CodeForge.Core.Service
         }
 
 
-        // submit problem .
+        /// <summary>
+        /// Gửi code lên Judge0 để kiểm tra với tất cả test cases của bài tập
+        /// </summary>
         public async Task<Object> SubmitProblem(Guid userId, Guid problemId, string language, string userCode, string functionName)
         {
             try
             {
+                // Lấy thông tin bài tập
                 var problem = await _problemRepository.GetByIdAsync(problemId);
                 if (problem == null)
                 {
@@ -347,9 +350,11 @@ namespace CodeForge.Core.Service
                     };
                 }
 
+                // Parse parameters từ chuỗi "param1: type1, param2: type2"
                 var parameters = ParseParameters(problem.Parameters);
-                List<TestCase> testCases = await _testCaseRepository.GetAllByProblemIdAsync(null, problemId);
 
+                // Lấy tất cả test cases của bài tập
+                List<TestCase> testCases = await _testCaseRepository.GetAllByProblemIdAsync(null, problemId);
 
                 if (testCases == null || testCases.Count == 0)
                 {
@@ -363,66 +368,132 @@ namespace CodeForge.Core.Service
                     };
                 }
 
+                // Kiểm tra code validity trước khi submit
+                if (string.IsNullOrWhiteSpace(userCode))
+                {
+                    return new
+                    {
+                        testCasePass = 0,
+                        totalTestCase = 0,
+                        submit = false,
+                        status = "Error",
+                        message = "Code is empty"
+                    };
+                }
+
                 int countTestCasePassed = 0;
-                string status = "Accepted", message = "";
-                Judge0Response resultFail = null;
+                string status = "Accepted";
+                string message = "";
+                Judge0Response? resultFail = null;
                 double time = 0;
                 int memory = 0;
-                bool checkPass = true;
 
+                // Chạy từng test case
                 foreach (var testCase in testCases)
                 {
                     try
                     {
+                        // Parse input values từ chuỗi JSON
                         var inputValues = ParseInputValues(testCase.Input);
-                        string jsonInput = BuildJsonInput(inputValues, parameters);
-                        string fullCode = BuildFullCode(language, userCode, functionName, jsonInput, parameters);
-                        var response = await SubmitAsync(language, fullCode, testCase.TestCaseId, testCase.ExpectedOutput, problem.TimeLimit, problem.MemoryLimit);
 
-                        time = Math.Max(time, Double.Parse(response.Time));
-                        memory = Math.Max(memory, response.Memory ?? 0);
+                        // Build JSON input theo số lượng và type của parameters
+                        string jsonInput = BuildJsonInput(inputValues, parameters);
+
+                        // Build full code (thêm wrapper để test)
+                        string fullCode;
+                        try
+                        {
+                            fullCode = BuildFullCode(language, userCode, functionName, jsonInput, parameters);
+                        }
+                        catch (Exception ex)
+                        {
+                            status = "Compilation Error";
+                            message = $"Code generation error: {ex.Message}";
+                            break;
+                        }
+
+                        // Gửi code lên Judge0
+                        var response = await SubmitAsync(
+                            language,
+                            fullCode,
+                            testCase.TestCaseId,
+                            testCase.ExpectedOutput,
+                            problem.TimeLimit,
+                            problem.MemoryLimit
+                        );
+
+                        // Update thống kê thời gian và bộ nhớ
+                        if (!string.IsNullOrEmpty(response.Time) && double.TryParse(response.Time, out var parsedTime))
+                        {
+                            time = Math.Max(time, parsedTime);
+                        }
+
+                        if (response.Memory.HasValue)
+                        {
+                            memory = Math.Max(memory, response.Memory.Value);
+                        }
+
+                        // Kiểm tra kết quả
                         if (response.Passed == true)
                         {
                             countTestCasePassed++;
                         }
                         else
                         {
+                            // Test case không pass, lưu lại response lỗi đầu tiên
                             status = response.Status?.Description ?? "Failed";
                             message = response.Message ?? response.Stderr ?? "Test case failed";
                             resultFail = response;
-                            checkPass = false;
-                            break;
+                            break; // Dừng lại test case tiếp theo
                         }
                     }
                     catch (Exception ex)
                     {
+                        // Xảy ra lỗi khi xử lý test case này
                         status = "Runtime Error";
                         message = $"Error processing test case: {ex.Message}";
                         break;
                     }
                 }
 
-                // if (problem.Status != "SOLVED") problem.Status = checkPass ? "SOLVED" : "ATTEMPTED";
-                // UpdateProblemDto updateProblemDto = _mapper.Map<UpdateProblemDto>(problem);
-                // await _problemRepository.UpdateAsync(updateProblemDto);
+                // Lưu submission vào database
+                try
+                {
+                    CreateSubmissionDto createSubmissionDto = new CreateSubmissionDto(
+                        userId,
+                        problemId,
+                        userCode,
+                        language,
+                        status,
+                        (int)(time * 1000), // Convert từ seconds sang milliseconds
+                        memory,
+                        countTestCasePassed,
+                        testCases.Count
+                    );
+                    await _submissionRepository.CreateAsync(createSubmissionDto);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] Failed to save submission: {ex.Message}");
+                    // Không throw error, vẫn trả về kết quả cho user
+                }
 
-                CreateSubmissionDto createSubmissionDto = new CreateSubmissionDto(userId, problemId, userCode, language, status, (int)(time * 1000), memory, countTestCasePassed, testCases.Count);
-                await _submissionRepository.CreateAsync(createSubmissionDto);
-
+                // Trả về kết quả
                 return new
                 {
                     testCasePass = countTestCasePassed,
                     totalTestCase = testCases.Count,
-                    submit = countTestCasePassed == testCases.Count,
+                    submit = countTestCasePassed == testCases.Count, // true nếu all pass
                     status,
                     message,
                     time,
                     memory,
-                    resultFail,
+                    resultFail, // Trả về response lỗi đầu tiên (nếu có)
                 };
             }
             catch (Exception ex)
             {
+                // Xảy ra lỗi fatal
                 return new
                 {
                     testCasePass = 0,
@@ -470,7 +541,7 @@ namespace CodeForge.Core.Service
             return $"[{string.Join(",", jsonValues)}]";
         }
 
-        public static string BuildFullCode(string language, string userCode, string functionName, string inputJson, List<Parameter> parameters = null)
+        public static string BuildFullCode(string language, string userCode, string functionName, string inputJson, List<Parameter>? parameters = null)
         {
             if (string.IsNullOrWhiteSpace(userCode))
                 throw new ArgumentException("User code cannot be empty");

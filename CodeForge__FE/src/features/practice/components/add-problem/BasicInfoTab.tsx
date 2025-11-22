@@ -1,6 +1,15 @@
 import { AlertCircle, FileText } from "lucide-react";
 
-const BasicInfoTab = ({activeTab , problem , handleProblemChange , errors , getDifficultyColor , difficultyOptions , lessons}) => {
+const BasicInfoTab = ({
+  activeTab,
+  problem,
+  handleProblemChange,
+  errors,
+  getDifficultyColor,
+  difficultyOptions,
+  lessons,
+}) => {
+ 
   return (
     <>
       {/* Basic Info Tab */}
@@ -115,18 +124,18 @@ const BasicInfoTab = ({activeTab , problem , handleProblemChange , errors , getD
               />
               {problem.tags && (
                 <div className="tags">
-                  {problem.tags.split(",").map((tag : string, i : number) => (
+                  {problem.tags.split(",").map((tag: string, i: number) => (
                     <span key={i} className="tag">
                       {tag.trim()}
                     </span>
                   ))}
-                </div>  
+                </div>
               )}
             </div>
 
             <div className="form-group form-group--full">
               <label className="form-label">
-                Mô tả bài toán  <span className="form-label--required">*</span>
+                Mô tả bài toán <span className="form-label--required">*</span>
               </label>
               <textarea
                 value={problem.description}

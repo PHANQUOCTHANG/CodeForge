@@ -3,12 +3,14 @@ using CodeForge.Api.DTOs.Request;
 using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Interfaces.Services;
 using CodeForge.Core.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeForge.Api.Controllers
 {
     [ApiController]
     [Route("api/[Controller]")]
+     [Authorize]
     public class SubmissionsController : ControllerBase
     {
         private readonly ISubmissionService _submissionService;
@@ -29,7 +31,7 @@ namespace CodeForge.Api.Controllers
 
         // get by problemId and userId .
         [HttpGet("{problemId}/{userId}")]
-        public async Task<IActionResult> GetSubmissionByProblemIdAndUserId([FromRoute] Guid problemId , Guid userId)
+        public async Task<IActionResult> GetSubmissionByProblemIdAndUserId([FromRoute] Guid problemId, [FromRoute] Guid userId)
         {
             var result = await _submissionService.GetSubmissionByIdAsync(problemId, userId);
 
@@ -37,6 +39,7 @@ namespace CodeForge.Api.Controllers
         }
         // create .
         [HttpPost("create")]
+      
         public async Task<IActionResult> CreateSubmissionAsync([FromBody] CreateSubmissionDto createSubmissionDto)
         {
             // Service ném ConflictException nếu tiêu đề trùng

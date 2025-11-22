@@ -32,6 +32,7 @@ export interface Variable {
 }
 
 export interface TestCase {
+  testCaseId : string ;
   input: Variable[];
   expectedOutput: string;
   explain: string;

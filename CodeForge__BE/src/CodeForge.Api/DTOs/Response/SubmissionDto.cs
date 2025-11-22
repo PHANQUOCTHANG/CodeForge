@@ -15,10 +15,10 @@ namespace CodeForge.Api.DTOs.Response
 
         public DateTime SubmitTime { get; set; }
 
-        public int ExecutionTime { get; set; }
-        public int MemoryUsed { get; set; }
-        public int QuantityTestPassed { get; set; }
-        public int QuantityTest { get; set; }
+        public int? ExecutionTime { get; set; }
+        public int? MemoryUsed { get; set; }
+        public int? QuantityTestPassed { get; set; }
+        public int? QuantityTest { get; set; }
 
         public Guid? TestCaseIdFail { get; set; }
         public User? User { get; set; }

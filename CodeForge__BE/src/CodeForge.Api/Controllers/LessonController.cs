@@ -22,6 +22,13 @@ namespace CodeForge.Api.Controllers
             _lessonService = lessonService;
         }
 
+        // [HttpGet] 
+        // public async Task<IActionResult> GetAllLesson () {
+        //     var lessons = await _lessonService.
+
+        //     return Ok(ApiResponse<List<LessonDto>>.Success(lessons, "Lấy bài học thành công."));
+        // }
+
         /// <summary>
         /// Lấy chi tiết một bài học (Người dùng phải đăng ký khóa học).
         /// </summary>

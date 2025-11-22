@@ -41,7 +41,7 @@ namespace CodeForge.Api.Controllers
 
 
         // --- GET TESTCASE BY ID (GET /api/testcase/{testCaseId}) ---
-        // [Authorize]
+        [Authorize]
         [HttpGet("detail/{id:guid}")]
         public async Task<IActionResult> GetTestCaseByIdAsync([FromRoute] Guid testCaseId)
         {
@@ -51,17 +51,19 @@ namespace CodeForge.Api.Controllers
         }
 
         // --- UPDATE TESTCASE (PATCH /api/testcase/update) ---
-        // [Authorize]
-        [HttpPatch]
+        [Authorize]
+        [HttpPatch("update")]
         public async Task<IActionResult> UpdateTestCaseAsync([FromBody] UpdateTestCaseDto updateTestCaseDto)
         {
+            Console.WriteLine("Update TestCase") ;
+            Console.WriteLine(updateTestCaseDto.TestCaseId) ;
             var result = await _testCaseService.UpdateTestCaseAsync(updateTestCaseDto);
 
             return Ok(ApiResponse<TestCaseDto>.Success(result, "Test case updated successfully."));
         }
 
         // --- CREATE TESTCASE (POST /api/testcase) ---
-        // [Authorize] 
+        [Authorize] 
         [HttpPost("create")]
         public async Task<IActionResult> CreateTestCaseAsync([FromBody] CreateTestCaseDto createTestCaseDto)
         {
@@ -73,6 +75,7 @@ namespace CodeForge.Api.Controllers
         }
 
         [HttpPost("createMany")]
+         [Authorize]
         public async Task<IActionResult> CreateManyTestCaseAsync([FromBody] List<CreateTestCaseDto> createTestCaseDtos)
         {
             var result = await _testCaseService.CreateManyTestCaseAsync(createTestCaseDtos);
@@ -83,10 +86,12 @@ namespace CodeForge.Api.Controllers
         }
 
         // --- DELETE TESTCASE (DELETE /api/testcase/{testCaseId}) ---
-        // [Authorize]
-        [HttpDelete("{id:guid}")]
+        [Authorize]
+        [HttpDelete("{testCaseId:guid}")]
         public async Task<IActionResult> DeleteTestCaseAsync([FromRoute] Guid testCaseId)
         {
+            Console.WriteLine("TestCaseId") ;
+            Console.WriteLine(testCaseId) ;
             await _testCaseService.DeleteTestCaseAsync(testCaseId);
 
             return NoContent();

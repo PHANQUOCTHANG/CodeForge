@@ -30,6 +30,7 @@ namespace CodeForge.Infrastructure.Repositories
         public async Task<List<Submission>> GetAllAsync()
         {
             return await _context.Submissions
+                .Where(s => s.User != null && s.Problem != null)
                 .Include(s => s.User)
                 .Include(s => s.Problem)
                 .Include(s => s.TestCase)
@@ -39,10 +40,10 @@ namespace CodeForge.Infrastructure.Repositories
         public async Task<List<Submission>> GetByIdAsync(Guid problemId, Guid userId)
         {
             return await _context.Submissions
+                .Where(s => s.User != null && s.Problem != null && s.ProblemId == problemId && s.UserId == userId)
                 .Include(s => s.User)
                 .Include(s => s.Problem)
                 .Include(s => s.TestCase)
-                .Where(s => s.ProblemId == problemId && s.UserId == userId)
                 .ToListAsync();
         }
     }

@@ -1,366 +1,668 @@
-import { useState, useEffect } from 'react';
-// Dùng react-icons thay vì lucide-react
+import React, { useState, useEffect } from "react";
+import "./SubmissionsManagement.scss";
 import {
-  FaSearch,
-  FaCode,
+  FaCheckCircle,
+  FaTimesCircle,
   FaClock,
-  FaCalendarAlt, // Icon lịch
-  FaEye,         // Icon mắt
-  FaTimes,       // Icon X để đóng modal
-  FaCheckCircle, // Icon test passed
-  FaTimesCircle, // Icon test failed
-} from 'react-icons/fa';
-import './SubmissionsManagement.scss'; // Import file SCSS
+  FaCodeBranch,
+  FaEllipsisV,
+  FaEye,
+  FaTrash,
+  FaDownload,
+  FaTimes,
+  FaCopy,
+  FaCheck,
+} from "react-icons/fa";
+import practiceService from "@/features/practice/services/practiceService";
 
-// Định nghĩa interface cho bài nộp
 interface Submission {
-  id: number;
-  student: string;
-  exercise: string;
-  course: string;
-  status: 'passed' | 'failed' | 'pending';
-  score: number | null;
-  submittedAt: string; // Format: 'DD/MM/YYYY HH:MM'
-  executionTime: string; // ví dụ: '125ms' hoặc '-'
-  testsPassed: string; // ví dụ: '10/10' hoặc '-'
+  submissionId: string;
+  userName: string;
+  userEmail: string;
+  problemTitle: string;
+  problemSlug: string;
+  language: string;
+  status:
+    | "Accepted"
+    | "Wrong Answer"
+    | "Runtime Error"
+    | "Time Limit"
+    | "Pending";
+  submitTime: string;
+  executionTime: number;
+  memoryUsed: number;
+  quantityTestPassed: number;
+  quantityTest: number;
+  difficulty: string;
+  code?: string;
 }
 
-// ==========================================================
-// DATA MOCK (Khớp với hình ảnh)
-// ==========================================================
-const submissionsData: Submission[] = [
-  { id: 1, student: 'Nguyễn Văn A', exercise: 'Thuật toán sắp xếp', course: 'JavaScript Cơ bản', status: 'passed', score: 95, submittedAt: '14/10/2025 14:30', executionTime: '125ms', testsPassed: '10/10' },
-  { id: 2, student: 'Trần Thị B', exercise: 'Promise và Async/Await', course: 'JavaScript Nâng cao', status: 'failed', score: 45, submittedAt: '14/10/2025 14:18', executionTime: '89ms', testsPassed: '4/10' },
-  { id: 3, student: 'Lê Văn C', exercise: 'Component trong React', course: 'React cơ bản', status: 'passed', score: 88, submittedAt: '14/10/2025 14:12', executionTime: '156ms', testsPassed: '9/10' },
-  { id: 4, student: 'Phạm Thị D', exercise: 'State Management', course: 'React nâng cao', status: 'pending', score: null, submittedAt: '14/10/2025 14:05', executionTime: '-', testsPassed: '-' },
-  { id: 5, student: 'Hoàng Văn E', exercise: 'API Integration', course: 'JavaScript Nâng cao', status: 'passed', score: 92, submittedAt: '14/10/2025 13:58', executionTime: '234ms', testsPassed: '10/10' },
-  { id: 6, student: 'Vũ Thị F', exercise: 'Vòng lặp và mảng', course: 'JavaScript Cơ bản', status: 'passed', score: 100, submittedAt: '14/10/2025 13:45', executionTime: '67ms', testsPassed: '8/8' },
-  // Thêm data để test phân trang (10 items/page)
-  { id: 7, student: 'Đặng Thị G', exercise: 'DOM Manipulation', course: 'JavaScript Cơ bản', status: 'passed', score: 85, submittedAt: '14/10/2025 13:30', executionTime: '110ms', testsPassed: '7/8' },
-  { id: 8, student: 'Ngô Văn H', exercise: 'React Hooks', course: 'React cơ bản', status: 'failed', score: 55, submittedAt: '14/10/2025 13:25', executionTime: '95ms', testsPassed: '5/10' },
-  { id: 9, student: 'Bùi Thị I', exercise: 'Data Structures', course: 'Thuật toán', status: 'passed', score: 78, submittedAt: '14/10/2025 13:15', executionTime: '180ms', testsPassed: '8/10' },
-  { id: 10, student: 'Dương Văn K', exercise: 'Python Classes', course: 'Python Nâng cao', status: 'pending', score: null, submittedAt: '14/10/2025 13:00', executionTime: '-', testsPassed: '-' },
-  { id: 11, student: 'Lý Thị L', exercise: 'Thuật toán sắp xếp', course: 'JavaScript Cơ bản', status: 'passed', score: 98, submittedAt: '14/10/2025 12:55', executionTime: '105ms', testsPassed: '10/10' },
-  { id: 12, student: 'Mai Văn M', exercise: 'Promise và Async/Await', course: 'JavaScript Nâng cao', status: 'passed', score: 80, submittedAt: '14/10/2025 12:40', executionTime: '130ms', testsPassed: '8/10' },
-];
+// Data structure for API response
+interface SubmissionDetailData {
+  submissionId: string;
+  userId: string;
+  problemId: string;
+  code: string;
+  language: string;
+  status: string;
+  submitTime: string;
+  executionTime: number;
+  memoryUsed: number;
+  quantityTestPassed: number;
+  quantityTest: number;
+  testCaseIdFail: string | null;
+  user: {
+    userId: string;
+    username: string;
+    email: string;
+    role: string;
+    joinDate: string;
+    status: string;
+  };
+  problem: {
+    problemId: string;
+    title: string;
+    slug: string;
+    difficulty: string;
+    description: string;
+    tags: string;
+    functionName: string;
+    parameters: string;
+    returnType: string;
+    notes: string;
+    constraints: string;
+    timeLimit: number;
+    memoryLimit: number;
+    createdAt: string;
+    updatedAt: string;
+    lessonId: string | null;
+  };
+}
 
-const SUBMISSIONS_PER_PAGE = 10; // Đúng yêu cầu 10 dòng/trang
-
-// == THÊM SAMPLE CODE VÀ TEST CASES CHO DIALOG ==
-const sampleCode = `function sortArray(arr) {
-  // Bubble sort algorithm
-  const n = arr.length;
-  for (let i = 0; i < n - 1; i++) {
-    for (let j = 0; j < n - i - 1; j++) {
-      if (arr[j] > arr[j + 1]) {
-        // Swap elements
-        const temp = arr[j];
-        arr[j] = arr[j + 1];
-        arr[j + 1] = temp;
-      }
-    }
-  }
-  return arr;
-}`;
-
-const sampleTestCases = [
-  { id: 1, input: '[5, 2, 8, 1, 9]', output: '[1, 2, 5, 8, 9]', status: 'passed' as const },
-  { id: 2, input: '[3, 1, 4, 1, 5]', output: '[1, 1, 3, 4, 5]', status: 'passed' as const },
-  { id: 3, input: '[-5, 0, 3, -2]', output: '[-5, -2, 0, 3]', status: 'passed' as const },
-  { id: 4, input: '[10]', output: '[10]', status: 'passed' as const },
-  { id: 5, input: '[]', output: '[]', status: 'passed' as const },
-  { id: 6, input: '[1, 2, 3]', output: '[1, 2, 3]', status: 'passed' as const },
-  // Giả sử có 1 test case failed
-  { id: 7, input: '[9, 8, 7]', output: '[7, 8, 9]', status: 'failed' as const, actualOutput: '[9, 8, 7]' },
-];
-// =============================================
-
-export default function SubmissionsManagement() {
-  const [searchQuery, setSearchQuery] = useState('');
+const SubmissionsManagement: React.FC = () => {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Tất cả");
+  const [difficultyFilter, setDifficultyFilter] = useState("Tất cả");
+  const [languageFilter, setLanguageFilter] = useState("Tất cả");
+  const [selectedSubmissions, setSelectedSubmissions] = useState<string[]>([]);
+  const [openAction, setOpenAction] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
-  const [activeTab, setActiveTab] = useState<'code' | 'tests' | 'feedback'>('code');
+  const [sortBy, setSortBy] = useState<"latest" | "oldest" | "problemName">(
+    "latest"
+  );
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [viewingSubmission, setViewingSubmission] = useState<Submission | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [loadingCode, setLoadingCode] = useState(false);
 
+  const pageSize = 10;
 
-  // Logic lọc (chỉ lọc theo tên học viên hoặc tên bài tập)
-  const filteredSubmissions = submissionsData.filter(submission =>
-    submission.student.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    submission.exercise.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter logic
+  const filtered = submissions.filter((submission) => {
+    const matchSearch =
+      submission.userName.toLowerCase().includes(search.toLowerCase()) ||
+      submission.userEmail.toLowerCase().includes(search.toLowerCase()) ||
+      submission.problemTitle.toLowerCase().includes(search.toLowerCase());
+    const matchStatus =
+      statusFilter === "Tất cả" ? true : submission.status === statusFilter;
+    const matchDifficulty =
+      difficultyFilter === "Tất cả"
+        ? true
+        : submission.difficulty === difficultyFilter;
+    const matchLanguage =
+      languageFilter === "Tất cả"
+        ? true
+        : submission.language === languageFilter;
+
+    return matchSearch && matchStatus && matchDifficulty && matchLanguage;
+  });
+
+  // Sorting logic
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "latest") {
+      return (
+        new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime()
+      );
+    } else if (sortBy === "oldest") {
+      return (
+        new Date(a.submitTime).getTime() - new Date(b.submitTime).getTime()
+      );
+    } else {
+      return a.problemTitle.localeCompare(b.problemTitle);
+    }
+  });
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const paginated = sorted.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
-  // Logic phân trang
-  const totalPages = Math.ceil(filteredSubmissions.length / SUBMISSIONS_PER_PAGE);
-  const startIndex = (currentPage - 1) * SUBMISSIONS_PER_PAGE;
-  const currentSubmissions = filteredSubmissions.slice(startIndex, startIndex + SUBMISSIONS_PER_PAGE);
+  // Pagination validation
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(Math.max(1, totalPages));
+    }
+  }, [currentPage, totalPages]);
 
-  // Hàm helper cho badge trạng thái (khớp Figma)
-  const getStatusBadge = (status: 'passed' | 'failed' | 'pending') => {
-    const classMap = {
-      passed: 'badge-passed',
-      failed: 'badge-failed',
-      pending: 'badge-pending',
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        // Block 1: Try to fetch with details (includes user and problem info)
+        {
+          try {
+            const submissionData = await practiceService.getAllSubmission();
+
+            // Transform API data to match Submission interface
+            const transformedData: Submission[] = submissionData.map(
+              (item: SubmissionDetailData) => ({
+                submissionId: item.submissionId,
+                userName: item.user?.username || "Unknown",
+                userEmail: item.user?.email || "Unknown",
+                problemTitle: item.problem?.title || "Unknown",
+                problemSlug: item.problem?.slug || "unknown",
+                language: item.language,
+                status: item.status as Submission["status"],
+                submitTime: new Date(item.submitTime).toLocaleString("vi-VN"),
+                executionTime: item.executionTime || 0,
+                memoryUsed: item.memoryUsed || 0,
+                quantityTestPassed: item.quantityTestPassed || 0,
+                quantityTest: item.quantityTest || 0,
+                difficulty: item.problem?.difficulty || "Unknown",
+                code: item.code || "",
+              })
+            );
+
+            setSubmissions(transformedData);
+            return; // Success - exit the effect
+          } catch (detailsError) {
+            console.warn(
+              "⚠️ Endpoint with-details không khả dụng:",
+              detailsError
+            );
+            // Continue to fallback block
+          }
+        }
+
+        // Block 2: Fallback to getAllSubmission if with-details endpoint doesn't exist
+        {
+          try {
+            const fallbackData = await practiceService.getAllSubmission();
+            setSubmissions(fallbackData || []);
+          } catch (fallbackError) {
+            console.error("❌ Lỗi khi lấy dữ liệu submission:", fallbackError);
+            setSubmissions([]);
+          }
+        }
+      } catch (error) {
+        // Outer catch for any unexpected errors
+        console.error("❌ Lỗi không mong muốn:", error);
+        setSubmissions([]);
+      }
     };
-    const textMap = {
-      passed: 'Đạt',
-      failed: 'Không đạt',
-      pending: 'Chờ chấm',
-    };
-    return <span className={`badge ${classMap[status]}`}>{textMap[status]}</span>;
+
+    fetchSubmissions();
+  }, []);
+
+  const isPageFullySelected =
+    paginated.length > 0 &&
+    paginated.every((s) => selectedSubmissions.includes(s.submissionId));
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedSubmissions((prev) => {
+        const setPrev = new Set(prev);
+        paginated.forEach((s) => setPrev.add(s.submissionId));
+        return Array.from(setPrev);
+      });
+    } else {
+      setSelectedSubmissions((prev) =>
+        prev.filter((id) => !paginated.some((s) => s.submissionId === id))
+      );
+    }
   };
 
-  // == THÊM EFFECT ĐỂ NGĂN SCROLL KHI DIALOG MỞ ==
-  useEffect(() => {
-    if (selectedSubmission) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    // Cleanup function
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [selectedSubmission]);
-  // =============================================
+  const handleSelectSubmission = (submissionId: string) => {
+    setSelectedSubmissions((prev) =>
+      prev.includes(submissionId)
+        ? prev.filter((id) => id !== submissionId)
+        : [...prev, submissionId]
+    );
+  };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, difficultyFilter, languageFilter, sortBy]);
+
+  const handleViewCode = async (submission: Submission) => {
+    setOpenAction(null);
+    setLoadingCode(true);
+    
+    try {
+      // If code is already loaded, just show it
+      if (submission.code) {
+        setViewingSubmission(submission);
+      } else {
+        // Fetch full submission details with code
+        const fullSubmission = await practiceService.getSubmissionById(submission.submissionId);
+        setViewingSubmission({
+          ...submission,
+          code: fullSubmission.code || "// Code not available",
+        });
+      }
+    } catch (error) {
+      console.error("Error loading submission code:", error);
+      alert("Không thể tải code. Vui lòng thử lại.");
+    } finally {
+      setLoadingCode(false);
+    }
+  };
+
+  const handleCopyCode = () => {
+    if (viewingSubmission?.code) {
+      navigator.clipboard.writeText(viewingSubmission.code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDownloadCode = (submission: Submission) => {
+    const extension: Record<string, string> = {
+      JavaScript: "js",
+      Python: "py",
+      Java: "java",
+      "C++": "cpp",
+    };
+
+    const ext = extension[submission.language] || "txt";
+    const code = submission.code || "// Code not available";
+    
+    const blob = new Blob([code], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${submission.problemSlug}_${submission.submissionId}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "Accepted":
+        return <FaCheckCircle className="status-icon accepted" />;
+      case "Wrong Answer":
+        return <FaTimesCircle className="status-icon wrong" />;
+      case "Time Limit":
+        return <FaClock className="status-icon timeout" />;
+      case "Runtime Error":
+        return <FaTimesCircle className="status-icon error" />;
+      case "Pending":
+        return <FaCodeBranch className="status-icon pending" />;
+      default:
+        return null;
+    }
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "Accepted":
+        return "badge-success";
+      case "Wrong Answer":
+        return "badge-danger";
+      case "Time Limit":
+        return "badge-warning";
+      case "Runtime Error":
+        return "badge-error";
+      case "Pending":
+        return "badge-info";
+      default:
+        return "";
+    }
+  };
+
+  const getDifficultyBadgeClass = (difficulty: string) => {
+    switch (difficulty) {
+      case "Dễ":
+        return "difficulty-easy";
+      case "Trung bình":
+        return "difficulty-medium";
+      case "Khó":
+        return "difficulty-hard";
+      default:
+        return "";
+    }
+  };
 
   return (
-    <div className="submissions-management-page">
-      {/* ===== 1. Header (Chỉ có Search) ===== */}
-      <div className="header-row">
-        <div className="search-bar">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm bài nộp..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1); // Reset về trang 1 khi search
-            }}
-          />
-        </div>
-        {/* Có thể thêm nút Filter hoặc Export sau nếu cần */}
+    <div className="submissions-page">
+      <h2>Submissions Management</h2>
+
+      {/* ===== Search ===== */}
+      <div className="search-row">
+        <input
+          type="text"
+          placeholder="Tìm kiếm..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
-      {/* ===== 2. Bảng Bài nộp ===== */}
+      {/* ===== Filters + Actions ===== */}
+      <div className="filter-bar">
+        <div className="filter-group">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option>Tất cả trạng thái</option>
+            <option>Accepted</option>
+            <option>Wrong Answer</option>
+            <option>Time Limit</option>
+            <option>Runtime Error</option>
+            <option>Pending</option>
+          </select>
+          <select
+            value={difficultyFilter}
+            onChange={(e) => setDifficultyFilter(e.target.value)}
+          >
+            <option>Tất cả độ khó</option>
+            <option>Dễ</option>
+            <option>Trung bình</option>
+            <option>Khó</option>
+          </select>
+          <select
+            value={languageFilter}
+            onChange={(e) => setLanguageFilter(e.target.value)}
+          >
+            <option>Tất cả ngôn ngữ</option>
+            <option>JavaScript</option>
+            <option>Python</option>
+            <option>Java</option>
+            <option>C++</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) =>
+              setSortBy(e.target.value as "latest" | "oldest" | "problemName")
+            }
+          >
+            <option value="latest">Mới nhất trước</option>
+            <option value="oldest">Cũ nhất trước</option>
+            <option value="problemName">Tên bài toán</option>
+          </select>
+        </div>
+
+        {selectedSubmissions.length > 0 && (
+          <div className="action-buttons">
+            <button className="btn-delete">
+              <FaTrash /> Xóa ({selectedSubmissions.length})
+            </button>
+            <button className="btn-export">
+              <FaDownload /> Export
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ===== Table ===== */}
       <div className="table-container">
-        <table>
+        <table className="submissions-table">
           <thead>
             <tr>
-              {/* Bỏ cột checkbox */}
-              <th>Học viên</th>
-              <th>Bài tập</th>
+              <th>
+                <input
+                  type="checkbox"
+                  checked={isPageFullySelected}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                />
+              </th>
+              <th>User</th>
+              <th>Bài toán</th>
+              <th>Ngôn ngữ</th>
               <th>Trạng thái</th>
-              <th>Điểm</th>
-              <th>Tests</th>
-              <th>Thời gian</th>
-              <th></th>{/* Cột cho nút Xem */}
+              <th>Thời gian (ms)</th>
+              <th>Bộ nhớ (KB)</th>
+              <th>Test</th>
+              <th>Thời gian nộp</th>
+              <th>Hành động</th>
             </tr>
           </thead>
           <tbody>
-            {currentSubmissions.map((submission) => (
-              <tr key={submission.id}>
-                {/* <td> Bỏ checkbox </td> */}
-                <td>
-                  <div className="cell-student-info">
-                    <span className="student-name">{submission.student}</span>
-                    <span className="course-name">{submission.course}</span>
-                  </div>
+            {paginated.map((submission) => (
+              <tr key={submission.submissionId} className="table-row">
+                <td className="checkbox-cell">
+                  <input
+                    type="checkbox"
+                    checked={selectedSubmissions.includes(
+                      submission.submissionId
+                    )}
+                    onChange={() =>
+                      handleSelectSubmission(submission.submissionId)
+                    }
+                  />
                 </td>
-                <td>
-                  <div className="cell-exercise-title">
-                    <FaCode className="icon" />
-                    <span>{submission.exercise}</span>
-                  </div>
-                </td>
-                <td>{getStatusBadge(submission.status)}</td>
-                <td>
-                  <span className="score-value">
-                    {submission.score !== null ? `${submission.score}/100` : '-'}
-                  </span>
-                </td>
-                <td>
-                  <span className="tests-passed">{submission.testsPassed}</span>
-                </td>
-                <td>
-                  <div className="cell-time-info">
-                    <div className="time-row">
-                      <FaCalendarAlt className="icon" />
-                      <span>{submission.submittedAt}</span>
+                <td className="user-cell">
+                  <div className="user-info">
+                    <div className="avatar">
+                      {submission.userName.charAt(0)}
                     </div>
-                    <div className="time-row">
-                      <FaClock className="icon" />
-                      <span>{submission.executionTime}</span>
+                    <div className="user-details">
+                      <p className="user-name">{submission.userName}</p>
+                      <p className="user-email">{submission.userEmail}</p>
                     </div>
                   </div>
                 </td>
-                <td>
-                  <button
-                    className="view-button"
-                    // === CẬP NHẬT onClick ĐỂ MỞ DIALOG ===
-                    onClick={() => {
-                      setSelectedSubmission(submission);
-                      setActiveTab('code'); // Reset về tab code khi mở
-                    }}
-                    // ===================================
-                  >
-                    <FaEye className="icon" /> Xem
-                  </button>
+                <td className="problem-cell">
+                  <div className="problem-info">
+                    <p className="problem-title">{submission.problemTitle}</p>
+                    <span
+                      className={`difficulty-badge ${getDifficultyBadgeClass(
+                        submission.difficulty
+                      )}`}
+                    >
+                      {submission.difficulty}
+                    </span>
+                  </div>
+                </td>
+                <td className="language-cell">
+                  <span className="language-badge">{submission.language}</span>
+                </td>
+                <td className="status-cell">
+                  <div className="status-wrapper">
+                    <span
+                      className={`status-badge ${getStatusBadgeClass(
+                        submission.status
+                      )}`}
+                    >
+                      {submission.status}
+                    </span>
+                  </div>
+                </td>
+                <td className="metric-cell">
+                  <span>{submission.executionTime}</span>
+                </td>
+                <td className="metric-cell">
+                  <span>{submission.memoryUsed}</span>
+                </td>
+                <td className="test-cell">
+                  <div className="test-progress">
+                    <span className="test-count">
+                      {submission.quantityTestPassed}/{submission.quantityTest}
+                    </span>
+                    <div className="test-bar">
+                      <div
+                        className="test-bar-fill"
+                        style={{
+                          width: `${
+                            (submission.quantityTestPassed /
+                              submission.quantityTest) *
+                            100
+                          }%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </td>
+                <td className="time-cell">
+                  <span className="submit-time">{submission.submitTime}</span>
+                </td>
+                <td className="action-cell">
+                  <div className="action-menu">
+                    <button
+                      className="action-btn"
+                      onClick={() =>
+                        setOpenAction(
+                          openAction === submission.submissionId
+                            ? null
+                            : submission.submissionId
+                        )
+                      }
+                    >
+                      <FaEllipsisV />
+                    </button>
+                    {openAction === submission.submissionId && (
+                      <div className="dropdown-menu">
+                        <button 
+                          className="menu-item view"
+                          onClick={() => handleViewCode(submission)}
+                        >
+                          <FaEye /> Xem chi tiết
+                        </button>
+                        <button 
+                          className="menu-item download"
+                          onClick={() => handleDownloadCode(submission)}
+                        >
+                          <FaDownload /> Tải code
+                        </button>
+                        <button className="menu-item delete">
+                          <FaTrash /> Xóa
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
-            {/* Thêm dòng trống nếu dữ liệu ít hơn số dòng mỗi trang */}
-            {currentSubmissions.length < SUBMISSIONS_PER_PAGE &&
-             Array.from({ length: SUBMISSIONS_PER_PAGE - currentSubmissions.length }).map((_, index) => (
-               <tr key={`empty-${index}`} className="empty-row">
-                 {/* Số cột phải bằng số lượng <th> (7 cột) */}
-                 <td colSpan={7}>&nbsp;</td>
-               </tr>
-             ))}
           </tbody>
         </table>
       </div>
 
-      {/* ===== 3. Phân trang ===== */}
+      {paginated.length === 0 && (
+        <div className="empty-state">
+          <p>Không tìm thấy submission nào</p>
+        </div>
+      )}
+
+      {/* ===== Pagination ===== */}
       {totalPages > 1 && (
-        <div className="pagination-container">
+        <div className="pagination">
           <button
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+            className="btn-nav"
           >
-            &larr;
+            ← Trước
           </button>
-          {/* Logic phân trang giống trang Exercises */}
-          {totalPages <= 7 ? (
-             Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+
+          <div className="page-numbers">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={currentPage === page ? 'active' : ''}
+                className={`page-btn ${currentPage === page ? "active" : ""}`}
               >
                 {page}
               </button>
-            ))
-          ) : (
-            <>
-              <button onClick={() => setCurrentPage(1)} className={currentPage === 1 ? 'active' : ''}>1</button>
-              {currentPage > 3 && <span>...</span>}
-              {currentPage > 2 && <button onClick={() => setCurrentPage(currentPage - 1)}>{currentPage - 1}</button>}
-              {currentPage !== 1 && currentPage !== totalPages && <button className="active">{currentPage}</button>}
-              {currentPage < totalPages - 1 && <button onClick={() => setCurrentPage(currentPage + 1)}>{currentPage + 1}</button>}
-              {currentPage < totalPages - 2 && <span>...</span>}
-              <button onClick={() => setCurrentPage(totalPages)} className={currentPage === totalPages ? 'active' : ''}>{totalPages}</button>
-            </>
-          )}
+            ))}
+          </div>
+
           <button
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+            className="btn-nav"
           >
-            &rarr;
+            Tiếp →
           </button>
         </div>
       )}
 
-      {/* ================================================= */}
-      {/* ===== 4. Dialog xem chi tiết bài nộp ===== */}
-      {/* ================================================= */}
-      {selectedSubmission && (
-        <div className="dialog-overlay" onClick={() => setSelectedSubmission(null)}>
-          <div className="dialog-content" onClick={(e) => e.stopPropagation()}>
-            <div className="dialog-header">
-              <h2 className="dialog-title">Chi tiết bài nộp</h2>
-              <button className="dialog-close-btn" onClick={() => setSelectedSubmission(null)}>
+      {/* ===== Code Viewer Modal ===== */}
+      {viewingSubmission && (
+        <div className="modal-overlay" onClick={() => setViewingSubmission(null)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-section">
+                <h3 className="modal-title">Chi tiết Submission</h3>
+                <p className="modal-subtitle">
+                  {viewingSubmission.problemTitle} - {viewingSubmission.userName}
+                </p>
+              </div>
+              <button
+                className="modal-close-btn"
+                onClick={() => setViewingSubmission(null)}
+              >
                 <FaTimes />
               </button>
             </div>
-            <div className="dialog-body">
-              {/* --- Info Cards --- */}
-              <div className="info-cards-grid">
-                <div className="info-card">
-                  <p className="info-label">Học viên</p>
-                  <p className="info-value">{selectedSubmission.student}</p>
+
+            <div className="modal-body">
+              {/* Submission Info */}
+              <div className="submission-info-grid">
+                <div className="info-item">
+                  <span className="info-label">Trạng thái:</span>
+                  <span className={`status-badge ${getStatusBadgeClass(viewingSubmission.status)}`}>
+                    {viewingSubmission.status}
+                  </span>
                 </div>
-                <div className="info-card">
-                  <p className="info-label">Điểm</p>
-                  <p className={`info-value ${selectedSubmission.score === null ? 'pending' : (selectedSubmission.score >= 50 ? 'passed' : 'failed')}`}>
-                    {selectedSubmission.score !== null ? `${selectedSubmission.score}/100` : 'Chưa chấm'}
-                  </p>
+                <div className="info-item">
+                  <span className="info-label">Ngôn ngữ:</span>
+                  <span className="language-badge">{viewingSubmission.language}</span>
                 </div>
-                <div className="info-card">
-                  <p className="info-label">Tests</p>
-                  <p className="info-value">{selectedSubmission.testsPassed}</p>
+                <div className="info-item">
+                  <span className="info-label">Thời gian thực thi:</span>
+                  <span>{viewingSubmission.executionTime} ms</span>
                 </div>
-                <div className="info-card">
-                  <p className="info-label">Thời gian chạy</p>
-                  <p className="info-value">{selectedSubmission.executionTime}</p>
+                <div className="info-item">
+                  <span className="info-label">Bộ nhớ:</span>
+                  <span>{viewingSubmission.memoryUsed} KB</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Test cases:</span>
+                  <span>
+                    {viewingSubmission.quantityTestPassed}/{viewingSubmission.quantityTest} passed
+                  </span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Thời gian nộp:</span>
+                  <span>{viewingSubmission.submitTime}</span>
                 </div>
               </div>
 
-              {/* --- Tabs --- */}
-              <div className="tabs-container">
-                <div className="tabs-list">
-                  <button
-                    className={`tab-trigger ${activeTab === 'code' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('code')}
-                  >
-                    Code
-                  </button>
-                  <button
-                    className={`tab-trigger ${activeTab === 'tests' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('tests')}
-                  >
-                    Test Cases
-                  </button>
-                  <button
-                    className={`tab-trigger ${activeTab === 'feedback' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('feedback')}
-                  >
-                    Nhận xét
-                  </button>
+              {/* Code Section */}
+              <div className="code-section">
+                <div className="code-header">
+                  <span className="code-title">Code</span>
+                  <div className="code-actions">
+                    <button className="code-action-btn" onClick={handleCopyCode}>
+                      {copied ? <FaCheck /> : <FaCopy />}
+                      <span>{copied ? "Đã copy" : "Copy"}</span>
+                    </button>
+                    <button 
+                      className="code-action-btn"
+                      onClick={() => handleDownloadCode(viewingSubmission)}
+                    >
+                      <FaDownload />
+                      <span>Download</span>
+                    </button>
+                  </div>
                 </div>
-                <div className="tabs-content">
-                  {/* --- Tab Code --- */}
-                  {activeTab === 'code' && (
-                    <div className="tab-panel">
-                      <pre className="code-block">
-                        <code>{sampleCode}</code>
-                      </pre>
-                    </div>
-                  )}
-                  {/* --- Tab Test Cases --- */}
-                  {activeTab === 'tests' && (
-                    <div className="tab-panel test-cases-panel">
-                      {sampleTestCases.map((test) => (
-                        <div key={test.id} className={`test-case-card ${test.status}`}>
-                          <div className="test-case-header">
-                            <span className="test-case-name">Test case #{test.id}</span>
-                            <span className={`test-case-status ${test.status}`}>
-                              {test.status === 'passed' ? <FaCheckCircle/> : <FaTimesCircle/>}
-                              {test.status === 'passed' ? 'Passed' : 'Failed'}
-                            </span>
-                          </div>
-                          <div className="test-case-body">
-                             <pre>Input: {test.input}</pre>
-                             <pre>Expected Output: {test.output}</pre>
-                             {test.status === 'failed' && test.actualOutput && (
-                               <pre className="failed">Actual Output: {test.actualOutput}</pre>
-                             )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {/* --- Tab Feedback --- */}
-                  {activeTab === 'feedback' && (
-                    <div className="tab-panel feedback-panel">
-                      <textarea
-                        placeholder="Nhập nhận xét cho học viên..."
-                        rows={6}
-                      />
-                      <button className="submit-feedback-btn">
-                        Gửi nhận xét
-                      </button>
-                    </div>
+                <div className="code-viewer">
+                  {loadingCode ? (
+                    <div className="code-loading">Đang tải code...</div>
+                  ) : (
+                    <pre className="code-block">
+                      <code>{viewingSubmission.code || "// Code not available"}</code>
+                    </pre>
                   )}
                 </div>
               </div>
@@ -368,9 +670,8 @@ export default function SubmissionsManagement() {
           </div>
         </div>
       )}
-      {/* ================================================= */}
-      {/* ===== KẾT THÚC DIALOG ===== */}
-      {/* ================================================= */}
     </div>
   );
-}
+};
+
+export default SubmissionsManagement;

@@ -13,7 +13,7 @@ const NotFound = lazy(() => import("@/pages/not-found/NotFound"));
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <RootLayout />,
+    element: <RootLayout />, // ✅ Đây là chỗ App.tsx được render
     children: [
       clientRouters,
       adminRouters,
