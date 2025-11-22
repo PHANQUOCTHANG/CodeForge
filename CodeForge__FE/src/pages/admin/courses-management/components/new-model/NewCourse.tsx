@@ -22,7 +22,6 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 import "./CourseEditor.scss";
-import { useCourseCategory } from "@/features/category/hooks/useCoursesCategory";
 
 import TextEditor from "@/common/components/tiny-editor/TinyEditor";
 import { sanitizeHtml } from "@/common/utils/sanitizeHtml";
@@ -31,9 +30,10 @@ import CloudinaryImageUpload from "@/common/components/CloudinaryImageUpload/Clo
 import type { ModuleDto } from "@/features/module/types";
 import { calculateDiscount, type CreateCourseDto } from "@/features";
 
-import type { CourseCategory } from "@/features/category/types";
+import type { CourseCategory } from "@/features/course-category/types";
 import { useCreateCourse } from "@/features/course/hooks/useCreateCourse";
 import CreateLessonEditor from "@/pages/admin/courses-management/components/lesson-editor/CreateLessonEditor";
+import { useCourseCategories } from "@/features/course-category/hooks/useCoursesCategory";
 // --- Component Con: PriceTabContent ---
 const PriceTabContent: React.FC = () => {
   const price = Form.useWatch("price");
@@ -85,7 +85,7 @@ const CreateCourseEditor = ({ courseId }: { courseId?: string }) => {
   const [editingModule, setEditingModule] = useState<ModuleDto | null>(null);
   const [moduleForm] = Form.useForm();
   const createCourseMutation = useCreateCourse();
-  const { data, isLoading } = useCourseCategory();
+  const { data, isLoading } = useCourseCategories();
   const categories: CourseCategory[] = data || [];
   const navigate = useNavigate(); /** Submit form */
 

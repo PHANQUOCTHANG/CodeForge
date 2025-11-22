@@ -1,6 +1,6 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using CodeForge.Application.DTOs.Response;
+using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Interfaces.Services;
 using CodeForge.Core.Settings;
 using Microsoft.AspNetCore.Http;

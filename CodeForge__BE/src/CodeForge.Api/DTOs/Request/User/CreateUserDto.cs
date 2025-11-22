@@ -1,10 +1,19 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CodeForge.Api.DTOs.Request.User
 {
     public class CreateUserDto
     {
-        public string? Username { get; set; }
-        public string? Email { get; set; }
-        public string? PasswordHash { get; set; }
-        public string? Role { get; set; } = "student";
+        [Required]
+        public string Username { get; set; } = string.Empty;
+
+        [Required, EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required, MinLength(6)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        public string Role { get; set; } = "student"; // student, teacher, admin
     }
 }

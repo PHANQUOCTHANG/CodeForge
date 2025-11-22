@@ -1,0 +1,155 @@
+.user-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #1976d2;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid #e0e0e0;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__username {
+    margin: 2px 0 0 0;
+    font-size: 13px;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  &__badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: #666;
+
+    & > div {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  }
+
+  &__meta-label {
+    font-weight: 500;
+    color: #333;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  &__action-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &--edit {
+      background-color: #e3f2fd;
+      color: #1976d2;
+
+      &:hover {
+        background-color: #bbdefb;
+        color: #1565c0;
+      }
+    }
+
+    &--delete {
+      background-color: #ffebee;
+      color: #d32f2f;
+
+      &:hover {
+        background-color: #ffcdd2;
+        color: #c62828;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+    gap: 10px;
+
+    &__avatar {
+      width: 40px;
+      height: 40px;
+    }
+
+    &__name {
+      font-size: 14px;
+    }
+
+    &__username {
+      font-size: 12px;
+    }
+
+    &__badge {
+      font-size: 11px;
+      padding: 3px 6px;
+    }
+
+    &__action-btn {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+  }
+}

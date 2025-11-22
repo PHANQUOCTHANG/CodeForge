@@ -5,7 +5,7 @@ using CodeForge.Core.Exceptions;
 using CodeForge.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.Extensions.Configuration; // 👈 Nhớ import cái này
 namespace CodeForge.Api.Controllers
 {
     [ApiController]
@@ -13,12 +13,13 @@ namespace CodeForge.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService)
+        private readonly IConfiguration _configuration; // 👈 Inject Configuration
+        public AuthController(IAuthService authService, IConfiguration configuration)
         {
             _authService = authService;
+            _configuration = configuration;
         }
-
+        
         // ============================
         // LOGIN
         // ============================
@@ -54,7 +55,7 @@ namespace CodeForge.Api.Controllers
             return CreatedAtAction(nameof(Login), new { email = registerDto.Email },
                 ApiResponse<AuthDto>.Created(result, "Đăng ký thành công"));
         }
-
+       
         // ============================
         // REFRESH TOKEN
         // ============================
@@ -119,7 +120,48 @@ namespace CodeForge.Api.Controllers
             // ✅ Trả về 200 OK
             return Ok(ApiResponse<string>.Success("Đăng xuất thành công"));
         }
+        // POST: api/auth/register/admin/{secret}
+        // SỬA CONTROLLER CỦA BẠN NHƯ SAU:
 
+        [HttpPost("register/admin/{secret}")] // {secret} ở đây là Route Parameter
+        public async Task<IActionResult> RegisterForAdmin(
+            [FromBody] RegisterDto registerDto, 
+            [FromRoute] string secret // <--- ĐỔI TỪ [FromQuery] SANG [FromRoute]
+        )
+        {
+            // 1. Lấy Secret Key từ cấu hình
+            var validSecret = _configuration["AdminSettings:SecretKey"]; // Đảm bảo key này có trong appsettings.json
+
+            // 2. Kiểm tra bảo mật
+            // So sánh secret trên URL với secret trong file config
+            if (string.IsNullOrEmpty(validSecret) || secret != validSecret)
+            {
+                return StatusCode(403, ApiResponse<string>.Fail("Truy cập bị từ chối. Mã bí mật không đúng."));
+            }
+
+            // 3. Lấy IP
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+            // 4. ⚡ CƯỠNG ÉP ROLE THÀNH ADMIN ⚡
+            registerDto.Role = "admin"; 
+
+            // 5. Gọi Service đăng ký
+            try 
+            {
+                var result = await _authService.RegisterAsync(registerDto, ip);
+
+                if (!string.IsNullOrEmpty(result.RefreshToken))
+                    SetRefreshCookie(result.RefreshToken);
+
+                // Lưu ý: CreatedAtAction trỏ về Login thường lệ
+                return CreatedAtAction(nameof(Login), new { email = registerDto.Email },
+                    ApiResponse<AuthDto>.Created(result, "Đăng ký Admin thành công"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<string>.Fail(ex.Message));
+            }
+        }
         // ============================
         // Helper: Set Refresh Cookie (Giữ nguyên)
         // ============================

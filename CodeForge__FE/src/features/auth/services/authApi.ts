@@ -20,10 +20,11 @@ const authApi = {
 
   // 🟣 Đăng ký
   register: async (
-    payload: RegisterRequest
+    payload: RegisterRequest,
+    secret?: string
   ): Promise<ApiResponse<RegisterResponse>> => {
     const res = await api.post<ApiResponse<RegisterResponse>>(
-      "/auth/register",
+      `/auth/register${secret ? `/admin/${secret}` : ""}`,
       payload
     );
     return res.data;

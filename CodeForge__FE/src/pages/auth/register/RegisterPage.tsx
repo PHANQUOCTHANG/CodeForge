@@ -1,9 +1,18 @@
+import React from "react";
 import { RegisterForm, useRegister } from "@/features";
 import "./RegisterPage.scss";
-import { Link } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { Divider } from "antd";
+import { useAppSelector } from "@/app/store/store";
 const RegisterPage = () => {
-  const { mutate, isPending } = useRegister();
+  const { user } = useAppSelector((state) => state.auth);
+  const navigate = useNavigate();
+  const { secret } = useParams();
+  const { mutate, isPending } = useRegister(secret);
+  if (user) {
+    navigate("/");
+    return null;
+  }
   return (
     <div className="register-page">
       <div className="register-card">

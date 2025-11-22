@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using CodeForge.Application.DTOs.Lessons;
+using CodeForge.Api.DTOs.Lessons;
 
-namespace CodeForge.Application.DTOs.Modules
+
+namespace CodeForge.Api.DTOs.Modules
 {
     public class CreateModuleDto
     {

@@ -13,6 +13,7 @@ const AdminLayout = () => {
     "/admin/dashboard": "Dashboard ",
     "/admin/users": "Quản lý học viên",
     "/admin/courses": "Quản lý khóa học",
+    "/admin/courses-category": "Danh mục khóa học",
     "/admin/assignments": "Quản lý bài tập",
     "/admin/submissions": "Quản lí bài nộp",
   };

@@ -1,0 +1,70 @@
+// TopCoursesCard.scss
+.top-courses {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+
+  &__loading {
+    padding: 2rem;
+    text-align: center;
+    color: #6b7280;
+  }
+
+  &__title {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__item {
+    padding: 0.5rem 0;
+  }
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    color: #111827;
+  }
+
+  &__name {
+    font-weight: 500;
+  }
+
+  &__count {
+    color: #6b7280;
+    font-size: 0.75rem;
+  }
+
+  &__progress-bar {
+    height: 0.5rem;
+    background: #e5e7eb;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    margin: 4px 0;
+  }
+
+  &__progress {
+    height: 100%;
+    width: 0;
+    border-radius: 0.25rem;
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    transition: width 0.3s ease;
+  }
+
+  &__percent {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: right;
+    margin: 0;
+  }
+}

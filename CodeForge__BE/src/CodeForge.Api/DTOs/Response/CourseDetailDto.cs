@@ -1,7 +1,7 @@
 using CodeForge.Api.DTOs;
 using CodeForge.Api.DTOs.Response;
 
-namespace CodeForge.Application.DTOs.Response;
+namespace CodeForge.Api.DTOs.Response;
 
 public class CourseDetailDto
 {

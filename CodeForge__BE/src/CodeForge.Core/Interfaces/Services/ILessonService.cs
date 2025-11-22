@@ -1,5 +1,7 @@
-using CodeForge.Application.DTOs.Lessons;
-using CodeForge.Application.DTOs.Response;
+
+using CodeForge.Api.DTOs.Lessons;
+using CodeForge.Api.DTOs.Response;
+
 namespace CodeForge.Core.Services
 {
     public interface ILessonService

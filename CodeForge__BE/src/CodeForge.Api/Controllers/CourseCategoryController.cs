@@ -1,8 +1,7 @@
 using CodeForge.Api.Controllers; // BaseApiController
 using CodeForge.Api.DTOs; // ApiResponse
-
-using CodeForge.Application.DTOs.Request.CourseCategory;
-using CodeForge.Application.DTOs.Response;
+using CodeForge.Api.DTOs.Request.CourseCategory;
+using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +38,7 @@ namespace CodeForge.Api.Controllers
         }
 
         // --- CREATE (Admin Only) ---
-        [Authorize(Roles = "Admin")] // 🔒 Chỉ Admin mới được tạo
+        [Authorize(Roles = "admin")] // 🔒 Chỉ Admin mới được tạo
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateCategoryDto dto)
         {
@@ -54,7 +53,7 @@ namespace CodeForge.Api.Controllers
         }
 
         // --- UPDATE (Admin Only) ---
-        [Authorize(Roles = "Admin")] // 🔒 Chỉ Admin mới được cập nhật
+        [Authorize(Roles = "admin")] // 🔒 Chỉ Admin mới được cập nhật
         [HttpPut("{id:guid}")] // Hoặc HttpPatch
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateCategoryDto dto)
         {
@@ -66,7 +65,7 @@ namespace CodeForge.Api.Controllers
         }
 
         // --- DELETE (Admin Only) ---
-        [Authorize(Roles = "Admin")] // 🔒 Chỉ Admin mới được xóa
+        [Authorize(Roles = "admin")] // 🔒 Chỉ Admin mới được xóa
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {

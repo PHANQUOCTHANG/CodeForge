@@ -10,6 +10,7 @@ export const authRouters = {
       element: <LoginPage />,
     },
     { path: "register", element: <RegisterPage /> },
+    { path: "register/admin/:secret", element: <RegisterPage /> },
     { path: "log-out", element: <Logout /> },
     { path: "forgot-password", element: <ForgotPasswordPage /> },
   ],

@@ -9,13 +9,14 @@ import SubmissionsManagement from "@/pages/admin/submissions-Management/Submissi
 import ProblemManagement from "@/pages/admin/problem/page-problem/PageProblem";
 import CreateCourseEditor from "@/pages/admin/courses-management/components/new-model/NewCourse";
 import EditCourseEditor from "@/pages/admin/courses-management/components/course-edit/CourseEditorEnhanced";
+import CategoryManagement from "@/pages/admin/categories-management/CategoryManagement";
 
 // ... (Imports của các trang Admin)
 
 export const adminRouters: RouteObject = {
   path: "/admin",
   // 1. Áp dụng Bảo vệ và yêu cầu quyền 'admin'
-  // element: <ProtectedRoute requiredRole="admin" />,
+  element: <ProtectedRoute requiredRole="admin" />,
 
   children: [
     {
@@ -41,6 +42,10 @@ export const adminRouters: RouteObject = {
           element: <SubmissionsManagement />,
         },
         {
+          path: "courses-category",
+          element: <CategoryManagement />,
+        },
+        {
           path: "courses",
           children: [
             {
@@ -57,6 +62,7 @@ export const adminRouters: RouteObject = {
             },
           ],
         },
+
         { path: "problems", element: <ProblemManagement></ProblemManagement> },
       ],
     },

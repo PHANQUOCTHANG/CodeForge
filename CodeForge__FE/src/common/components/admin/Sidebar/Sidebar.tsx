@@ -7,6 +7,7 @@ import {
   BookOpen,
   Code,
   FileText,
+  Layers2,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -16,11 +17,24 @@ interface SidebarProps {
 
 const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   const menu = [
-    { label: "Dashboard", path: "/admin/dashboard", icon: <LayoutDashboard size={20} /> },
+    {
+      label: "Dashboard",
+      path: "/admin/dashboard",
+      icon: <LayoutDashboard size={20} />,
+    },
     { label: "Học viên", path: "/admin/users", icon: <Users size={20} /> },
     { label: "Khóa học", path: "/admin/courses", icon: <BookOpen size={20} /> },
+    {
+      label: "Danh mục khóa học",
+      path: "/admin/courses-category",
+      icon: <Layers2 size={20} />,
+    },
     { label: "Bài tập", path: "/admin/problems", icon: <Code size={20} /> },
-    { label: "Bài nộp", path: "/admin/submissions", icon: <FileText size={20} /> },
+    {
+      label: "Bài nộp",
+      path: "/admin/submissions",
+      icon: <FileText size={20} />,
+    },
   ];
 
   useEffect(() => {

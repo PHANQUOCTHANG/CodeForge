@@ -1,5 +1,5 @@
 
-namespace CodeForge.Application.DTOs.Response
+namespace CodeForge.Api.DTOs.Response
 {
     public class CategoryDto
     {

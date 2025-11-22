@@ -1,7 +1,8 @@
 using AutoMapper;
 using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Modules;
 using CodeForge.Api.DTOs.Response;
-using CodeForge.Application.DTOs.Modules;
+
 using CodeForge.Core.Entities;
 using CodeForge.Core.Exceptions;
 using CodeForge.Core.Interfaces.Repositories;
