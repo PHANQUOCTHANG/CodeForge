@@ -1,12 +1,10 @@
 using AutoMapper;
-using CodeForge.Application.DTOs;
-using CodeForge.Application.DTOs.Lessons;
-using CodeForge.Application.DTOs.Response;
+using CodeForge.Api.DTOs.Lessons;
+using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Entities;
 using CodeForge.Core.Exceptions;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Services;
-using CodeForge.Application.DTOs.Lessons;
 
 namespace CodeForge.Core.Services
 {

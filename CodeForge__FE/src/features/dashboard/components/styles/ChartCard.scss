@@ -1,0 +1,27 @@
+// ChartCard.scss
+.chart-card {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+
+  &__title {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin-top: 0;
+  }
+
+  &__chart {
+    height: 250px;
+
+    &--loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+  }
+}

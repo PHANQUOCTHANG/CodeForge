@@ -9,11 +9,12 @@ using CodeForge.Core.Helpers; // SlugHelper
 using Microsoft.EntityFrameworkCore; // <-- Added to enable Include/ThenInclude extensions
 using Microsoft.EntityFrameworkCore.Storage;
 using CodeForge.Core.Exceptions;
-using CodeForge.Application.DTOs.Response;
+
 using CodeForge.Core.Services;
 using CodeForge.Infrastructure.Data;
-using CodeForge.Api.DTOs; // ✅ Import Custom Exceptions
-using CodeForge.Application.DTOs.Lessons;
+using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Lessons; // ✅ Import Custom Exceptions
+
 
 namespace CodeForge__BE.src.CodeForge.Core.Services
 {

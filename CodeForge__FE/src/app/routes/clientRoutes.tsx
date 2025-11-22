@@ -13,8 +13,7 @@ import {
 } from "@/pages";
 import AboutPage from "@/pages/client/about/AboutPage";
 import CommunityPage from "@/pages/client/community/CommunityPage";
-import AboutPage from "@/pages/client/about/AboutPage";
-import CommunityPage from "@/pages/client/community/CommunityPage";
+
 export const clientRouters = {
   path: "/",
   element: <ClientLayout />,

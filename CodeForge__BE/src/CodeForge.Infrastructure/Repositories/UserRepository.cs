@@ -23,14 +23,64 @@ namespace CodeForge.Infrastructure.Repositories
         {
             return await _context.Users.ToListAsync();
         }
-
-        public async Task<User> CreateAsync(CreateUserDto createUserDto)
+        public async Task<(IEnumerable<User> Data, int TotalItems)> GetPagedUsersAsync(
+            int page, int pageSize, string? search, string? role, string? status)
         {
-            createUserDto.PasswordHash = BCrypt.Net.BCrypt.HashPassword(createUserDto.PasswordHash);
-            User user = _mapper.Map<User>(createUserDto);
-            _context.Users.Add(user);
+            var query = _context.Users
+                .Include(u => u.Profile) // Join bảng Profile
+                .Where(u => !u.IsDeleted); // Lọc đã xóa
+
+            // Filter
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.ToLower();
+                query = query.Where(u => u.Username.ToLower().Contains(search) || 
+                                         u.Email.ToLower().Contains(search) ||
+                                         (u.Profile != null && u.Profile.FullName.ToLower().Contains(search)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(role) && role != "All")
+                query = query.Where(u => u.Role == role);
+
+            if (!string.IsNullOrWhiteSpace(status) && status != "All")
+                query = query.Where(u => u.Status == status);
+
+            var totalItems = await query.CountAsync();
+
+            var data = await query
+                .OrderByDescending(u => u.JoinDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (data, totalItems);
+        }
+        public async Task<User?> GetByIdWithProfileAsync(Guid id)
+        {
+            return await _context.Users
+                .Include(u => u.Profile)
+                .FirstOrDefaultAsync(u => u.UserId == id && !u.IsDeleted);
+        }
+        public async Task<User?> GetByUsernameAsync(string username)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username && !u.IsDeleted);
+        }
+
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && !u.IsDeleted);
+        }
+
+        public async Task AddAsync(User user)
+        {
+            await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
-            return user;
+        }
+
+        public async Task UpdateAsync(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<bool> ExistsByEmail(CreateUserDto createUserDto)

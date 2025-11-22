@@ -2,6 +2,7 @@ import { Facebook, Github, Linkedin, Youtube } from "lucide-react";
 import { motion } from "framer-motion";
 import "./Footer.scss";
 import { Link } from "react-router-dom";
+
 const Footer = () => {
   return (
     <footer className="footer">
@@ -36,8 +37,8 @@ const Footer = () => {
               </motion.span>
             </Link>
             <p className="footer__description">
-              Empowering the next generation of developers through interactive,
-              practical coding education.
+              Trao quyền cho thế hệ lập trình viên tiếp theo thông qua học tập
+              tương tác và thực hành.
             </p>
             <div className="footer__social">
               <a href="#" className="footer__social-link">
@@ -57,7 +58,7 @@ const Footer = () => {
 
           {/* Courses */}
           <div className="footer__nav">
-            <h3 className="footer__nav-title">Courses</h3>
+            <h3 className="footer__nav-title">Khóa học</h3>
             <ul className="footer__list">
               <li className="footer__item">
                 <a href="#">JavaScript</a>
@@ -72,7 +73,7 @@ const Footer = () => {
                 <a href="#">Node.js</a>
               </li>
               <li className="footer__item">
-                <a href="#">Data Science</a>
+                <a href="#">Khoa học dữ liệu</a>
               </li>
               <li className="footer__item">
                 <a href="#">Machine Learning</a>
@@ -82,50 +83,50 @@ const Footer = () => {
 
           {/* Resources */}
           <div className="footer__nav">
-            <h3 className="footer__nav-title">Resources</h3>
+            <h3 className="footer__nav-title">Tài nguyên</h3>
             <ul className="footer__list">
               <li className="footer__item">
-                <a href="#">Documentation</a>
+                <a href="#">Tài liệu</a>
               </li>
               <li className="footer__item">
-                <a href="#">Tutorials</a>
+                <a href="#">Hướng dẫn</a>
               </li>
               <li className="footer__item">
                 <a href="#">Blog</a>
               </li>
               <li className="footer__item">
-                <a href="#">Community</a>
+                <a href="#">Cộng đồng</a>
               </li>
               <li className="footer__item">
-                <a href="#">Help Center</a>
+                <a href="#">Trung tâm trợ giúp</a>
               </li>
               <li className="footer__item">
-                <a href="#">Career Guide</a>
+                <a href="#">Định hướng nghề nghiệp</a>
               </li>
             </ul>
           </div>
 
           {/* Company */}
           <div className="footer__nav">
-            <h3 className="footer__nav-title">Company</h3>
+            <h3 className="footer__nav-title">Công ty</h3>
             <ul className="footer__list">
               <li className="footer__item">
-                <a href="#">About Us</a>
+                <a href="#">Về chúng tôi</a>
               </li>
               <li className="footer__item">
-                <a href="#">Careers</a>
+                <a href="#">Tuyển dụng</a>
               </li>
               <li className="footer__item">
-                <a href="#">Press</a>
+                <a href="#">Truyền thông</a>
               </li>
               <li className="footer__item">
-                <a href="#">Contact</a>
+                <a href="#">Liên hệ</a>
               </li>
               <li className="footer__item">
-                <a href="#">Privacy Policy</a>
+                <a href="#">Chính sách bảo mật</a>
               </li>
               <li className="footer__item">
-                <a href="#">Terms of Service</a>
+                <a href="#">Điều khoản dịch vụ</a>
               </li>
             </ul>
           </div>
@@ -134,13 +135,16 @@ const Footer = () => {
         <hr className="footer__divider" />
 
         <div className="footer__bottom">
-          <p className="footer__copy">© 2025 CodeLearn. All rights reserved.</p>
+          <p className="footer__copy">
+            © 2025 CodeForge. Bản quyền thuộc về chúng tôi.
+          </p>
           <p className="footer__tagline">
-            Made with ❤️ for aspiring developers
+            Được tạo nên với ❤️ dành cho những lập trình viên tương lai
           </p>
         </div>
       </div>
     </footer>
   );
 };
+
 export default Footer;

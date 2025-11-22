@@ -1,5 +1,5 @@
 
-namespace CodeForge.Application.DTOs.Response
+namespace CodeForge.Api.DTOs.Response
 {
     /// <summary>
     /// DTO trả về thông tin của một bản ghi tiến độ.

@@ -1,6 +1,6 @@
 
 
-using CodeForge.Application.DTOs.Response;
+using CodeForge.Api.DTOs.Response;
 
 namespace CodeForge.Api.DTOs.Response
 {

@@ -1,0 +1,19 @@
+// DashboardLayout.scss
+.dashboard-layout {
+  padding: 1rem;
+  font-family: "Inter", sans-serif;
+  color: #1f2937;
+  background: #f9fafb;
+  min-height: 100vh;
+
+  &__charts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    @media (min-width: 1024px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+}

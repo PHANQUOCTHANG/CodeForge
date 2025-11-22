@@ -1,8 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-using CodeForge.Api.DTOs;
-using CodeForge.Application.DTOs.Lessons;
 
-namespace CodeForge.Application.DTOs.Modules
+
+namespace CodeForge.Api.DTOs.Modules
 {
     public class UpdateModuleDto
     {

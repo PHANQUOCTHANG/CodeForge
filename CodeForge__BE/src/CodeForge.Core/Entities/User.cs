@@ -33,7 +33,8 @@ namespace CodeForge.Core.Entities
                 public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
                 public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
                 public ICollection<Progress> Progresses { get; set; } = new List<Progress>();
-
+                // Navigation Property (1 User có 1 Profile)
+                public virtual Profile? Profile { get; set; }
                 public User() { }
 
         }

@@ -1,0 +1,144 @@
+// CategoryManagement.scss
+
+.category-management {
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 1rem;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #1f2937;
+    letter-spacing: -0.5px;
+  }
+
+  &__subtitle {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.95rem;
+    color: #6b7280;
+  }
+
+  &__filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: center;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+
+      input {
+        max-width: 100% !important;
+      }
+    }
+  }
+
+  &__table {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+}
+
+// Ant Design table overrides
+:global(.category-management__table) {
+  .ant-table {
+    font-size: 0.95rem;
+
+    thead {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+
+      tr th {
+        background: transparent;
+        color: white;
+        font-weight: 600;
+        border: none;
+
+        &:before {
+          display: none;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        &:hover {
+          background: #f9fafb;
+        }
+
+        td {
+          border-bottom: 1px solid #e5e7eb;
+          padding: 1rem 1.5rem;
+        }
+      }
+    }
+  }
+
+  .ant-empty {
+    padding: 3rem 2rem;
+  }
+
+  .ant-pagination {
+    margin: 1.5rem 0;
+    text-align: right;
+  }
+}
+
+// Category Form
+.category-form {
+  margin-top: 1rem;
+
+  :global(.ant-form-item) {
+    margin-bottom: 1.5rem;
+
+    :global(.ant-form-item-label) > label {
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .ant-input,
+    .ant-input-textarea > textarea {
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: #3b82f6;
+      }
+
+      &:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+    }
+  }
+}
+
+// Utility classes
+.font-medium {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.text-gray-600 {
+  color: #4b5563;
+}

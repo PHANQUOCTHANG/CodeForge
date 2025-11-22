@@ -4,14 +4,15 @@ using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 
 namespace CodeForge.Api.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("api/[Controller]")]
-    public class UsersController : BaseApiController
+    [Authorize(Roles = "admin")] // 🔒 Chỉ Admin mới được quản lý User
+    public class UsersController : ControllerBase // Hoặc BaseApiController
     {
         private readonly IUserService _userService;
 
@@ -20,45 +21,49 @@ namespace CodeForge.Api.Controllers
             _userService = userService;
         }
 
-        // --- GET ALL USERS (GET /api/user)
-        // [Authorize]
+        // GET: api/users
         [HttpGet]
-        public async Task<IActionResult> GetUsersAsync()
+        public async Task<IActionResult> GetUsers(
+            [FromQuery] int page = 1, 
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? search = null,
+            [FromQuery] string? role = null,
+            [FromQuery] string? status = null)
         {
-            // Service returns List<UserDto>
-            var result = await _userService.GetUsersAsync();
-
-            // ✅ Return 200 OK, wrapped in ApiResponse<T>
-            return Ok(ApiResponse<List<UserDto>>.Success(result, "Users retrieved successfully."));
+            var result = await _userService.GetPagedUsersAsync(page, pageSize, search, role, status);
+            return Ok(result); // PaginationResult
         }
 
-        // --- CREATE USER (POST /api/user/create)
-        [Authorize]
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto createUserDto)
+        // GET: api/users/{id}
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetUser(Guid id)
         {
-            // Service returns UserDto (throws ConflictException if email exists)
-            var result = await _userService.CreateUserAsync(createUserDto);
-
-            // ✅ RESTful: Return 201 Created. Assuming a GetUserById method exists.
-            // We use CreatedAtAction for HTTP 201 response.
-            return CreatedAtAction(
-                // Change "GetUserByIdAsync" to the actual GET method name for a single user, if available
-                nameof(GetUsersAsync),
-                new { id = result.UserId }, // Assuming UserDto has an Id property
-                ApiResponse<UserDto>.Created(result, "User created successfully.")
-            );
+            var result = await _userService.GetUserByIdAsync(id);
+            return Ok(ApiResponse<UserDto>.Success(result));
         }
 
-        // NOTE: For a complete RESTful controller, you would typically add:
-        //
-        // [HttpGet("{id}")]
-        // public async Task<IActionResult> GetUserByIdAsync(Guid id) { ... }
-        //
-        // [HttpPatch("{id}")]
-        // public async Task<IActionResult> UpdateUserAsync(Guid id, [FromBody] UpdateUserDto dto) { ... }
-        //
-        // [HttpDelete("{id}")]
-        // public async Task<IActionResult> DeleteUserAsync(Guid id) { ... }
+        // POST: api/users
+        [HttpPost]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
+        {
+            var result = await _userService.CreateUserAsync(dto);
+            return CreatedAtAction(nameof(GetUser), new { id = result.UserId }, ApiResponse<UserDto>.Created(result));
+        }
+
+        // PUT: api/users/{id}
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto dto)
+        {
+            var result = await _userService.UpdateUserAsync(id, dto);
+            return Ok(ApiResponse<UserDto>.Success(result, "User updated successfully"));
+        }
+
+        // DELETE: api/users/{id}
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteUser(Guid id)
+        {
+            await _userService.DeleteUserAsync(id);
+            return NoContent(); // 204 No Content
+        }
     }
 }

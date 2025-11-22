@@ -2,7 +2,7 @@ using CodeForge.Api.Controllers;
 using CodeForge.Api.DTOs;
 using CodeForge.Api.DTOs.Request.Course;
 using CodeForge.Api.DTOs.Response;
-using CodeForge.Application.DTOs.Response;
+
 using CodeForge.Core.Interfaces.Services;
 using CodeForge__BE.src.CodeForge.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -110,7 +110,7 @@ namespace CodeForge__BE.src.CodeForge.Api.Controllers
         }
 
         // --- DELETE COURSE (DELETE /api/courses/{id}) ---
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "admin")]
         [HttpDelete("{courseId:guid}")] // ✅ Use route constraint and clean up route
         public async Task<IActionResult> DeleteCourseAsync([FromRoute] Guid id)
         {

@@ -2,20 +2,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using CodeForge.Core.Services;
-using CodeForge.Application.DTOs.Lessons;
+
 using CodeForge.Api.DTOs.Response;
 using CodeForge.Api.DTOs;
-using CodeForge.Application.DTOs.Response;
+using CodeForge.Api.DTOs.Lessons;
+
 
 namespace CodeForge.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-<<<<<<< HEAD
-    // [Authorize] 
-=======
     [Authorize] // 🛡️ Yêu cầu xác thực
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
     public class LessonsController : BaseApiController
     {
         private readonly ILessonService _lessonService;
@@ -25,16 +22,6 @@ namespace CodeForge.Api.Controllers
             _lessonService = lessonService;
         }
 
-<<<<<<< HEAD
-        // [HttpGet] 
-        // public async Task<IActionResult> GetAllLesson () {
-        //     var lessons = await _lessonService.
-
-        //     return Ok(ApiResponse<List<LessonDto>>.Success(lessons, "Lấy bài học thành công."));
-        // }
-
-=======
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
         /// <summary>
         /// Lấy chi tiết một bài học (Người dùng phải đăng ký khóa học).
         /// </summary>
@@ -63,7 +50,7 @@ namespace CodeForge.Api.Controllers
         /// Tạo một bài học mới (Yêu cầu quyền Teacher/Admin).
         /// </summary>
         [HttpPost("create")]
-        // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
+        [Authorize(Roles = "teacher, admin")] // 🛡️ Thêm phân quyền
         public async Task<IActionResult> CreateLesson([FromBody] CreateLessonDto createDto)
         {
             var userId = GetRequiredUserId();

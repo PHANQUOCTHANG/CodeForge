@@ -8,12 +8,12 @@ import type { ApiResponse } from "@/common/types";
 import type { LoginResponse, RegisterRequest } from "@/features/auth/types";
 import { login } from "@/features/auth/slices/authSlice";
 import { useQueryClient } from "@tanstack/react-query";
-export const useRegister = () => {
+export const useRegister = (secret?: string) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: RegisterRequest) => authApi.register(data),
+    mutationFn: (data: RegisterRequest) => authApi.register(data, secret),
 
     onSuccess: (res: ApiResponse<LoginResponse>) => {
       openNotification("success", "Thành công", "Đăng ký thành công!");

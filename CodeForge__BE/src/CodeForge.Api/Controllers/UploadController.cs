@@ -1,6 +1,5 @@
 using CodeForge.Api.DTOs;
-
-using CodeForge.Application.DTOs.Response;
+using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Interfaces.Services; // Namespace IPhotoService
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

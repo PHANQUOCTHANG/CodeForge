@@ -1,6 +1,7 @@
 using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Modules;
 using CodeForge.Api.DTOs.Response;
-using CodeForge.Application.DTOs.Modules;
+
 
 namespace CodeForge.Core.Services
 {

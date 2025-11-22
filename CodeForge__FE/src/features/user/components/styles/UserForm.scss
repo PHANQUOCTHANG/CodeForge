@@ -1,0 +1,257 @@
+.user-form {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  &__header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f5f5f5;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  &__content {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    &:nth-child(2),
+    &:nth-child(3) {
+      grid-column: 1 / 2;
+    }
+
+    &:nth-child(4),
+    &:nth-child(5),
+    &:nth-child(6) {
+      grid-column: 2 / 3;
+    }
+
+    &:nth-child(4) {
+      margin-top: 0;
+    }
+  }
+
+  &__label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  &__input,
+  &__select {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #1976d2;
+      box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+    }
+
+    &:disabled {
+      background-color: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    &--error {
+      border-color: #d32f2f;
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+      }
+    }
+  }
+
+  &__select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 20px;
+    padding-right: 32px;
+  }
+
+  &__error {
+    font-size: 12px;
+    color: #d32f2f;
+    margin: 0;
+  }
+
+  &__password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  &__password-toggle {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #1976d2;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #1565c0;
+    }
+
+    &:disabled {
+      color: #999;
+      cursor: not-allowed;
+    }
+  }
+
+  &__password-strength {
+    margin-top: 8px;
+  }
+
+  &__strength-bar {
+    height: 4px;
+    background-color: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  &__strength-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+  }
+
+  &__strength-text {
+    margin: 6px 0 0 0;
+    font-size: 12px;
+    color: #666;
+
+    span {
+      font-weight: 600;
+    }
+  }
+
+  &__actions {
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    background: #f5f5f5;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  &__btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+
+    &--cancel {
+      background-color: #e0e0e0;
+      color: #333;
+
+      &:hover:not(:disabled) {
+        background-color: #d0d0d0;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    &--submit {
+      background-color: #1976d2;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background-color: #1565c0;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 1024px) {
+    &__content {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    &__group {
+      &:nth-child(2),
+      &:nth-child(3),
+      &:nth-child(4),
+      &:nth-child(5),
+      &:nth-child(6) {
+        grid-column: 1 / 2;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    &__header {
+      padding: 16px 16px;
+    }
+
+    &__title {
+      font-size: 16px;
+    }
+
+    &__content {
+      padding: 16px;
+      gap: 12px;
+    }
+
+    &__label {
+      font-size: 13px;
+    }
+
+    &__input,
+    &__select {
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    &__actions {
+      padding: 12px 16px;
+      flex-direction: column-reverse;
+      gap: 10px;
+    }
+
+    &__btn {
+      width: 100%;
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+  }
+}

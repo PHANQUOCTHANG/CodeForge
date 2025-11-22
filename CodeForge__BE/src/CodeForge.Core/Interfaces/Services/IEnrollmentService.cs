@@ -1,6 +1,7 @@
 using CodeForge.Api.Controllers;
+using CodeForge.Api.DTOs;
 using CodeForge.Api.DTOs.Response;
-using CodeForge.Application.DTOs; // Namespace chứa EnrollmentProcessResult
+
 
 namespace CodeForge.Core.Interfaces.Services
 {

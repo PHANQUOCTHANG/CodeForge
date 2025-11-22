@@ -30,7 +30,7 @@ import { useNavigate } from "react-router-dom";
 import "./CourseEditor.scss";
 
 // --- Import Dependencies ---
-import { useCourseCategory } from "@/features/category/hooks/useCoursesCategory";
+import { useCourseCategories } from "@/features/course-category/hooks/useCoursesCategory";
 import TextEditor from "@/common/components/tiny-editor/TinyEditor";
 import { sanitizeHtml } from "@/common/utils/sanitizeHtml";
 import CloudinaryImageUpload from "@/common/components/CloudinaryImageUpload/CloudinaryImageUpload";
@@ -123,7 +123,7 @@ const CourseEditor: React.FC<CourseEditorProps> = ({
   const createCourseMutation = useCreateCourse();
   const editCourseMutation = useEditCourse();
   const { data: categories, isLoading: isLoadingCategories } =
-    useCourseCategory();
+    useCourseCategories();
   const navigate = useNavigate();
   const isSubmitting =
     createCourseMutation.isPending || editCourseMutation.isPending;

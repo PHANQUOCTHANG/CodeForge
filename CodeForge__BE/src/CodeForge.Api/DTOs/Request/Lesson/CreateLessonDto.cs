@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace CodeForge.Application.DTOs.Lessons
+namespace CodeForge.Api.DTOs.Lessons
 {
     public class CreateLessonDto
     {

@@ -1,7 +1,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace CodeForge.Application.DTOs.Request.CourseCategory
+namespace CodeForge.Api.DTOs.Request.CourseCategory
 
 {
     public class UpdateCategoryDto

@@ -11,24 +11,22 @@ import {
   NotebookPen,
   LogIn,
   UserRoundPen,
+  LogOut,
 } from "lucide-react";
 import { Avatar, Popover, Tooltip } from "antd";
 import CustomButton from "@/common/components/Ui/Button/CustomButton";
 import { useAppSelector } from "@/app/store/store";
 
 const navItems = [
-  { label: "Home", icon: Home, path: "/" },
-  { label: "Courses", icon: BookText, path: "/courses" },
-  { label: "Practice", icon: NotebookPen, path: "/practice" },
-  { label: "Contact", icon: Home, path: "/contact" },
-  { label: "Community", icon: Home, path: "/community" },
-  { label: "Login", icon: LogIn, path: "/login" },
-  { label: "Register", icon: UserRoundPen, path: "/register" },
-<<<<<<< HEAD
-=======
-  { label: "About", icon: UserRoundPen, path: "/about" },
-  // { label: "Log out", icon: LogOut, path: "/log-out" },
->>>>>>> 4267c93ffa34cc360cdb6298ed97d499bdd02553
+  { label: "Trang chủ", key: "home", icon: Home, path: "/" },
+  { label: "Khóa học", key: "courses", icon: BookText, path: "/courses" },
+  { label: "Luyện tập", key: "practice", icon: NotebookPen, path: "/practice" },
+  { label: "Liên hệ", key: "contact", icon: Home, path: "/contact" },
+  { label: "Cộng đồng", key: "community", icon: Home, path: "/community" },
+  { label: "Đăng nhập", key: "login", icon: LogIn, path: "/login" },
+  { label: "Đăng ký", key: "register", icon: UserRoundPen, path: "/register" },
+  { label: "Giới thiệu", key: "about", icon: UserRoundPen, path: "/about" },
+  { label: "Đăng xuất", key: "log-out", icon: LogOut, path: "/log-out" },
 ];
 
 const content = (
@@ -80,7 +78,12 @@ const Header = () => {
           {/* Navbar (Desktop) */}
           <nav className="header__nav">
             {navItems.map((item, index) => {
-              if (item.label === "Login" || item.label === "Register") return;
+              if (
+                item.key === "login" ||
+                item.key === "register" ||
+                item.key === "log-out"
+              )
+                return;
               return (
                 <motion.div
                   key={item.label}
@@ -136,10 +139,10 @@ const Header = () => {
               ) : (
                 <>
                   <CustomButton className="btn--login" variant="login">
-                    <Link to="/login">Login</Link>
+                    <Link to="/login">Đăng nhập</Link>
                   </CustomButton>
                   <CustomButton className="btn--register" variant="register">
-                    <Link to="/register">Register</Link>
+                    <Link to="/register">Đăng ký</Link>
                   </CustomButton>
                 </>
               )}

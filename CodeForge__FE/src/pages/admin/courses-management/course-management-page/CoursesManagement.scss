@@ -1,145 +1,378 @@
-// Courses Management Styles
+// Courses Management Styles - Enhanced Admin Interface
 
 .courses-management-container {
   min-height: 100vh;
-  background-color: #f9fafb;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
   padding: 32px 24px;
 }
 
+// ============ Header ============
 .courses-management-header {
   max-width: 1400px;
   margin: 0 auto 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 24px;
+  padding-bottom: 28px;
   border-bottom: 2px solid #e5e7eb;
 
-  h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0;
-    color: #1f2937;
+  .header-content {
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin: 0 0 4px 0;
+      color: #1f2937;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: #6b7280;
+      margin: 0;
+
+      strong {
+        color: #3b82f6;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .btn-create {
+    font-weight: 600;
+    padding: 8px 24px;
+    height: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+    }
   }
 }
 
+// ============ Filters ============
 .courses-management-filters {
   max-width: 1400px;
-  margin: 0 auto 24px;
+  margin: 0 auto 28px;
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
   align-items: center;
 
   .ant-input-search {
-    max-width: 260px;
+    width: 300px;
+    height: 40px;
+
+    .ant-input {
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      padding: 8px 12px;
+      font-size: 0.95rem;
+
+      &:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+    }
   }
 
   .ant-select {
-    width: 180px;
+    width: 220px;
+    height: 40px;
+
+    .ant-select-selector {
+      border-radius: 8px;
+      border: 1px solid #d1d5db !important;
+      height: 40px;
+
+      .ant-select-selection-item {
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    &:hover .ant-select-selector {
+      border-color: #3b82f6 !important;
+    }
   }
 }
 
+// ============ Grid Layout ============
 .courses-management-grid {
   max-width: 1400px;
   margin: 0 auto 32px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
   min-height: 300px;
 }
 
-.course-card-admin {
-  background: #fff;
+// ============ Admin Course Card ============
+.admin-course-card {
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  height: 100%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid #e5e7eb;
 
   &:hover {
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-    transform: translateY(-6px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+    transform: translateY(-8px);
     border-color: #3b82f6;
   }
 
+  // --- Thumbnail Section ---
+  &__thumbnail-wrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background: #f3f4f6;
+  }
+
+  &__thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .admin-course-card:hover & {
+      transform: scale(1.08);
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+
+    .admin-course-card:hover & {
+      background: rgba(0, 0, 0, 0.4);
+      opacity: 1;
+    }
+
+    .admin-course-card__btn-view {
+      transform: scale(0.8);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+      .admin-course-card:hover & {
+        transform: scale(1);
+      }
+    }
+  }
+
+  &__discount-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  }
+
+  // --- Content Section ---
   &__content {
     flex: 1;
-    margin-bottom: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__header {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    .ant-tag {
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+    }
   }
 
   &__title {
-    font-size: 1.125rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: #1f2937;
-    margin-bottom: 10px;
+    margin: 0;
     line-height: 1.4;
-    word-break: break-word;
-  }
-
-  &__desc {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin-bottom: 16px;
-    line-height: 1.6;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  &__meta {
+  &__author,
+  &__category {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.5;
+
+    .label {
+      font-weight: 600;
+      color: #374151;
+      margin-right: 4px;
+    }
+  }
+
+  &__description {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin: 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__rating {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
+    font-size: 0.875rem;
+
+    .ant-rate {
+      font-size: 0.95rem;
+    }
+
+    .rating-value {
+      color: #6b7280;
+      font-weight: 500;
+    }
   }
 
-  &__badge {
-    display: inline-block;
-    padding: 6px 12px;
-    background-color: #f3f4f6;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    color: #4b5563;
-    font-weight: 600;
-    white-space: nowrap;
+  // --- Stats Row ---
+  &__stats {
+    display: flex;
+    gap: 16px;
+    padding: 12px 0;
+    border-top: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f4f6;
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.875rem;
+      color: #6b7280;
+      flex: 1;
+
+      svg {
+        font-size: 1rem;
+        color: #3b82f6;
+      }
+
+      span {
+        font-weight: 500;
+      }
+    }
   }
 
-  &__level {
-    background-color: #dbeafe;
-    color: #1e40af;
+  // --- Price Section ---
+  &__price-section {
+    padding: 12px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+
+    .price-free {
+      color: #10b981;
+    }
+
+    .price-current {
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      svg {
+        font-size: 0.95rem;
+      }
+    }
+
+    .price-original {
+      font-size: 0.875rem;
+      color: #9ca3af;
+      text-decoration: line-through;
+      margin-top: 4px;
+      font-weight: 500;
+    }
   }
 
-  &__lang {
-    background-color: #d1fae5;
-    color: #065f46;
+  // --- Status Toggle ---
+  &__status-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #f3f4f6;
+
+    .label {
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
+
+    .ant-switch {
+      .ant-switch-inner {
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      &.ant-switch-checked {
+        background-color: #10b981;
+      }
+    }
   }
 
-  &__slug {
-    background-color: #fce7f3;
-    color: #831843;
-  }
-
+  // --- Action Buttons ---
   &__actions {
     display: flex;
+    flex-direction: column;
     gap: 8px;
     padding-top: 12px;
-    border-top: 1px solid #e5e7eb;
+    margin-top: auto;
 
     .ant-btn {
-      flex: 1;
-      font-weight: 500;
+      font-weight: 600;
+      border-radius: 6px;
+      height: 36px;
+      transition: all 0.2s ease;
 
       &:hover {
-        transform: scale(1.02);
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        transform: translateY(0);
       }
     }
   }
 }
 
+// ============ Pagination ============
 .courses-management-pagination {
   max-width: 1400px;
   margin: 32px auto 0;
@@ -147,60 +380,64 @@
   justify-content: center;
   padding-top: 24px;
   border-top: 1px solid #e5e7eb;
-}
 
-.empty {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 80px 20px;
-  color: #9ca3af;
-  font-size: 1.125rem;
-}
+  .ant-pagination {
+    .ant-pagination-item {
+      border-radius: 6px;
 
-.ant-spin {
-  width: 100%;
-}
+      &-active {
+        background-color: #3b82f6;
 
-.ant-modal {
-  .ant-modal-content {
-    padding: 24px;
-  }
+        a {
+          color: white;
+        }
+      }
+    }
 
-  .ant-modal-title {
-    font-weight: 700;
-    font-size: 1.125rem;
-  }
-
-  .ant-form-item-label > label {
-    font-weight: 600;
-    color: #374151;
+    .ant-pagination-item-link {
+      border-radius: 6px;
+    }
   }
 }
 
+// ============ Responsive Design ============
 @media (max-width: 1024px) {
   .courses-management-grid {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .courses-management-filters {
+    gap: 12px;
+
+    .ant-input-search {
+      width: 240px;
+    }
+
+    .ant-select {
+      width: 180px;
+    }
   }
 }
 
 @media (max-width: 768px) {
   .courses-management-container {
-    padding: 16px 12px;
+    padding: 20px 16px;
   }
 
   .courses-management-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
 
-    h1 {
-      font-size: 1.5rem;
+    .header-content h1 {
+      font-size: 1.75rem;
       width: 100%;
     }
 
-    .ant-btn {
+    .btn-create {
       width: 100%;
     }
   }
@@ -221,59 +458,113 @@
     margin-bottom: 20px;
   }
 
-  .course-card-admin {
-    padding: 16px;
+  .admin-course-card {
+    &__thumbnail-wrapper {
+      height: 160px;
+    }
 
-    &__actions {
-      gap: 4px;
+    &__content {
+      padding: 14px;
+      gap: 10px;
+    }
 
-      .ant-btn {
-        padding: 4px 8px;
-        height: 32px;
-        font-size: 0.75rem;
+    &__title {
+      font-size: 1rem;
+    }
+
+    &__stats {
+      gap: 12px;
+
+      .stat {
+        font-size: 0.8rem;
       }
     }
-  }
 
-  .ant-modal {
-    .ant-modal-content {
-      padding: 16px;
+    &__actions {
+      .ant-btn {
+        height: 32px;
+        font-size: 0.875rem;
+      }
     }
   }
 }
 
 @media (max-width: 480px) {
   .courses-management-container {
-    padding: 12px 8px;
+    padding: 16px 12px;
   }
 
   .courses-management-header {
     margin-bottom: 16px;
 
-    h1 {
-      font-size: 1.25rem;
+    .header-content h1 {
+      font-size: 1.5rem;
+    }
+
+    .btn-create {
+      font-size: 0.875rem;
+      padding: 6px 16px;
     }
   }
 
-  .course-card-admin {
-    &__title {
-      font-size: 1rem;
+  .courses-management-filters {
+    gap: 10px;
+
+    .ant-input-search {
+      width: 100%;
+
+      .ant-input {
+        height: 36px;
+        font-size: 0.875rem;
+      }
     }
 
-    &__desc {
-      font-size: 0.8125rem;
+    .ant-select {
+      width: 100%;
+      height: 36px;
+    }
+  }
+
+  .admin-course-card {
+    &__thumbnail-wrapper {
+      height: 140px;
+    }
+
+    &__content {
+      padding: 12px;
+      gap: 8px;
+    }
+
+    &__title {
+      font-size: 0.95rem;
       -webkit-line-clamp: 2;
     }
 
-    &__badge {
-      padding: 4px 8px;
-      font-size: 0.7rem;
+    &__description {
+      font-size: 0.8rem;
+      -webkit-line-clamp: 1;
+    }
+
+    &__stats {
+      gap: 8px;
+      padding: 10px 0;
+
+      .stat {
+        font-size: 0.75rem;
+      }
+    }
+
+    &__price-section {
+      font-size: 1rem;
     }
 
     &__actions {
+      gap: 6px;
+
       .ant-btn {
-        padding: 2px 4px;
         height: 28px;
+        font-size: 0.8rem;
+        padding: 0 8px;
       }
     }
   }
