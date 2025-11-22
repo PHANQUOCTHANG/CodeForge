@@ -1,8 +1,8 @@
-import DetailPractice from "@/pages/client/practice/practice-detail-page/DetailPractice"
-
-
+import { CodingLayout } from "@/layouts";
+import { PracticeDetailPage } from "@/pages";
 
 export const practiceRouters = {
-    path : "/practice/:slug" , 
-    element : <DetailPractice></DetailPractice> ,
-}
+  path: "/practice/:slug",
+  element: <CodingLayout />,
+  children: [{ index: true, element: <PracticeDetailPage /> }],
+};

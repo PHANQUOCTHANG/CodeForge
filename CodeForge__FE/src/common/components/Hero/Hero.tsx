@@ -5,6 +5,7 @@ import "./Hero.scss";
 import { Button } from "antd";
 import { ImageWithFallback } from "@/common/components/ImageWithFallback/ImageWithFallback";
 import { motion } from "framer-motion";
+
 export function Hero() {
   return (
     <section className="hero">
@@ -48,7 +49,7 @@ export function Hero() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
               >
-                Enter the world of programming!
+                Bước vào thế giới lập trình!
               </motion.span>
             </motion.div>
 
@@ -58,8 +59,8 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             >
-              Learn to <span className="hero__title-gradient">Code</span> with
-              Friends! 👋
+              Học <span className="hero__title-gradient">Lập Trình</span> cùng
+              mọi người! 👋
             </motion.h1>
 
             <motion.p
@@ -68,10 +69,11 @@ export function Hero() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8, duration: 0.8 }}
             >
-              Master programming languages through hands-on practice, real-world
-              projects, and a super supportive community.
+              Làm chủ các ngôn ngữ lập trình thông qua thực hành, dự án thực tế
+              và một cộng đồng siêu nhiệt tình.
               <span className="hero__subtitle-highlight">
-                We make coding fun! <Heart className="hero__heart" />
+                Chúng tôi biến việc học lập trình trở nên thú vị!{" "}
+                <Heart className="hero__heart" />
               </span>
             </motion.p>
 
@@ -83,7 +85,7 @@ export function Hero() {
             >
               <Link to="/courses">
                 <Button className="hero__btn hero__btn--primary">
-                  Start Learning Free 🎉
+                  Bắt đầu học miễn phí 🎉
                   <ArrowRight className="hero__btn-icon" />
                 </Button>
               </Link>
@@ -91,11 +93,11 @@ export function Hero() {
 
             <div className="hero__testimonial">
               <p className="hero__testimonial-title">
-                💬 What our learners say:
+                💬 Học viên nói gì về chúng tôi:
               </p>
               <p className="hero__testimonial-text">
-                "From zero to landing my first dev job in 6 months! CodeLearn
-                made it possible."
+                “Từ con số 0 đến công việc lập trình đầu tiên chỉ trong 6 tháng!
+                CodeLearn đã giúp tôi đạt được điều đó.”
                 <span className="hero__testimonial-author">
                   - Sarah K.
                 </span>{" "}
@@ -115,14 +117,14 @@ export function Hero() {
             />
             <ImageWithFallback
               src="https://images.unsplash.com/photo-1520569495996-b5e1219cb625?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080"
-              alt="Happy students learning coding together"
+              alt="Học sinh đang học lập trình cùng nhau"
               className="hero__image"
             />
             <div className="hero__badge-floating hero__badge-floating--top">
-              🏆 Coding Platform Effectivelly
+              🏆 Nền tảng học lập trình hiệu quả
             </div>
             <div className="hero__badge-floating hero__badge-floating--bottom">
-              ✅ Success Rate Study
+              ✅ Tỷ lệ học thành công cao
             </div>
           </div>
         </div>
@@ -130,4 +132,5 @@ export function Hero() {
     </section>
   );
 }
+
 export default Hero;

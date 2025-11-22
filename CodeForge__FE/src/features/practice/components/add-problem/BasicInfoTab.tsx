@@ -9,7 +9,7 @@ const BasicInfoTab = ({
   difficultyOptions,
   lessons,
 }) => {
-  console.log(problem) ;
+ 
   return (
     <>
       {/* Basic Info Tab */}

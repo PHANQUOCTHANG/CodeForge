@@ -1,0 +1,280 @@
+// Courses Management Styles
+
+.courses-management-container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 32px 24px;
+}
+
+.courses-management-header {
+  max-width: 1400px;
+  margin: 0 auto 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #e5e7eb;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1f2937;
+  }
+}
+
+.courses-management-filters {
+  max-width: 1400px;
+  margin: 0 auto 24px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+
+  .ant-input-search {
+    max-width: 260px;
+  }
+
+  .ant-select {
+    width: 180px;
+  }
+}
+
+.courses-management-grid {
+  max-width: 1400px;
+  margin: 0 auto 32px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  min-height: 300px;
+}
+
+.course-card-admin {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e5e7eb;
+
+  &:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    transform: translateY(-6px);
+    border-color: #3b82f6;
+  }
+
+  &__content {
+    flex: 1;
+    margin-bottom: 16px;
+  }
+
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  &__desc {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 16px;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #f3f4f6;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: #4b5563;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  &__level {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+
+  &__lang {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  &__slug {
+    background-color: #fce7f3;
+    color: #831843;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+
+    .ant-btn {
+      flex: 1;
+      font-weight: 500;
+
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+  }
+}
+
+.courses-management-pagination {
+  max-width: 1400px;
+  margin: 32px auto 0;
+  display: flex;
+  justify-content: center;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 20px;
+  color: #9ca3af;
+  font-size: 1.125rem;
+}
+
+.ant-spin {
+  width: 100%;
+}
+
+.ant-modal {
+  .ant-modal-content {
+    padding: 24px;
+  }
+
+  .ant-modal-title {
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+
+  .ant-form-item-label > label {
+    font-weight: 600;
+    color: #374151;
+  }
+}
+
+@media (max-width: 1024px) {
+  .courses-management-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .courses-management-container {
+    padding: 16px 12px;
+  }
+
+  .courses-management-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+
+    h1 {
+      font-size: 1.5rem;
+      width: 100%;
+    }
+
+    .ant-btn {
+      width: 100%;
+    }
+  }
+
+  .courses-management-filters {
+    flex-direction: column;
+    gap: 12px;
+
+    .ant-input-search,
+    .ant-select {
+      width: 100%;
+    }
+  }
+
+  .courses-management-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .course-card-admin {
+    padding: 16px;
+
+    &__actions {
+      gap: 4px;
+
+      .ant-btn {
+        padding: 4px 8px;
+        height: 32px;
+        font-size: 0.75rem;
+      }
+    }
+  }
+
+  .ant-modal {
+    .ant-modal-content {
+      padding: 16px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .courses-management-container {
+    padding: 12px 8px;
+  }
+
+  .courses-management-header {
+    margin-bottom: 16px;
+
+    h1 {
+      font-size: 1.25rem;
+    }
+  }
+
+  .course-card-admin {
+    &__title {
+      font-size: 1rem;
+    }
+
+    &__desc {
+      font-size: 0.8125rem;
+      -webkit-line-clamp: 2;
+    }
+
+    &__badge {
+      padding: 4px 8px;
+      font-size: 0.7rem;
+    }
+
+    &__actions {
+      .ant-btn {
+        padding: 2px 4px;
+        height: 28px;
+      }
+    }
+  }
+}

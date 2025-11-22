@@ -13,6 +13,7 @@ import {
 } from "@/pages";
 import AboutPage from "@/pages/client/about/AboutPage";
 import CommunityPage from "@/pages/client/community/CommunityPage";
+
 export const clientRouters = {
   path: "/",
   element: <ClientLayout />,
@@ -31,6 +32,5 @@ export const clientRouters = {
     // { path: "practice/:slug", element: <PracticeDetailPage /> },
     { path: "community", element: <CommunityPage /> },
     { path: "about", element: <AboutPage /> },
-
   ],
 };

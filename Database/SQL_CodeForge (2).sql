@@ -3,6 +3,7 @@ USE CodeForge;
 GO
 
 Select * from Users; 
+Select * from Submissions ;
 
 /* ============================================================
    1️⃣ USERS - Tài khoản người dùng
@@ -57,7 +58,16 @@ CREATE TABLE CourseCategories (
     Icon NVARCHAR(255),
     IsDeleted BIT NOT NULL DEFAULT 0
 );
+INSERT INTO CourseCategories (Name, Description, Icon) VALUES
+('Lập trình Web Frontend', N'Các khóa học về HTML, CSS, JavaScript, và các Framework như React, Vue, Angular.', 'fa-code'),
+('Lập trình Backend', N'Các khóa học về ngôn ngữ máy chủ (Node.js, Python, Java, .NET) và Cơ sở dữ liệu.', 'fa-server'),
+('Khoa học Dữ liệu', N'Các khóa học về Phân tích Dữ liệu, Machine Learning, và Trí tuệ Nhân tạo.', 'fa-chart-line'),
+('Thiết kế UX/UI', N'Các khóa học tập trung vào trải nghiệm người dùng (UX) và giao diện người dùng (UI) bằng Figma, Sketch.', 'fa-pen-ruler'),
+('DevOps & Cloud', N'Các khóa học về triển khai, tự động hóa và quản lý hệ thống trên Cloud (AWS, Azure, GCP).', 'fa-cloud');
 
+-- Ví dụ về một danh mục đã bị xóa (IsDeleted = 1)
+INSERT INTO CourseCategories (Name, Description, Icon, IsDeleted) VALUES
+('Quản lý Dự án', N'Các khóa học về phương pháp luận Agile và Scrum.', 'fa-project-diagram', 1);
 /* ============================================================
    4️⃣ COURSES - Khóa học
 ============================================================ */
@@ -149,7 +159,45 @@ CREATE TABLE QuizQuestions (
     CorrectIndex INT NOT NULL,
     CONSTRAINT FK_QuizQuestions_Lessons FOREIGN KEY (LessonID) REFERENCES Lessons(LessonID)
 );
+-- Lệnh thêm cột LessonQuizId (Khóa ngoại mới)
+ALTER TABLE QuizQuestions
+-- BƯỚC 1: Xóa ràng buộc Khóa Ngoại cũ
+-- (Tên ràng buộc có thể khác, bạn cần kiểm tra lại tên chính xác của ràng buộc cũ)
+ALTER TABLE QuizQuestions
+DROP CONSTRAINT FK_QuizQuestions_Lessons;
 
+
+-- BƯỚC 2: Xóa cột Khóa Ngoại cũ
+ALTER TABLE QuizQuestions
+DROP COLUMN LessonQuizId ;
+
+
+-- BƯỚC 3: Thêm cột Khóa Ngoại mới (LessonQuizId)
+-- Cột này sẽ thay thế LessonID
+ALTER TABLE QuizQuestions
+ADD LessonQuizId UNIQUEIDENTIFIER NOT NULL;
+
+
+-- BƯỚC 4: Thêm cột Explanation mới
+-- Cột này bị thiếu trong cấu trúc cũ của bạn
+ALTER TABLE QuizQuestions
+ADD Explanation NVARCHAR(MAX) NULL;
+
+
+-- BƯỚC 5: Thiết lập ràng buộc Khóa Ngoại mới
+-- Liên kết LessonQuizId (bảng QuizQuestions) với LessonID (bảng LessonQuizzes)
+ALTER TABLE QuizQuestions
+ADD CONSTRAINT FK_QuizQuestions_LessonQuiz
+FOREIGN KEY (LessonQuizId) REFERENCES LessonQuizzes(LessonID);
+
+-- LƯU Ý QUAN TRỌNG:
+-- Khóa chính của bảng LessonQuizzes phải thực sự là cột LessonID. 
+-- Nếu Khóa chính của LessonQuizzes là LessonQuizId, bạn phải thay REFERENCES LessonQuizzes(LessonID) 
+-- thành REFERENCES LessonQuizzes(LessonQuizId) 
+-- Dùng NULL cho phép các hàng cũ không bị lỗi nếu chúng không có dữ liệu này
+select * from Courses
+
+drop table QuizQuestions
 /* ============================================================
    🔟 CODING PROBLEMS - Bài tập code
 ============================================================ */
@@ -202,7 +250,8 @@ CREATE TABLE TestCases (
     CONSTRAINT FK_TestCases_Problems FOREIGN KEY (ProblemID) REFERENCES CodingProblems(ProblemID)
 );
 
-
+Use CodeForge ;
+Select * from  Submissions ;
 
 CREATE TABLE Submissions (
     SubmissionID UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),

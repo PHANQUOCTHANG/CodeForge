@@ -21,7 +21,7 @@ namespace CodeForge.Api.Controllers
         }
 
         // --- GET ALL USERS (GET /api/user)
-        // [Authorize]
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetUsersAsync()
         {

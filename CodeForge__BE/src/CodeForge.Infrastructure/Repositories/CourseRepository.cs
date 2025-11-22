@@ -20,15 +20,21 @@ namespace CodeForge.Infrastructure.Repositories
             _mapper = mapper;
         }
         public async Task<(IEnumerable<Course> Data, int TotalItems)> GetPagedCoursesAsync(
-            int page, int pageSize, string? search)
+            int page, int pageSize, string? search, string? level, string? status)
         {
             var query = _context.Courses
                 .Include(c => c.Category)
                 .Include(c => c.User)
-                .Where(c => !c.IsDeleted && c.Status == "active");
+                .Where(c => !c.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(status) && status != "all")
+                query = query.Where(c => c.Status.Contains(status));
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.Title.Contains(search));
+
+            if (!string.IsNullOrWhiteSpace(level) && level != "all")
+                query = query.Where(c => c.Level.Contains(level));
 
             var totalItems = await query.CountAsync();
 
@@ -39,6 +45,12 @@ namespace CodeForge.Infrastructure.Repositories
                 .ToListAsync();
 
             return (data, totalItems);
+        }
+        public async Task<Course> AddAsync(Course course)
+        {
+            await _context.Courses.AddAsync(course);
+            // KHÔNG GỌI SaveChangesAsync() ở đây
+            return course;
         }
         public async Task<Dictionary<Guid, double>> GetUserCourseProgressAsync(Guid userId)
         {
@@ -70,33 +82,43 @@ namespace CodeForge.Infrastructure.Repositories
         public async Task<Course?> GetBySlugAsync(string slug)
         {
             var course = await _context.Courses
-                .Include(c => c.Category)
-                .Include(c => c.User)
-                .Include(c => c.Reviews)
-                    .ThenInclude(r => r.User)
+                .Include(c => c.Category) // Tải Category
+                .Include(c => c.User)     // Tải thông tin tác giả (User)
 
-                // 1. Sắp xếp Modules và Lessons ngay tại đây (trong SQL)
-                //    thay vì sắp xếp trong RAM.
+                // --- Tải nội dung lồng nhau (Đã tối ưu) ---
+                // EF Core yêu cầu bạn lặp lại đường dẫn Include từ gốc 
+                // cho mỗi nhánh ThenInclude khác nhau từ cùng một collection (Lessons).
+
+                // Đường dẫn 1: Tải Modules -> Lessons -> CodingProblem
                 .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
                     .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
                         .ThenInclude(l => l.CodingProblem)
 
-                // 2. Thêm AsSplitQuery() để sửa lỗi hiệu suất "Cartesian Explosion"
-                //    (Lỗi 'warn: Microsoft.EntityFrameworkCore.Query[20504]' trong log)
-                .AsSplitQuery()
+                // Đường dẫn 2: Tải Modules -> Lessons -> LessonVideo
+                .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
+                    .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                        .ThenInclude(l => l.LessonVideo)
 
+                // Đường dẫn 3: Tải Modules -> Lessons -> LessonText
+                .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
+                    .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                        .ThenInclude(l => l.LessonText)
+
+                // Đường dẫn 4: Tải Modules -> Lessons -> LessonQuiz -> QuizQuestions
+                .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
+                    .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                        .ThenInclude(l => l.LessonQuiz) // 1. Đi vào LessonQuiz (1-1)
+                            .ThenInclude(lq => lq!.Questions) // 2. TỪ LessonQuiz đi vào QuizQuestions (1-N)
+                                                              // Dùng '!' (null-forgiving operator) để báo cho C#
+                                                              // rằng bạn biết lq có thể null, nhưng nếu không null, hãy tải Questions.
+
+                // --- Tối ưu hóa ---
+                .AsSplitQuery() // ✅ Rất quan trọng! Chia truy vấn để tránh "Cartesian Explosion".
+
+                // --- Điều kiện lọc ---
                 .FirstOrDefaultAsync(c => c.Slug == slug && !c.IsDeleted);
 
-            // 3. Toàn bộ code sắp xếp bằng tay ở dưới có thể xóa đi,
-            //    vì database đã làm việc đó cho bạn.
             return course;
-        }
-        public async Task<List<Guid>> GetUserEnrolledCourseIdsAsync(Guid userId)
-        {
-            return await _context.Enrollments
-                .Where(e => e.UserId == userId)
-                .Select(e => e.CourseId)
-                .ToListAsync();
         }
 
         public async Task<Course> CreateAsync(CreateCourseDto createCourseDto)
@@ -121,12 +143,54 @@ namespace CodeForge.Infrastructure.Repositories
             int limit = query.Limit, page = query.Page;
             return await _context.Courses.Include(u => u.User).Skip(limit * (page - 1)).Take(limit).ToListAsync();
         }
-
+        // Hàm cập nhật đơn giản
+        public async Task UpdateCourseOnlyAsync(Course course)
+        {
+            _context.Courses.Update(course);
+            await _context.SaveChangesAsync();
+        }
         public async Task<Course?> GetByIdAsync(Guid courseId)
         {
-            return await _context.Courses.FindAsync(courseId);
+            return await _context.Courses
+            .FirstOrDefaultAsync(c => c.CourseId == courseId);
         }
+        public async Task<Course?> GetCourseByIdWithDeletedAsync(Guid courseId)
+        {
+            var course = await _context.Courses
+                .IgnoreQueryFilters() // 👈 [QUAN TRỌNG NHẤT] Tắt bộ lọc IsDeleted
+                .Include(c => c.Category)
+                .Include(c => c.User)
 
+                // --- Tải nội dung lồng nhau (Copy logic từ GetBySlugAsync) ---
+
+                // 1. CodingProblem
+                .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
+                    .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                        .ThenInclude(l => l.CodingProblem)
+
+                // 2. LessonVideo
+                .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
+                    .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                        .ThenInclude(l => l.LessonVideo)
+
+                // 3. LessonText
+                .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
+                    .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                        .ThenInclude(l => l.LessonText)
+
+                // 4. Quiz
+                .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
+                    .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                        .ThenInclude(l => l.LessonQuiz)
+                            .ThenInclude(lq => lq!.Questions)
+
+                .AsSplitQuery() // Tối ưu hiệu năng
+
+                // Điều kiện tìm kiếm (Không cần check !IsDeleted nữa)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
+            return course;
+        }
         public async Task<Course?> UpdateAsync(UpdateCourseDto updateCourseDto)
         {
             Course? course = await _context.Courses.FindAsync(updateCourseDto.CourseId);

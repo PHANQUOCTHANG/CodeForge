@@ -12,7 +12,6 @@ import {
   CourseReviews,
   CourseSidebar,
   useCourseDetail,
-  type Review,
 } from "@/features";
 const CourseDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string | undefined }>();
@@ -23,7 +22,8 @@ const CourseDetailPage: React.FC = () => {
     isError,
     error,
   } = useCourseDetail(slug);
-  const reviews: Review[] = course?.reviews || [];
+  console.log(course);
+
   const [activeTab, setActiveTab] = useState<
     "overview" | "curriculum" | "reviews"
   >("overview");
@@ -38,9 +38,8 @@ const CourseDetailPage: React.FC = () => {
       });
     }
   };
-  console.log(course);
   const finalPrice = calculateDiscount(course?.price, course?.discount);
-  console.log(course?.price, course?.discount, finalPrice);
+
   return (
     <>
       {/* Course Grid */}
@@ -51,7 +50,7 @@ const CourseDetailPage: React.FC = () => {
         </div>
       ) : isError ? (
         <Empty description={error.message} />
-      ) : course == null || course.length === 0 ? (
+      ) : course == null ? (
         <Empty description="Không có khóa học nào" />
       ) : (
         <div className="course-detail-page">
@@ -107,7 +106,9 @@ const CourseDetailPage: React.FC = () => {
                       <div
                         ref={overviewRef}
                         className="overview-content"
-                        dangerouslySetInnerHTML={{ __html: course.overview }}
+                        dangerouslySetInnerHTML={{
+                          __html: course.overview ?? "",
+                        }}
                       />
 
                       <CourseCurriculum
@@ -116,7 +117,7 @@ const CourseDetailPage: React.FC = () => {
                       />
                       <CourseReviews
                         reviewsRef={reviewsRef}
-                        reviews={reviews}
+                        course={course}
                         totalRatings={course.totalRatings}
                         rating={course.rating}
                       />

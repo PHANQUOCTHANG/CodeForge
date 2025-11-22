@@ -83,21 +83,6 @@ const TABS: TabItem[] = [
   { id: "testcases", label: "Các Test Case", icon: TestTube },
 ];
 
-const DIFFICULTY_MAP: Record<string, string> = {
-  Easy: "Dễ",
-  Medium: "Trung Bình",
-  Hard: "Khó",
-  Dễ: "Dễ",
-  "Trung Bình": "Trung Bình",
-  Khó: "Khó",
-};
-
-const DIFFICULTY_REVERSE_MAP: Record<string, string> = {
-  Dễ: "Easy",
-  "Trung Bình": "Medium",
-  Khó: "Hard",
-};
-
 const INITIAL_PROBLEM: Problem = {
   problemId: "",
   title: "",
@@ -253,12 +238,20 @@ const EditProblem: React.FC = () => {
       ];
     }
 
+    const testCaseId = (tc.TestCaseId || tc.testCaseId) as string;
+    const validTestCaseId =
+      testCaseId &&
+      testCaseId !== "00000000-0000-0000-0000-000000000000" &&
+      testCaseId.trim() !== ""
+        ? testCaseId
+        : "";
+
     return {
       input: inputArray,
       expectedOutput: (tc.ExpectedOutput || tc.expectedOutput || "") as string,
       explain: (tc.Explain || tc.explain || "") as string,
       isHidden: (tc.IsHidden || tc.isHidden || false) as boolean,
-      testCaseId: ((tc.TestCaseId || tc.testCaseId) as string) || "",
+      testCaseId: validTestCaseId,
     };
   };
 
@@ -334,12 +327,17 @@ const EditProblem: React.FC = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  /** Auto-save khi xóa test case */
-  const handleTestCaseDelete = async (deletedIndex: number) => {
-    const deletedTestCase = originalTestCases[deletedIndex];
-    if (deletedTestCase?.testCaseId) {
+  /** Xóa test case qua callback từ TestCaseTab */
+  const handleTestCaseDelete = async (testCaseId: string) => {
+    console.log(testCaseId);
+    // Kiểm tra testCaseId hợp lệ (không phải GUID rỗng)
+    if (
+      testCaseId &&
+      testCaseId !== "00000000-0000-0000-0000-000000000000" &&
+      testCaseId.trim() !== ""
+    ) {
       try {
-        await practiceService.deleteTestCase(deletedTestCase.testCaseId);
+        await practiceService.deleteTestCase(testCaseId);
         showNotificationMessage("✓ Đã xóa test case thành công!");
       } catch (error) {
         console.error("Lỗi khi xóa test case:", error);
@@ -352,12 +350,20 @@ const EditProblem: React.FC = () => {
   const handleTestCaseUpdate = async (
     updatedTestCases: (ProblemTestCase & { testCaseId?: string })[]
   ) => {
-    // Chỉ update những test case đã tồn tại (có testCaseId)
+    // Chỉ update những test case đã tồn tại (có testCaseId hợp lệ)
     for (let i = 0; i < originalTestCases.length; i++) {
       const original = originalTestCases[i];
       const current = updatedTestCases[i];
 
       if (!current || !current.testCaseId) {
+        continue;
+      }
+
+      // Kiểm tra testCaseId hợp lệ
+      if (
+        current.testCaseId === "00000000-0000-0000-0000-000000000000" ||
+        current.testCaseId.trim() === ""
+      ) {
         continue;
       }
 
@@ -380,6 +386,7 @@ const EditProblem: React.FC = () => {
         try {
           console.log("Updating test case:", current.testCaseId);
           await practiceService.updateTestCase(current.testCaseId, {
+            problemId: problem.problemId,
             input: current.input,
             expectedOutput: current.expectedOutput,
             isHidden: current.isHidden,
@@ -423,64 +430,84 @@ const EditProblem: React.FC = () => {
 
       // Xử lý test cases
       if (problemId) {
-        // 1. Update test cases đã tồn tại
-        for (let i = 0; i < originalTestCases.length; i++) {
-          const original = originalTestCases[i];
-          const current = testCases[i];
+        // 1. Xử lý test cases: Nếu có testcaseId thì UPDATE, không có thì CREATE
+        const updatePromises: Promise<void>[] = [];
+        const createTestCases: Array<{
+          problemId: string;
+          input: (typeof testCases)[0]["input"];
+          expectedOutput: string;
+          isHidden: boolean;
+          explain: string;
+        }> = [];
 
+        for (let i = 0; i < testCases.length; i++) {
+          const testCase = testCases[i];
+
+          // Bỏ qua test case không hợp lệ
           if (
-            current &&
-            current.testCaseId &&
-            JSON.stringify(original) !== JSON.stringify(current)
+            !Array.isArray(testCase.input) ||
+            !testCase.input.some((v) => v.name && v.value) ||
+            !testCase.expectedOutput
           ) {
-            try {
-              await practiceService.updateTestCase(current.testCaseId, {
-                input: current.input,
-                expectedOutput: current.expectedOutput,
-                isHidden: current.isHidden,
-                explain: current.explain,
-              });
-            } catch (error) {
-              console.error("Lỗi khi cập nhật test case:", error);
-              showNotificationMessage("Lỗi khi cập nhật test case", "error");
-            }
+            continue;
+          }
+
+          // Nếu có testcaseId hợp lệ: UPDATE
+          if (
+            testCase.testCaseId &&
+            testCase.testCaseId !== "00000000-0000-0000-0000-000000000000" &&
+            testCase.testCaseId.trim() !== ""
+          ) {
+            updatePromises.push(
+              (async () => {
+                try {
+                  await practiceService.updateTestCase(testCase.testCaseId!, {
+                    problemId,
+                    input: testCase.input,
+                    expectedOutput: testCase.expectedOutput,
+                    isHidden: testCase.isHidden,
+                    explain: testCase.explain,
+                  });
+                } catch (error) {
+                  console.error(
+                    `Lỗi khi cập nhật test case ${testCase.testCaseId}:`,
+                    error
+                  );
+                  throw error;
+                }
+              })()
+            );
+          } else {
+            // Nếu không có testcaseId hợp lệ: Thêm vào danh sách CREATE
+            createTestCases.push({
+              problemId,
+              input: testCase.input,
+              expectedOutput: testCase.expectedOutput,
+              isHidden: testCase.isHidden,
+              explain: testCase.explain,
+            });
           }
         }
 
-        // 2. Create test cases mới (những cái được thêm sau khi load)
-        const newTestCases = testCases.filter(
-          (_, index) => index >= originalTestCases.length
-        );
+        // Thực hiện các update song song
+        if (updatePromises.length > 0) {
+          try {
+            await Promise.all(updatePromises);
+            console.log(`✓ Cập nhật ${updatePromises.length} test case`);
+          } catch (error) {
+            console.error("Lỗi khi cập nhật test cases:", error);
+            showNotificationMessage("Lỗi khi cập nhật test case", "error");
+          }
+        }
 
-        if (newTestCases.length > 0) {
-          const validNewTestCases = newTestCases.filter(
-            (tc) =>
-              Array.isArray(tc.input) &&
-              tc.input.some((v) => v.name && v.value) &&
-              tc.expectedOutput
-          );
-
-          if (validNewTestCases.length > 0) {
-            const testCasePayload = validNewTestCases.map((tc) => ({
-              problemId,
-              input: tc.input,
-              expectedOutput: tc.expectedOutput,
-              isHidden: tc.isHidden,
-              explain: tc.explain,
-            }));
-            try {
-              console.log(testCasePayload);
-              await practiceService.createTestCase(testCasePayload);
-            } catch (error) {
-              console.error("Lỗi khi tạo test case mới:", error);
-              showNotificationMessage("Lỗi khi tạo test case mới", "error");
-            }
-          } else {
-            // Nếu có test case mới nhưng không hợp lệ, hiển thị cảnh báo
-            showNotificationMessage(
-              "Các test case mới không hợp lệ và sẽ không được lưu",
-              "error"
-            );
+        // Tạo test cases mới
+        if (createTestCases.length > 0) {
+          try {
+            await practiceService.createTestCase(createTestCases);
+            console.log(`✓ Tạo ${createTestCases.length} test case mới`);
+          } catch (error) {
+            console.error("Lỗi khi tạo test case mới:", error);
+            showNotificationMessage("Lỗi khi tạo test case mới", "error");
           }
         }
       }

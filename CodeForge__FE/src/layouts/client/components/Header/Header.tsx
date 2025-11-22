@@ -70,7 +70,7 @@ const Header = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              LEARN
+              FORGE
             </motion.span>
           </Link>
 

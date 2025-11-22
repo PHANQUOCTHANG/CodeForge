@@ -6,7 +6,7 @@ import {
   ChevronRight,
   ChevronUp,
 } from "lucide-react";
-import type { CourseDetail, LessonDto } from "@/features/course/types";
+import type { CourseDetail } from "@/features/course/types";
 import {
   CheckCircle,
   Code,
@@ -20,6 +20,7 @@ import TextContent from "@/features/course/components/course-learning/TextConten
 import VideoContent from "@/features/course/components/course-learning/VideoContent";
 import CodeContent from "@/features/course/components/course-learning/CodeContent";
 import QuizContent from "@/features/course/components/course-learning/QuizContent";
+import type { LessonDto } from "@/features/Lesson/types";
 
 const { Panel } = Collapse;
 
@@ -41,7 +42,7 @@ const LessonType = ({ lesson }: { lesson: LessonDto | undefined }) => {
       </div>
     );
   }
-
+  console.log(lesson);
   return (
     <div className="lesson-content">
       {content === "text" && <TextContent lesson={lesson} />}
@@ -66,8 +67,7 @@ const LessonContent: React.FC<Props> = ({
   const initialX = useRef<number>(0);
   const initialWidth = useRef<number>(30);
   const rafRef = useRef<number | null>(null);
-  console.log(course);
-  console.log(lesson);
+
   // responsive detection
   useEffect(() => {
     const check = () => {
@@ -310,7 +310,9 @@ const LessonContent: React.FC<Props> = ({
           <div className="lesson-page__resizer-handle" />
         </div>
       )}
-
+      {lesson && lesson.lessonType === "coding" && (
+        <CodeContent lesson={lesson} />
+      )}
       {/* right panel */}
       <div
         className="lesson-page__right-panel"
@@ -320,7 +322,9 @@ const LessonContent: React.FC<Props> = ({
             : undefined
         }
       >
-        <LessonType lesson={lesson} />
+        {lesson && lesson.lessonType !== "coding" && (
+          <LessonType lesson={lesson} />
+        )}
       </div>
 
       {/* overlay to capture pointer during dragging - prevents iframe from stealing events */}

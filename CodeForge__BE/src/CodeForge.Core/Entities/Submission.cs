@@ -30,11 +30,11 @@ namespace CodeForge.Core.Entities
         [Required]
         public DateTime SubmitTime { get; set; } = DateTime.UtcNow;
 
-        public int ExecutionTime { get; set; }
+        public int? ExecutionTime { get; set; }
 
-        public int MemoryUsed { get; set; }
-        public int QuantityTestPassed { get; set; }
-        public int QuantityTest { get; set; }
+        public int? MemoryUsed { get; set; }
+        public int? QuantityTestPassed { get; set; }
+        public int? QuantityTest { get; set; }
 
         public Guid? TestCaseIdFail { get; set; }
 

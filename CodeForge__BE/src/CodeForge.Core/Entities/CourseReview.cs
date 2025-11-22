@@ -17,7 +17,8 @@ namespace CodeForge.Core.Entities
         public string? Comment { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
+        // ✅ FIX 1: Khởi tạo giá trị mặc định ngay trong Entity
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
         public Course Course { get; set; } = null!;

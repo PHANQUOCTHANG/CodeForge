@@ -3,6 +3,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/features/auth/slices/authSlice";
 import lessonUpdateReducer from "@/features/progress/slices/lessonUpdateSlice";
+import paymentStatusReducer from "@/features/payment/slices/StatusPayment";
 import { setGlobalAccessToken } from "@/api/axios";
 
 // 1️⃣, 2️⃣ (Giữ nguyên)
@@ -16,6 +17,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     lessonUpdate: lessonUpdateReducer,
+    paymentStatus: paymentStatusReducer,
   },
 });
 

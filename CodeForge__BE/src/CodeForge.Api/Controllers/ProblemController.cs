@@ -44,7 +44,7 @@ namespace CodeForge.Api.Controllers
         }
 
         // --- UPDATE PROBLEM (PATCH /api/problem/update) ---
-        // [Authorize] 
+        [Authorize]
         [HttpPatch("update/{id}")]
         public async Task<IActionResult> UpdateProblemAsync([FromBody] UpdateProblemDto updateProblemDto, [FromRoute] Guid id)
         {
@@ -55,6 +55,7 @@ namespace CodeForge.Api.Controllers
 
         // --- CREATE PROBLEM (POST /api/problem/create) ---
         [HttpPost("create")]
+        [Authorize]
         public async Task<IActionResult> CreateProblemAsync([FromBody] CreateProblemDto createProblemDto)
         {
             var result = await _problemService.CreateProblemAsync(createProblemDto);
@@ -75,6 +76,7 @@ namespace CodeForge.Api.Controllers
 
         // --- RUN CODE (POST /api/problem/run-problem) ---
         [HttpPost("run-problem")]
+        [Authorize]
         public async Task<IActionResult> RunProblemAsync([FromBody] RunProblemDto runProblemDto)
         {
             if (runProblemDto == null)
@@ -98,12 +100,13 @@ namespace CodeForge.Api.Controllers
         }
 
         [HttpPost("submit")]
+        [Authorize]
         public async Task<IActionResult> SubmitProblemAsync([FromBody] RunProblemDto runProblemDto)
         {
-             Console.WriteLine("Debug ok") ;
-            Console.WriteLine(runProblemDto.UserId) ;
-            Console.WriteLine(runProblemDto.ProblemId) ;
-            Console.WriteLine(runProblemDto.Code) ;
+            Console.WriteLine("Debug ok");
+            Console.WriteLine(runProblemDto.UserId);
+            Console.WriteLine(runProblemDto.ProblemId);
+            Console.WriteLine(runProblemDto.Code);
             if (runProblemDto == null)
             {
                 return BadRequest(ApiResponse<object>.Fail("Invalid request body."));

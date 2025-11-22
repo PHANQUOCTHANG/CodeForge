@@ -30,7 +30,7 @@ const CourseList: React.FC<Props> = ({
     <>
       {isLoading ? (
         <div className="course-page__grid">
-          {Array.from({ length: 6 }).map((_, idx) => (
+          {Array.from({ length: limit }).map((_, idx) => (
             <div key={idx} className="course-card">
               {/* Thumbnail */}
               <div className="course-card__thumbnail">

@@ -3,25 +3,22 @@ import Editor from "@monaco-editor/react";
 import "./DetailPractice.scss";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "@/common/helper/Loading";
-import practiceService from "@/features/practice/services/practiceService";
 import type { CodingProblem } from "@/features";
-import type {
-  TestResult,
-  TestCase,
-  Language,
-  SubmitResult,
-} from "@/features/practice/types";
+import type { TestCase, TestResult, Language } from "@/features/practice/types";
 import { ArrowLeft } from "lucide-react";
+import SubmitModal from "@/features/practice/components/submit-modal/SubmitModal";
+import ResultDetailsRaw from "@/features/practice/components/result-detail/ResultDetail";
+import { Spin } from "antd";
+import SubmissionsTab from "@/features/practice/components/submission/SubmissionTab";
+import practiceService from "@/features/practice/services/practiceService";
 import { generateFunctionTemplate } from "@/features/practice/utils/generateFunctionTemplate";
 import {
   clampValue,
   parseTestCaseInput,
   readNumber,
 } from "@/features/practice/utils";
-import SubmitModal from "@/features/practice/components/submit-modal/SubmitModal";
-import ResultDetailsRaw from "@/features/practice/components/result-detail/ResultDetail";
-import { Spin } from "antd";
-import SubmissionsTab from "@/features/practice/components/submission/SubmissionTab";
+import { useSelector } from "react-redux";
+import { useAppSelector } from "@/app/store/store";
 
 // Type casting for compatibility
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,12 +40,14 @@ const UI_CONFIG = {
   DEFAULT_LANGUAGE: "cpp" as const,
 } as const;
 
+
 // Hardcoded userId (should be moved to context/state management)
-const DUMMY_USER_ID = "A0C392F8-ACEA-46AF-8815-316BFDFAB064";
+
 const DetailPractice: React.FC = () => {
   const navigate = useNavigate();
   const { slug } = useParams() || "";
-
+  const {user} = useAppSelector(s => s.auth) ; 
+  const DUMMY_USER_ID = user?.userId;
   // Core Data State
   const [problem, setProblem] = useState<CodingProblem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +55,6 @@ const DetailPractice: React.FC = () => {
   const [testResults, setTestResults] = useState<TestResult[] | []>([]);
   const [isTesting, setIsTesting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   // Modal State
   const [showModal, setShowModal] = useState(false);
   const [modalData, setModalData] = useState({
@@ -386,13 +384,8 @@ const DetailPractice: React.FC = () => {
         functionName: problem.functionName,
         code,
       };
-      console.log(payload) ;
       const response = await practiceService.submitProblem(payload);
-      console.log("Submit");
-      console.log(response);
-
-      const result: SubmitResult = response.data.data;
-      console.log(result);
+      const result = response.data.data;
       setModalData({
         isSuccess: !!result.submit,
         passedTests: result.testCasePass ?? 0,

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { ProblemTestCase, Variable } from "../../types/problem";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface TestCaseTabProps {
   activeTab: string;
@@ -25,7 +26,7 @@ interface TestCaseTabProps {
   onTestCaseUpdate?: (
     testCases: (ProblemTestCase & { testCaseId?: string })[]
   ) => void;
-  onTestCaseDelete?: (index: number) => void;
+  onTestCaseDelete?: (testCaseId: string) => void;
 }
 
 const EXPAND_BUTTON_STYLES = {
@@ -55,6 +56,17 @@ const TestCaseTab: React.FC<TestCaseTabProps> = ({
   const [expandedCases, setExpandedCases] = useState<Record<number, boolean>>(
     testCases.reduce((acc, _, index) => ({ ...acc, [index]: false }), {})
   );
+
+  // State cho dialog xác nhận xóa
+  const [confirmDelete, setConfirmDelete] = useState<{
+    isOpen: boolean;
+    index: number;
+  }>({
+    isOpen: false,
+    index: -1,
+  });
+
+  const [isDeleting, setIsDeleting] = useState(false);
 
   /** Bật/tắt hiển thị chi tiết test case */
   const toggleExpand = (index: number) => {
@@ -99,19 +111,61 @@ const TestCaseTab: React.FC<TestCaseTabProps> = ({
 
     // Auto-save nếu test case hợp lệ
     if (onTestCaseUpdate) {
+      console.log(newTestCases) ;
       onTestCaseUpdate(newTestCases);
     }
   };
 
   /** Xóa test case (gọi callback để xóa khỏi database) */
   const removeTestCase = (index: number) => {
-    if (testCases.length > 1) {
-      const newTestCases = testCases.filter((_, i) => i !== index);
-      setTestCases(newTestCases);
+    const testCaseToDelete = testCases[index];
+    let newTestCases: (ProblemTestCase & { testCaseId?: string })[];
 
-      if (onTestCaseDelete) {
-        onTestCaseDelete(index);
-      }
+    if (testCases.length > 1) {
+      // Nếu có nhiều hơn 1 testcase, xóa testcase ở vị trí index
+      newTestCases = testCases.filter((_, i) => i !== index);
+    } else {
+      // Nếu chỉ còn 1 testcase, thay thế nó bằng một testcase trống mới
+      newTestCases = [
+        {
+          input: [{ name: "", type: "int", value: "" }],
+          expectedOutput: "",
+          explain: "",
+          isHidden: false,
+        },
+      ];
+    }
+
+    setTestCases(newTestCases);
+
+    // Gọi callback để xóa khỏi database (truyền testCaseId nếu có)
+    // Chỉ gọi nếu testCaseId tồn tại và không phải rỗng
+    if (
+      onTestCaseDelete &&
+      testCaseToDelete?.testCaseId &&
+      testCaseToDelete.testCaseId.trim() !== ""
+    ) {
+      console.log(testCaseToDelete.testCaseId) ;
+      onTestCaseDelete(testCaseToDelete.testCaseId);
+    }
+  };
+
+  /** Mở dialog xác nhận xóa */
+  const handleDeleteClick = (index: number) => {
+    setConfirmDelete({
+      isOpen: true,
+      index,
+    });
+  };
+
+  /** Xóa testcase sau khi người dùng xác nhận */
+  const handleConfirmDelete = async () => {
+    try {
+      setIsDeleting(true);
+      removeTestCase(confirmDelete.index);
+      setConfirmDelete({ isOpen: false, index: -1 });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -270,15 +324,13 @@ const TestCaseTab: React.FC<TestCaseTabProps> = ({
                   </button>
 
                   {/* Nút xóa */}
-                  {testCases.length > 1 && (
-                    <button
-                      onClick={() => removeTestCase(tcIndex)}
-                      className="icon-btn"
-                      title="Xóa test case"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleDeleteClick(tcIndex)}
+                    className="icon-btn"
+                    title="Xóa test case"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
               </div>
 
@@ -464,6 +516,21 @@ const TestCaseTab: React.FC<TestCaseTabProps> = ({
           );
         })}
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDelete.isOpen}
+        title="Xóa Test Case"
+        message={`Bạn có chắc chắn muốn xóa Test Case #${
+          confirmDelete.index + 1
+        }? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        isDangerous={true}
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDelete({ isOpen: false, index: -1 })}
+      />
     </div>
   );
 };

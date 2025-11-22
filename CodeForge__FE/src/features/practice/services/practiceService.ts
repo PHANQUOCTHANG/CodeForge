@@ -135,15 +135,18 @@ const practiceService = {
 
   updateTestCase: async (testCaseId: string, data: any) => {
     try {
+      console.log(testCaseId);
       const converted = convertInputArrayToObject(data.input);
       const payload = {
         testCaseId,
+        problemId: data.problemId,
         input: JSON.stringify(converted),
         expectedOutput: data.expectedOutput,
         isHidden: data.isHidden,
         explain: data.explain || "",
       };
-      const res = await api.patch(`api/testcases`, payload);
+      console.log(payload);
+      const res = await api.patch(`api/testcases/update`, payload);
       return res.data.data;
     } catch (error: any) {
       console.error("❌ Lỗi khi update test case:", error.response?.data);
@@ -153,6 +156,7 @@ const practiceService = {
 
   deleteTestCase: async (testCaseId: string) => {
     try {
+      console.log(testCaseId);
       const res = await api.delete(`api/testcases/${testCaseId}`);
       return res.data;
     } catch (error: any) {
@@ -184,7 +188,7 @@ const practiceService = {
   submitProblem: async (data: any) => {
     try {
       const res = await api.post(`api/problems/submit`, data);
-      console.log(res.data) ;
+      console.log(res.data);
       return res;
     } catch (error: any) {
       throw new Error(error.message);
@@ -197,9 +201,13 @@ const practiceService = {
   ) => {
     try {
       const res = await api.get(`api/submissions/${problemId}/${userId}`);
-      return res;
+      return res.data.data;
     } catch (error: any) {
-      throw new Error(error.message);
+      console.error(
+        "Lỗi khi gọi API /api/submissions/{problemId}/{userId}:",
+        error.message
+      );
+      throw error;
     }
   },
 

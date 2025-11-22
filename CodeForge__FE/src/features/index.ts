@@ -2,3 +2,5 @@
 export * from "./auth";
 export * from "./course";
 export * from "./progress";
+export * from "./payment";
+export * from "./course-review";

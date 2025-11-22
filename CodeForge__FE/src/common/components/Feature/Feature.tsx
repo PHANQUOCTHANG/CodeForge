@@ -10,55 +10,56 @@ import {
 } from "lucide-react";
 import "./Feature.scss";
 import { motion } from "framer-motion";
+
 export function Features() {
   const features = [
     {
       icon: Brain,
-      title: "Interactive Learning",
+      title: "Học Tập Tương Tác",
       description:
-        "Learn by doing with hands-on exercises and real-time feedback on your code.",
+        "Học bằng cách thực hành với bài tập trực quan và phản hồi thời gian thực cho code của bạn.",
     },
     {
       icon: Trophy,
-      title: "Gamified Progress",
+      title: "Tiến Trình Game Hoá",
       description:
-        "Earn points, badges, and certificates as you complete challenges and courses.",
+        "Nhận điểm, huy hiệu và chứng nhận khi bạn hoàn thành thử thách và khoá học.",
     },
     {
       icon: Users,
-      title: "Community Support",
+      title: "Cộng Đồng Hỗ Trợ",
       description:
-        "Connect with fellow learners, get help, and share your coding journey.",
+        "Kết nối với người học khác, nhận trợ giúp và chia sẻ hành trình lập trình của bạn.",
     },
     {
       icon: Code,
-      title: "Real Code Editor",
+      title: "Trình Soạn Thảo Code Thực",
       description:
-        "Practice in a professional IDE environment with syntax highlighting and debugging.",
+        "Luyện tập trong môi trường IDE chuyên nghiệp với highlight cú pháp và debugging.",
     },
     {
       icon: BookOpen,
-      title: "Comprehensive Curriculum",
+      title: "Lộ Trình Học Đầy Đủ",
       description:
-        "Structured learning paths from basics to advanced topics in multiple languages.",
+        "Lộ trình học tập từ cơ bản đến nâng cao cho nhiều ngôn ngữ lập trình.",
     },
     {
       icon: Target,
-      title: "Project-Based Learning",
+      title: "Học Qua Dự Án",
       description:
-        "Build real projects and add them to your portfolio as you learn.",
+        "Xây dựng dự án thực tế và thêm vào portfolio khi bạn tiến bộ.",
     },
     {
       icon: Clock,
-      title: "Learn at Your Pace",
+      title: "Học Theo Tốc Độ Của Bạn",
       description:
-        "Self-paced courses that fit your schedule with 24/7 access to content.",
+        "Khoá học tự chọn thời gian, phù hợp với lịch trình của bạn và có thể học 24/7.",
     },
     {
       icon: Award,
-      title: "Industry Recognition",
+      title: "Chứng Nhận Uy Tín",
       description:
-        "Earn certificates recognized by top tech companies and hiring managers.",
+        "Nhận chứng nhận được công nhận bởi nhiều công ty công nghệ và nhà tuyển dụng.",
     },
   ];
 
@@ -73,8 +74,9 @@ export function Features() {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            Why Choose CodeLearn?
+            Vì Sao Chọn CodeLearn?
           </motion.h2>
+
           <motion.p
             className="features__subtitle"
             initial={{ opacity: 0, y: 24 }}
@@ -82,8 +84,8 @@ export function Features() {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            Our platform is designed to make learning programming engaging,
-            effective, and accessible to everyone.
+            Nền tảng của chúng tôi được thiết kế để giúp việc học lập trình trở
+            nên thú vị, hiệu quả và dễ tiếp cận với mọi người.
           </motion.p>
         </div>
 

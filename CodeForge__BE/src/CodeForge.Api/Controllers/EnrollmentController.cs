@@ -42,18 +42,11 @@ namespace CodeForge.Api.Controllers
         public async Task<IActionResult> EnrollOrInitiatePayment([FromBody] EnrollmentRequestDto request)
         {
             _logger.LogInformation("Enrollment request received for CourseId: {CourseId}", request.CourseId);
-            var userId = GetUserId();
-            if (userId == null)
-            {
-                _logger.LogWarning("Enrollment request failed: Unauthorized access attempt.");
-                return Unauthorized();
-            }
-
-
+            var userId = GetRequiredUserId();
             try
             {
                 // Pass HttpContext directly to the service
-                var result = await _enrollmentService.ProcessEnrollmentRequestAsync(userId.Value, request.CourseId, HttpContext);
+                var result = await _enrollmentService.ProcessEnrollmentRequestAsync(userId, request.CourseId, HttpContext);
 
                 if (result.IsPaymentRequired)
                 {
@@ -98,12 +91,12 @@ namespace CodeForge.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetEnrollmentStatus(Guid courseId)
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
+            var userId = GetRequiredUserId();
+
 
             try
             {
-                var isEnrolled = await _enrollmentService.IsUserEnrolledAsync(userId.Value, courseId);
+                var isEnrolled = await _enrollmentService.IsUserEnrolledAsync(userId, courseId);
                 return Ok(ApiResponse<object>.Success(new { isEnrolled }, "Trạng thái đăng ký."));
             }
             catch (Exception ex)
@@ -121,12 +114,10 @@ namespace CodeForge.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetMyEnrollments()
         {
-            var userId = GetUserId();
-            if (userId == null) return Unauthorized();
-
+            var userId = GetRequiredUserId();
             try
             {
-                var enrollments = await _enrollmentService.GetEnrollmentsByUserIdAsync(userId.Value);
+                var enrollments = await _enrollmentService.GetEnrollmentsByUserIdAsync(userId);
                 return Ok(ApiResponse<List<EnrollmentDto>>.Success(enrollments, "Lấy danh sách khóa học đã đăng ký thành công."));
             }
             catch (Exception ex)

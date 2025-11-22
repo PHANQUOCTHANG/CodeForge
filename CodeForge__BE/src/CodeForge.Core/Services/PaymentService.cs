@@ -17,15 +17,17 @@ namespace CodeForge.Core.Services
         private readonly IVNPayService _vnPayService;
         private readonly IPaymentRepository _paymentRepository;
         private readonly IEnrollmentRepository _enrollmentRepository;
+        private readonly ICourseRepository _courseRepository;
         private readonly ILogger<PaymentService> _logger;
 
         public PaymentService(
           IVNPayService vnPayService,
           IPaymentRepository paymentRepository,
-          IEnrollmentRepository enrollmentRepository,
+          IEnrollmentRepository enrollmentRepository, ICourseRepository courseRepository,
           ILogger<PaymentService> logger)
         {
             _vnPayService = vnPayService;
+            _courseRepository = courseRepository;
             _paymentRepository = paymentRepository;
             _enrollmentRepository = enrollmentRepository;
             _logger = logger;
@@ -174,41 +176,36 @@ namespace CodeForge.Core.Services
             if (vnp_ResponseCode == "00" && vnp_TransactionStatus == "00")
             {
                 // --- SUCCESS ---
-                _logger.LogInformation("VNPay IPN Success: OrderId {OrderId}", payment.OrderId);
 
-                // Cập nhật Payment
+                // Cập nhật Payment (Giữ nguyên)
                 payment.Status = "Succeeded";
                 payment.PaidAt = DateTime.UtcNow;
-                payment.TransactionId = vnp_TransactionNo.ToString();
+                payment.TransactionId = vnpayData["vnp_TransactionNo"].ToString();
                 await _paymentRepository.UpdateAsync(payment);
-                _logger.LogInformation("Payment record {PaymentId} updated to Succeeded.", payment.PaymentId);
 
-                // TẠO ENROLLMENT (KÍCH HOẠT KHÓA HỌC)
+                // ✅ FIX: TÌM VÀ KÍCH HOẠT ENROLLMENT PENDING
+                // 1. Tìm bản ghi Enrollment (có thể là pending hoặc đã enrolled)
+                var enrollmentToActivate = await _enrollmentRepository.GetByUserIdAndCourseIdAsync(payment.UserId, payment.CourseId);
 
-                bool alreadyEnrolled = await _enrollmentRepository.ExistsAsync(payment.UserId, payment.CourseId);
-                if (!alreadyEnrolled)
+                if (enrollmentToActivate != null && enrollmentToActivate.Status == "pending")
                 {
-                    var enrollment = new Enrollment
-                    {
-                        EnrollmentId = Guid.NewGuid(), // Thêm ID cho Enrollment
-                        UserId = payment.UserId,
-                        CourseId = payment.CourseId,
-                        EnrolledAt = DateTime.UtcNow,
-                        Status = "enrolled"
-                    };
-                    await _enrollmentRepository.AddAsync(enrollment);
-                    _logger.LogInformation("Enrollment created for User {UserId}, Course {CourseId} from Order {OrderId}",
-                      payment.UserId, payment.CourseId, payment.OrderId);
+                    // 2. KÍCH HOẠT: Cập nhật trạng thái
+                    enrollmentToActivate.Status = "enrolled";
+                    await _enrollmentRepository.UpdateAsync(enrollmentToActivate);
+
+                    // 3. ĐỒNG BỘ: Tăng TotalStudents
+                    await IncrementTotalStudents(payment.CourseId);
+
+                    _logger.LogInformation("Enrollment activated and TotalStudents incremented for User {UserId}.", payment.UserId);
+                }
+                else if (enrollmentToActivate?.Status == "enrolled")
+                {
+                    _logger.LogWarning("Enrollment already active (Idempotency). Skipping student count increment.", payment.UserId);
                 }
                 else
                 {
-                    _logger.LogWarning("Enrollment already exists for User {UserId}, Course {CourseId} (Order {OrderId}). Skipping enrollment creation.",
-                      payment.UserId, payment.CourseId, payment.OrderId);
+                    _logger.LogError("CRITICAL: Pending Enrollment record not found for successful Order {OrderId}.", payment.OrderId);
                 }
-
-                // TODO: Send success notification (email, in-app) to the user
-
-                // Return success response to VNPay
 
                 return new VNPayIPNResponse { RspCode = "00", Message = "Confirm Success" };
             }
@@ -230,6 +227,18 @@ namespace CodeForge.Core.Services
                 return new VNPayIPNResponse { RspCode = "00", Message = "Confirm Success" };
             }
         }
+        private async Task IncrementTotalStudents(Guid courseId)
+        {
+            var course = await _courseRepository.GetByIdAsync(courseId);
+
+            if (course != null)
+            {
+                course.TotalStudents += 1;
+                // Giả định hàm này gọi SaveChangesAsync trên CourseRepository
+                await _courseRepository.UpdateCourseOnlyAsync(course);
+            }
+        }
     }
+
 }
 

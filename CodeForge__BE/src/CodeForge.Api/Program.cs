@@ -28,6 +28,10 @@ namespace CodeForge
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             // Cấu hình vnpay Settings từ appsettings.json
+            // 1. Đăng ký để đọc section "CloudinarySettings" từ appsettings.json
+            builder.Services.Configure<CloudinarySettings>(
+                builder.Configuration.GetSection(CloudinarySettings.SectionName)
+            );
 
             builder.Services.Configure<VNPaySettings>(builder.Configuration.GetSection("VNPaySettings"));
             builder.Services.AddHttpContextAccessor();
