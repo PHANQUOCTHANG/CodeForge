@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using CodeForge.Core.Services;
-using CodeForge.Application.DTOs.Modules;
 using CodeForge.Api.DTOs.Response;
 using CodeForge.Api.DTOs;
+using CodeForge.Api.DTOs.Modules;
 
 namespace CodeForge.Api.Controllers
 {
@@ -53,7 +53,7 @@ namespace CodeForge.Api.Controllers
         /// (Yêu cầu quyền sở hữu khóa học / Teacher / Admin).
         /// </summary>
         [HttpPost("create")]
-        // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
+       [Authorize(Roles = "teacher, admin")] // 🛡️ Thêm phân quyền
         public async Task<IActionResult> Create([FromBody] CreateModuleDto dto)
         {
             var userId = GetRequiredUserId();
@@ -73,7 +73,7 @@ namespace CodeForge.Api.Controllers
         /// (Yêu cầu quyền sở hữu khóa học / Teacher / Admin).
         /// </summary>
         [HttpPut("update")] // Dùng PUT hoặc PATCH
-        // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
+      [Authorize(Roles = "teacher, admin")] // 🛡️ Thêm phân quyền
         public async Task<IActionResult> Update([FromBody] UpdateModuleDto dto)
         {
             var userId = GetRequiredUserId();
@@ -87,7 +87,7 @@ namespace CodeForge.Api.Controllers
         /// (Yêu cầu quyền sở hữu khóa học / Teacher / Admin).
         /// </summary>
         [HttpDelete("{id:guid}")]
-        // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
+        [Authorize(Roles = "teacher, admin")] // 🛡️ Thêm phân quyền
         public async Task<IActionResult> Delete(Guid id)
         {
             var userId = GetRequiredUserId();

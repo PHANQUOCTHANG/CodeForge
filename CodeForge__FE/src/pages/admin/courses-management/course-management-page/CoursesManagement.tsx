@@ -1,35 +1,38 @@
-// CoursesManagement.tsx (Phiên bản React Query & UI cải tiến)
+// CoursesManagement.tsx (Phiên bản cải tiến với UI/UX đẹp hơn)
 
 import React, { useState } from "react";
 import {
   Button,
-  Modal,
   Input,
   Select,
   Popconfirm,
   message,
   Pagination,
   Spin,
-  Card,
   Tag,
+  Rate,
+  Switch,
+  Empty,
+  Skeleton,
+  Tooltip,
 } from "antd";
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
-  BookOutlined,
-  RiseOutlined,
+  ClockCircleOutlined,
+  TeamOutlined,
+  FileTextOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import "./CoursesManagement.scss";
 
-// Giả định: useCourses được định nghĩa ở đây hoặc file khác
 import { useCourses } from "@/features";
 import type { Course } from "@/features/course/types";
 import { useNavigate } from "react-router-dom";
 
-// Định nghĩa Page Size (nên dùng const chung hoặc lấy từ API)
-const pageSize = 8;
+const pageSize = 12;
 
 const CoursesManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,34 +40,24 @@ const CoursesManagement = () => {
   const [page, setPage] = useState(1);
 
   const navigate = useNavigate();
+
   // 🚀 LẤY DỮ LIỆU TỪ REACT QUERY
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch, // Dùng refetch để tải lại sau khi xóa/sửa
-  } = useCourses(
+  const { data, isLoading, isError, refetch } = useCourses(
     page,
     pageSize,
     searchTerm,
-    level === "all" ? "" : level, // Chuyển 'all' thành chuỗi rỗng cho API
+    level === "all" ? "" : level,
     "all" // Lấy tất cả trạng thái (active/draft) cho Admin
   );
 
   const courses: Course[] = data?.data || [];
   const totalItems = data?.totalItems || 0;
-  console.log("📚 Khóa học tải về:", courses);
-  // --- Logic Xử lý Actions ---
 
   const handleDelete = async (courseId: string) => {
     try {
-      // Thay thế axios.delete bằng hook mutation (useDeleteCourse)
-      // await deleteMutation.mutateAsync(courseId);
-
-      // Giả lập thành công:
+      // Thay thế bằng hook mutation thực tế
       message.success("Xóa khóa học thành công (giả lập)");
-
-      refetch(); // Tải lại danh sách sau khi xóa
+      refetch();
       setPage(1);
     } catch (err) {
       message.error("Lỗi khi xóa khóa học");
@@ -72,92 +65,228 @@ const CoursesManagement = () => {
     }
   };
 
-  // --- Cải tiến Card UI ---
-  const renderCourseCard = (course: Course) => (
-    <Card
-      className="course-card-admin"
-      key={course.courseId}
-      hoverable
-      title={<div className="course-card-admin__title">{course.title}</div>}
-      extra={
-        <Tag color={course.status === "active" ? "green" : "orange"}>
-          {course.status ? course.status.toUpperCase() : "DRAFT"}
-        </Tag>
-      }
-    >
-      <div className="course-card-admin__content">
-        <p className="course-card-admin__desc">
-          {course.description || "Không có mô tả"}
-        </p>
-        <div className="course-card-admin__meta">
-          <Tag icon={<BookOutlined />} color="blue">
-            {course.level}
-          </Tag>
-          {course.language && <Tag color="geekblue">{course.language}</Tag>}
-          <Tag icon={<RiseOutlined />} color="volcano">
-            {course.slug}
-          </Tag>
+  const handleStatusChange = async (courseId: string, newStatus: boolean) => {
+    try {
+      // Thay thế bằng hook mutation thực tế
+      const statusText = newStatus ? "active" : "draft";
+      message.success(`Cập nhật trạng thái thành ${statusText} (giả lập)`);
+      refetch();
+    } catch (err) {
+      message.error("Lỗi khi cập nhật trạng thái");
+      console.error(err);
+    }
+  };
+
+  // --- Render Course Card (Cải tiến) ---
+  const renderCourseCard = (course: Course) => {
+    const isActive = course.status === "active";
+    const discountedPrice =
+      course.price - (course.price * course.discount) / 100;
+
+    return (
+      <div key={course.courseId} className="admin-course-card">
+        {/* Thumbnail Section */}
+        <div className="admin-course-card__thumbnail-wrapper">
+          <img
+            src={
+              course.thumbnail ||
+              "https://via.placeholder.com/300x200?text=No+Image"
+            }
+            alt={course.title}
+            className="admin-course-card__thumbnail"
+          />
+          <div className="admin-course-card__overlay">
+            <Button
+              type="primary"
+              shape="circle"
+              size="large"
+              icon={<EyeOutlined />}
+              onClick={() => navigate(`/courses/${course.slug}`)}
+              className="admin-course-card__btn-view"
+            />
+          </div>
+          {course.discount > 0 && (
+            <div className="admin-course-card__discount-badge">
+              -{course.discount}%
+            </div>
+          )}
+        </div>
+
+        {/* Content Section */}
+        <div className="admin-course-card__content">
+          {/* Header with Status */}
+          <div className="admin-course-card__header">
+            <Tag color={isActive ? "green" : "orange"}>
+              {isActive ? "Active" : "Draft"}
+            </Tag>
+            <Tag color="blue">{course.level.toUpperCase()}</Tag>
+          </div>
+
+          {/* Title */}
+          <h3 className="admin-course-card__title">{course.title}</h3>
+
+          {/* Author */}
+          <p className="admin-course-card__author">
+            <span className="label">Giảng viên:</span> {course.author}
+          </p>
+
+          {/* Category */}
+          <p className="admin-course-card__category">
+            <span className="label">Danh mục:</span> {course.categoryName}
+          </p>
+
+          {/* Description */}
+          {course.description && (
+            <p className="admin-course-card__description">
+              {course.description.substring(0, 120)}...
+            </p>
+          )}
+
+          {/* Rating */}
+          <div className="admin-course-card__rating">
+            <Rate disabled allowHalf value={course.rating} />
+            <span className="rating-value">
+              {course.rating.toFixed(1)} ({course.totalRatings} đánh giá)
+            </span>
+          </div>
+
+          {/* Stats Row */}
+          <div className="admin-course-card__stats">
+            <div className="stat">
+              <ClockCircleOutlined />
+              <span>{course.duration}h</span>
+            </div>
+            <div className="stat">
+              <FileTextOutlined />
+              <span>{course.lessonCount} bài</span>
+            </div>
+            <div className="stat">
+              <TeamOutlined />
+              <span>{course.totalStudents} học viên</span>
+            </div>
+          </div>
+
+          {/* Price Section */}
+          <div className="admin-course-card__price-section">
+            {course.price === 0 ? (
+              <div className="price-free">Miễn phí</div>
+            ) : (
+              <>
+                <div className="price-current">
+                  <DollarOutlined />
+                  {discountedPrice.toLocaleString()}
+                </div>
+                {course.discount > 0 && (
+                  <div className="price-original">
+                    ${course.price.toLocaleString()}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Status Toggle Section */}
+          <div className="admin-course-card__status-toggle">
+            <span className="label">Trạng thái:</span>
+            <Switch
+              checked={isActive}
+              onChange={(checked) =>
+                handleStatusChange(course.courseId, checked)
+              }
+              checkedChildren="Active"
+              unCheckedChildren="Draft"
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="admin-course-card__actions">
+            <Tooltip title="Xem chi tiết">
+              <Button
+                type="default"
+                icon={<EyeOutlined />}
+                block
+                onClick={() => navigate(`/courses/${course.slug}`)}
+              >
+                Chi tiết
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="Chỉnh sửa khóa học">
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                block
+                onClick={() =>
+                  navigate(`/admin/courses/edit/${course.courseId}`)
+                }
+              >
+                Sửa
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="Xóa khóa học">
+              <Popconfirm
+                title="Xác nhận xóa?"
+                description="Hành động này không thể hoàn tác"
+                onConfirm={() => handleDelete(course.courseId)}
+                okText="Xóa"
+                cancelText="Hủy"
+              >
+                <Button danger icon={<DeleteOutlined />} block>
+                  Xóa
+                </Button>
+              </Popconfirm>
+            </Tooltip>
+          </div>
         </div>
       </div>
-      <div className="course-card-admin__actions-footer">
-        <Button
-          type="primary"
-          ghost
-          size="small"
-          icon={<EyeOutlined />}
-          title="Xem chi tiết"
-          style={{ marginRight: 8 }}
-        />
-        <Button
-          type="primary"
-          size="small"
-          icon={<EditOutlined />}
-          onClick={() => {
-            navigate(`/admin/courses/edit/${course.courseId}`);
-          }}
-          title="Sửa"
-          style={{ marginRight: 8 }}
-        />
-        <Popconfirm
-          title="Xác nhận xóa khóa học này?"
-          description="Hành động này không thể hoàn tác"
-          onConfirm={() => handleDelete(course.courseId)}
-          okText="Xóa"
-          cancelText="Hủy"
-        >
-          <Button danger size="small" icon={<DeleteOutlined />} title="Xóa" />
-        </Popconfirm>
+    );
+  };
+
+  // --- Loading Skeleton ---
+  const renderSkeletons = () => (
+    <div className="admin-course-card">
+      <Skeleton.Image active style={{ width: "100%", height: 200 }} />
+      <div style={{ padding: "16px" }}>
+        <Skeleton active paragraph={{ rows: 4 }} />
       </div>
-    </Card>
+    </div>
   );
 
-  // --- JSX Chính ---
+  // --- Main JSX ---
   return (
     <div className="courses-management-container">
+      {/* Header */}
       <div className="courses-management-header">
-        <h1>Quản lý khóa học</h1>
+        <div className="header-content">
+          <h1>Quản lý khóa học</h1>
+          <p className="subtitle">
+            Tổng cộng: <strong>{totalItems}</strong> khóa học
+          </p>
+        </div>
         <Button
           type="primary"
           size="large"
           icon={<PlusOutlined />}
-          onClick={() => {
-            navigate("/admin/courses/new");
-          }}
+          onClick={() => navigate("/admin/courses/new")}
+          className="btn-create"
         >
-          Thêm khóa học
+          + Thêm khóa học
         </Button>
       </div>
 
+      {/* Filters */}
       <div className="courses-management-filters">
         <Input.Search
-          placeholder="Tìm kiếm khóa học..."
+          placeholder="Tìm kiếm theo tiêu đề, giảng viên..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setPage(1);
           }}
-          style={{ width: 260 }}
+          style={{ width: 300 }}
           allowClear
+          size="large"
         />
         <Select
           value={level}
@@ -165,7 +294,8 @@ const CoursesManagement = () => {
             setLevel(v);
             setPage(1);
           }}
-          style={{ width: 180 }}
+          style={{ width: 200 }}
+          size="large"
         >
           <Select.Option value="all">Tất cả trình độ</Select.Option>
           <Select.Option value="beginner">Beginner</Select.Option>
@@ -174,39 +304,40 @@ const CoursesManagement = () => {
         </Select>
       </div>
 
-      <Spin spinning={isLoading}>
-        <div className="courses-management-grid">
-          {isError && (
-            <div className="error">Lỗi khi tải dữ liệu. Vui lòng thử lại.</div>
-          )}
-          {courses.length > 0 ? (
-            courses.map(renderCourseCard)
-          ) : (
-            <div
-              className="empty"
-              style={{
-                padding: "50px",
-                gridColumn: "1 / -1",
-                textAlign: "center",
-              }}
-            >
-              {isLoading
-                ? "Đang tải..."
-                : "Không có khóa học nào khớp với tiêu chí tìm kiếm."}
-            </div>
-          )}
-        </div>
+      {/* Grid */}
+      <Spin spinning={isLoading} size="large">
+        {isError ? (
+          <Empty description="Lỗi khi tải dữ liệu" />
+        ) : courses.length === 0 ? (
+          <Empty description="Không có khóa học nào" />
+        ) : (
+          <div className="courses-management-grid">
+            {courses.map(renderCourseCard)}
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="courses-management-grid">
+            {Array.from({ length: pageSize }).map((_, idx) => (
+              <div key={idx}>{renderSkeletons()}</div>
+            ))}
+          </div>
+        )}
       </Spin>
 
-      <div className="courses-management-pagination">
-        <Pagination
-          current={page}
-          pageSize={pageSize}
-          total={totalItems}
-          onChange={setPage}
-          showSizeChanger={false}
-        />
-      </div>
+      {/* Pagination */}
+      {!isLoading && courses.length > 0 && (
+        <div className="courses-management-pagination">
+          <Pagination
+            current={page}
+            pageSize={pageSize}
+            total={totalItems}
+            onChange={setPage}
+            showSizeChanger={false}
+            size="large"
+          />
+        </div>
+      )}
     </div>
   );
 };

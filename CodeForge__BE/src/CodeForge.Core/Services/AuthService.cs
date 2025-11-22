@@ -44,6 +44,7 @@ namespace CodeForge.Core.Service
             {
                 Username = request.Username,
                 Email = request.Email,
+                Role = request.Role?.ToLower() == "admin" ? "admin" : "student",
                 // Luôn kiểm tra nullability cho HashPassword
                 PasswordHash = _hasher.HashPassword(null!, request.Password)
             };

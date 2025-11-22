@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using CodeForge.Application.DTOs.Modules;
+using CodeForge.Api.DTOs.Modules;
+
 
 namespace CodeForge.Api.DTOs.Request.Course
 {

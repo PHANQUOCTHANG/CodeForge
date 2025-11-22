@@ -40,6 +40,8 @@ services:
       CloudinarySettings__CloudName: ${CloudName}
       CloudinarySettings__ApiKey: ${CloudApiKey}
       CloudinarySettings__ApiSecret: ${CloudApiSecret}
+      # 👇 THÊM DÒNG NÀY VÀO 👇
+      AdminSettings__SecretKey: ${AdminSecretKey}
 
     ports:
       - "5000:8080"

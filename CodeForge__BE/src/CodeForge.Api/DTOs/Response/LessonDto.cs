@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using CodeForge.Api.DTOs.Response;
 
-namespace CodeForge.Application.DTOs.Response
+namespace CodeForge.Api.DTOs.Response
 {
         /// <summary>
         /// DTO trả về thông tin chi tiết của một bài học.

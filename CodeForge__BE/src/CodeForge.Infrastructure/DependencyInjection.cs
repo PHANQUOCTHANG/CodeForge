@@ -67,6 +67,12 @@ namespace CodeForge.Infrastructure
             services.AddScoped<ICourseReviewRepository, CourseReviewRepository>();
             services.AddScoped<ICourseReviewService, CourseReviewService>();
 
+            //Statictic
+            services.AddScoped<IStatisticsRepository, StatisticsRepository>();
+            services.AddScoped<IStatisticsService, StatisticsService>();
+            // Language
+            services.AddScoped<ILanguageRepository, LanguageRepository>();
+            services.AddScoped<ILanguageService, LanguageService>();
             return services;
         }
     }

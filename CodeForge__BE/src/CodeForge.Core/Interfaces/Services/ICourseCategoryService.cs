@@ -1,7 +1,8 @@
 // Interface ICourseCategoryService.cs
 
-using CodeForge.Application.DTOs.Request.CourseCategory;
-using CodeForge.Application.DTOs.Response;
+
+using CodeForge.Api.DTOs.Request.CourseCategory;
+using CodeForge.Api.DTOs.Response;
 
 namespace CodeForge.Core.Interfaces.Services
 {

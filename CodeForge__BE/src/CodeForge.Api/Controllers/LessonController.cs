@@ -2,10 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using CodeForge.Core.Services;
-using CodeForge.Application.DTOs.Lessons;
+
 using CodeForge.Api.DTOs.Response;
 using CodeForge.Api.DTOs;
-using CodeForge.Application.DTOs.Response;
+using CodeForge.Api.DTOs.Lessons;
+
 
 namespace CodeForge.Api.Controllers
 {
@@ -56,7 +57,7 @@ namespace CodeForge.Api.Controllers
         /// Tạo một bài học mới (Yêu cầu quyền Teacher/Admin).
         /// </summary>
         [HttpPost("create")]
-        // [Authorize(Roles = "Teacher, Admin")] // 🛡️ Thêm phân quyền
+        [Authorize(Roles = "teacher, admin")] // 🛡️ Thêm phân quyền
         public async Task<IActionResult> CreateLesson([FromBody] CreateLessonDto createDto)
         {
             var userId = GetRequiredUserId();

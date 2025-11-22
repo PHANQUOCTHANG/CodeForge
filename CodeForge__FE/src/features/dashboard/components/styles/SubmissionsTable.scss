@@ -1,0 +1,63 @@
+// SubmissionsTable.scss
+.submissions-table {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+
+  &__loading {
+    padding: 2rem;
+    text-align: center;
+    color: #6b7280;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  &__view-all {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: text-decoration 0.2s;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__wrapper {
+    overflow-x: auto;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+      padding: 0.5rem;
+      text-align: left;
+      font-size: 0.75rem;
+      color: #6b7280;
+      font-weight: 600;
+      background-color: #f9fafb;
+    }
+
+    td {
+      padding: 0.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+  }
+}

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using CodeForge.Application.DTOs.Lessons;
-using CodeForge.Application.DTOs.Modules;
+using CodeForge.Api.DTOs.Modules;
+
 
 namespace CodeForge.Api.DTOs.Request.Course
 {

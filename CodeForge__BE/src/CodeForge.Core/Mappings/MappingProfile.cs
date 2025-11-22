@@ -1,19 +1,25 @@
 using AutoMapper;
 using CodeForge.Core.Entities;
 using CodeForge.Api.DTOs.Response;
-using CodeForge.Application.DTOs.Modules;
-using CodeForge.Application.DTOs.Lessons; // Giả định DTOs Lesson
+
 using CodeForge.Api.DTOs.Request.Enrollment;
-using CodeForge.Application.DTOs.Response;
+
 using CodeForge.Api.DTOs;
 using CodeForge.Api.DTOs.Request.Course;
 using CodeForge.Api.DTOs.Request.Auth;
+
+using UserProfile = CodeForge.Core.Entities.Profile;
+using CodeForge.Api.DTOs.Request.User;
+using CodeForge.Api.DTOs.Modules;
+using CodeForge.Api.DTOs.Request.CourseCategory;
+using CodeForge.Api.DTOs.Lessons;
+using CodeForge.Api.DTOs.Request.Language;
 using CodeForge.Application.DTOs.Request.CourseCategory;
 using CodeForge.Api.DTOs.Request; // Giả định DTOs Problem
 
 namespace CodeForge.Core.Mappings
 {
-    public class MappingProfile : Profile
+    public class MappingProfile : AutoMapper.Profile
     {
         public MappingProfile()
         {
@@ -23,11 +29,19 @@ namespace CodeForge.Core.Mappings
 
             // User Summary/Public DTO (Sử dụng cho Reviewer, Course Creator)
             CreateMap<User, UserSummaryDto>();
-
+            // Map Entity -> DTO
+            CreateMap<User, UserDto>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Profile.FullName))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Profile.Avatar));
             // User DTO đầy đủ (Có thể chứa Role, Status, v.v., KHÔNG chứa PasswordHash)
-            CreateMap<User, UserDto>();
+            // MappingProfile.cs
+            CreateMap<User, UserDto>()
+                // Lấy FullName từ Profile nhét vào UserDto
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Profile.FullName))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Profile.Avatar));
             CreateMap<RegisterDto, User>();
-
+            CreateMap<CreateUserDto, User>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "active")); // Mặc định active
             // =======================================================
             // 2. COURSE & MODULES
             // =======================================================
@@ -141,7 +155,11 @@ namespace CodeForge.Core.Mappings
 
             // ✅ FIX: Đảm bảo User DTO được map sang UserSummaryDto (hoặc UserDto)
             // Nếu CourseReviewDto.User là UserDto, thì nó sẽ sử dụng mapping User -> UserDto đã có.
-
+            //Lan guage
+            // Language Maps
+            CreateMap<LanguageEntity, LanguageDto>();
+            CreateMap<CreateLanguageDto, LanguageEntity>();
+            CreateMap<UpdateLanguageDto, LanguageEntity>();
 
         }
     }

@@ -1,5 +1,5 @@
 using AutoMapper;
-using CodeForge.Application.DTOs.Response;
+using CodeForge.Api.DTOs.Response;
 using CodeForge.Core.Entities;
 using CodeForge.Core.Exceptions;
 using CodeForge.Core.Interfaces.Repositories;

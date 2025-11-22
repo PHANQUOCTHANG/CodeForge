@@ -1,0 +1,232 @@
+.user-table {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  &__wrapper {
+    overflow-x: auto;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background: #f5f5f5;
+      border-bottom: 2px solid #e0e0e0;
+
+      th {
+        padding: 16px 12px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+        white-space: nowrap;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #e0e0e0;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: #fafafa;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+
+  &__row {
+    cursor: pointer;
+
+    &:hover {
+      background-color: #fafafa;
+    }
+  }
+
+  &__cell {
+    padding: 12px;
+    font-size: 14px;
+    color: #666;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  &__user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__name {
+    margin: 0;
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__username {
+    margin: 0;
+    font-size: 12px;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &--edit {
+      background-color: #e3f2fd;
+      color: #1976d2;
+
+      &:hover {
+        background-color: #bbdefb;
+        color: #1565c0;
+      }
+    }
+
+    &--delete {
+      background-color: #ffebee;
+      color: #d32f2f;
+
+      &:hover {
+        background-color: #ffcdd2;
+        color: #c62828;
+      }
+    }
+  }
+
+  &__loading,
+  &__empty {
+    padding: 40px 16px;
+    text-align: center;
+    font-size: 14px;
+    color: #999;
+  }
+
+  &__loading {
+    background: white;
+    border-radius: 8px;
+  }
+
+  &__empty {
+    background: #f5f5f5;
+    border-radius: 8px;
+  }
+
+  // Responsive design
+  @media (max-width: 1024px) {
+    &__cell {
+      padding: 10px 8px;
+      font-size: 13px;
+    }
+
+    &__name {
+      font-size: 13px;
+    }
+
+    &__username {
+      font-size: 11px;
+    }
+
+    &__action-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    &__wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    &__table {
+      min-width: 600px;
+
+      thead th {
+        padding: 12px 8px;
+        font-size: 12px;
+      }
+    }
+
+    &__cell {
+      padding: 8px 6px;
+      font-size: 12px;
+    }
+
+    &__avatar {
+      width: 28px;
+      height: 28px;
+    }
+
+    &__name {
+      font-size: 12px;
+    }
+
+    &__username {
+      font-size: 10px;
+    }
+
+    &__badge {
+      padding: 3px 6px;
+      font-size: 11px;
+    }
+
+    &__action-btn {
+      padding: 3px 6px;
+      font-size: 10px;
+    }
+  }
+}

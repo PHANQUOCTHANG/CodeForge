@@ -1,6 +1,6 @@
 using System;
 
-namespace CodeForge.Application.DTOs.Response
+namespace CodeForge.Api.DTOs.Response
 {
     /// <summary>
     /// Data Transfer Object (DTO) chứa thông tin trả về

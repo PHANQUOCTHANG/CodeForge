@@ -2,7 +2,7 @@
 using CodeForge.Api.Controllers;
 using CodeForge.Api.DTOs.Response;
 
-namespace CodeForge.Application.DTOs
+namespace CodeForge.Api.DTOs
 {
     /// <summary>
     /// DTO trả về kết quả sau khi xử lý yêu cầu đăng ký/mua khóa học.

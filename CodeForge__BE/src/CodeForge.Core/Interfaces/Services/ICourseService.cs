@@ -2,7 +2,7 @@
 using CodeForge.Api.DTOs.Response;
 using CodeForge.Api.DTOs.Request.Course;
 using CodeForge.Core.Models;
-using CodeForge.Application.DTOs.Response;
+
 
 
 namespace CodeForge__BE.src.CodeForge.Core.Interfaces.Services

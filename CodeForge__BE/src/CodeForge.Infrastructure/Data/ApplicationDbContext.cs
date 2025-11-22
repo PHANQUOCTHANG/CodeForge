@@ -30,6 +30,7 @@ namespace CodeForge.Infrastructure.Data
         public DbSet<Problem> CodingProblems { get; set; }
         public DbSet<TestCase> TestCases { get; set; }
         public DbSet<Submission> Submissions { get; set; }
+        public DbSet<LanguageEntity> Languages { get; set; }
 
         // =============================
         // 🔹 Cấu hình mối quan hệ và converter
