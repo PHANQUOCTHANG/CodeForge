@@ -117,6 +117,8 @@ namespace CodeForge.Core.Mappings
                     src.User != null ? src.User.Role : ""))
                 .ForMember(dest => dest.TimeAgo, opt => opt.MapFrom(src => 
                     TimeAgoHelper.GetTimeAgo(src.CreatedAt)))
+                .ForMember(dest => dest.TimeAgoUpdate, opt => opt.MapFrom(src => 
+                    TimeAgoHelper.GetTimeAgoWithEditStatus(src.CreatedAt, src.UpdatedAt)))    
                 .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => 
                     src.ImageUrl ?? ""))
                 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => 

@@ -189,6 +189,90 @@ namespace CodeForge.Api.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateThreadDto dto)
+        {
+            _logger.LogInformation($"=== UPDATE REQUEST for Thread: {id} ===");
+
+            Guid requestUserId;
+
+            // --- LOGIC AUTH LINH HOẠT (giống Delete) ---
+            var authHeader = HttpContext.Request.Headers["Authorization"].ToString();
+
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+            {
+                var token = authHeader.Substring("Bearer ".Length).Trim();
+                var userId = ValidateTokenAndGetUserId(token);
+
+                if (userId.HasValue)
+                {
+                    // Token hợp lệ → Ưu tiên ID trong token
+                    requestUserId = userId.Value;
+                    _logger.LogInformation($"Using UserID from token: {requestUserId}");
+                }
+                else
+                {
+                    // Token không hợp lệ → Phải dùng UserID từ body
+                    if (dto == null || dto.UserID == Guid.Empty)
+                    {
+                        return BadRequest(new { message = "UserID required when token is invalid" });
+                    }
+
+                    requestUserId = dto.UserID;
+                    _logger.LogWarning($"Token invalid, using UserID from body: {requestUserId}");
+                }
+            }
+            else
+            {
+                // Không có token → Guest update
+                if (dto == null || dto.UserID == Guid.Empty)
+                {
+                    return BadRequest(new { message = "UserID required when not authenticated" });
+                }
+
+                requestUserId = dto.UserID;
+                _logger.LogInformation($"No token, using UserID from body: {requestUserId}");
+            }
+            // --- END AUTH LOGIC ---
+
+
+            // 2. Lấy thread hiện tại
+            var existingThread = await _service.GetByIdAsync(id);
+            if (existingThread == null)
+            {
+                _logger.LogWarning($"Thread {id} not found");
+                return NotFound(new { message = "Thread not found" });
+            }
+
+            _logger.LogInformation($"Thread Owner: {existingThread.UserID}, Request User: {requestUserId}");
+
+            // 3. Check owner
+            if (existingThread.UserID != requestUserId)
+            {
+                _logger.LogWarning($"User {requestUserId} tried to update thread owned by {existingThread.UserID}");
+                return StatusCode(403, new { message = "You can only update your own threads" });
+            }
+
+            // 4. Update
+            try
+            {
+                var updatedThread = await _service.UpdateAsync(id, dto);
+
+                if (updatedThread == null)
+                {
+                    return StatusCode(500, new { message = "Update failed" });
+                }
+
+                _logger.LogInformation($"✅ Thread {id} updated successfully");
+                return Ok(updatedThread);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Update failed: {ex.Message}");
+                return StatusCode(500, new { message = "Update failed", error = ex.Message });
+            }
+        }
+
         private Guid? ValidateTokenAndGetUserId(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();

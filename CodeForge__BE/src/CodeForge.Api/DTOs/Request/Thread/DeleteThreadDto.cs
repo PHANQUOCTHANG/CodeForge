@@ -1,5 +1,7 @@
-// DTOs/DeleteThreadDto.cs
-public class DeleteThreadDto
+namespace CodeForge.Api.DTOs.Request.Thread
 {
-    public Guid UserID { get; set; }
+    public class DeleteThreadDto
+    {
+        public Guid UserID { get; set; }
+    }
 }

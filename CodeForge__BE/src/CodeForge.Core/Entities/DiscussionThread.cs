@@ -28,6 +28,7 @@ namespace CodeForge.Core.Entities
         public int Shares { get; set; } = 0;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
 
         public virtual User? User { get; set; }

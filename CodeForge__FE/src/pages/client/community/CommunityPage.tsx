@@ -28,6 +28,10 @@ import {
   PictureOutlined,
   SearchOutlined,
   SendOutlined,
+  EditOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  TagsOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -58,6 +62,9 @@ interface Thread {
   shares: number;
   isLiked?: boolean; // Client-side state
   commentsList?: Comment[];
+  updatedTimeAgo?: string | null;
+  timeAgoUpdate?: string | null;
+  UpdateAt?: string | null
 }
 
 interface Comment {
@@ -91,6 +98,14 @@ const CommunityPage: React.FC = () => {
   const [posting, setPosting] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
+
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [threadToEdit, setThreadToEdit] = useState<Thread | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const [updating, setUpdating] = useState(false);
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState("");
@@ -173,7 +188,10 @@ const CommunityPage: React.FC = () => {
         ...thread,
         threadID: thread.threadID,
         authorID: thread.userID,
-        timeAgo: formatTimeAgo(thread.timeAgo), // ✅ Format thời gian
+        timeAgo: formatTimeAgo(thread.timeAgo), 
+        updatedTimeAgo: thread.timeAgoUpdate && thread.timeAgoUpdate !== thread.timeAgo
+        ? formatTimeAgo(thread.timeAgoUpdate)
+        : null,
         isLiked: false,
         commentsList: [],
       }));
@@ -242,6 +260,12 @@ const CommunityPage: React.FC = () => {
   // ===========================
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const toggleEditTag = (tag: string) => {
+    setEditTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
@@ -380,9 +404,6 @@ const CommunityPage: React.FC = () => {
         message.error("Có lỗi xảy ra, không thể tương tác.");
     }
 };
-
-
-
   // ===========================
   // Toggle Comments Section
   // ===========================
@@ -501,7 +522,109 @@ const CommunityPage: React.FC = () => {
         setThreadToDelete(null);
     }
 };
+const openEditModal = (thread: Thread) => {
+  if (!isAuthenticated || !CURRENT_USER_ID) {
+    MySwal.fire({
+      icon: "warning",
+      title: "Please log in to edit!",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    return;
+  }
 
+  if (String(thread.authorID).toLowerCase() !== String(CURRENT_USER_ID).toLowerCase()) {
+    MySwal.fire({
+      icon: "error",
+      title: "You can only edit your own posts!",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  // Inject vào modal
+  setThreadToEdit(thread);
+  setEditTitle(thread.title);
+  setEditContent(thread.content);
+  setEditImageUrl(thread.imageUrl || "");
+  setEditTags([...thread.tags]);   // copy để tránh mutate
+  setEditModalVisible(true);
+};
+// Thêm hàm này (sau openEditModal)
+const handleUpdate = async () => {
+  if (!threadToEdit || !isAuthenticated || !CURRENT_USER_ID) {
+    MySwal.fire({
+      icon: "error",
+      title: "Unable to update post!",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  if (!editTitle.trim() || !editContent.trim()) {
+    MySwal.fire({
+      icon: "warning",
+      title: "Please enter title and content!",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  setUpdating(true);
+
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    const payload = {
+      userId: CURRENT_USER_ID,
+      title: editTitle.trim(),
+      content: editContent.trim(),
+      imageUrl: editImageUrl.trim() || undefined,
+      tags: editTags,
+    };
+
+    const res = await axios.put(
+      `${API_BASE_URL}/Thread/${threadToEdit.threadID}`,
+      payload,
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      }
+    );
+
+    const updatedThread = res.data;
+
+    // Cập nhật trực tiếp state threads
+    setThreads(prevThreads =>
+      prevThreads.map(t =>
+        t.threadID === updatedThread.threadID
+          ? { ...t, ...updatedThread } // merge tất cả dữ liệu mới
+          : t
+      )
+    );
+
+    await MySwal.fire({
+      icon: "success",
+      title: "Post updated successfully! ✏️",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+    setEditModalVisible(false);
+    setThreadToEdit(null);
+
+  } catch (error: any) {
+    MySwal.fire({
+      icon: "error",
+      title: "Failed to update!",
+      text: error.response?.data?.message || error.message,
+    });
+  } finally {
+    setUpdating(false);
+  }
+};
 
 
   // ===========================
@@ -703,6 +826,14 @@ const CommunityPage: React.FC = () => {
                             <ShareAltOutlined /> {thread.shares}
                           </span>
                         </Tooltip>,
+                        <Tooltip key="edit" title="Edit">
+                        <span
+                          onClick={() => openEditModal(thread)}
+                          style={{ cursor: "pointer", color: "#1890ff" }}
+                        >
+                          <EditOutlined /> Edit
+                        </span>
+                      </Tooltip>,
                         <Tooltip key="delete" title="Delete">
                           <span
                           onClick={() =>
@@ -746,9 +877,14 @@ const CommunityPage: React.FC = () => {
                             <strong>{thread.author}</strong>{" "}
                             <Tag color="geekblue">{thread.role}</Tag>
                           </div>
-                          <Text type="secondary" style={{ fontSize: "12px" }}>
-                            {thread.timeAgo}
-                          </Text>
+                          <div style={{ fontSize: 12, color: "#555" }}>
+                          {thread.timeAgo}
+                          {thread.timeAgoUpdate && (
+                            <span style={{ color: "#aaa", fontStyle: "italic", marginLeft: 4 }}>
+                              - {thread.timeAgoUpdate}
+                            </span>
+                          )}
+                        </div>
                         </div>
                       </div>
 
@@ -1047,6 +1183,287 @@ const CommunityPage: React.FC = () => {
       >
         <p>Are you sure you want to delete this post?</p>
       </Modal>
+      {/* ===========================
+    Edit Thread Modal
+    =========================== */}
+<Modal
+      open={editModalVisible}
+      onCancel={() => setEditModalVisible(false)}
+      footer={null}
+      width={700}
+      destroyOnClose
+      closeIcon={<CloseCircleOutlined style={{ fontSize: 20, color: '#8c8c8c' }} />}
+      styles={{
+        body: { padding: '24px 28px' }
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {/* Header */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+              }}
+            >
+              <EditOutlined style={{ fontSize: 24, color: 'white' }} />
+            </div>
+            <div>
+              <Title level={3} style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>
+                Edit Your Post
+              </Title>
+              <Text type="secondary" style={{ fontSize: 14 }}>
+                Make your post even better ✨
+              </Text>
+            </div>
+          </div>
+        </div>
+
+        <Divider style={{ margin: '0 0 24px 0' }} />
+
+        {/* Title Input */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Text strong style={{ display: 'block', marginBottom: 8, fontSize: 15 }}>
+            📝 Title
+          </Text>
+          <Input
+            size="large"
+            placeholder="Give your post a catchy title..."
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            maxLength={255}
+            showCount
+            style={{
+              marginBottom: 20,
+              borderRadius: 8,
+              fontSize: 15
+            }}
+          />
+        </motion.div>
+
+        {/* Content TextArea */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <Text strong style={{ display: 'block', marginBottom: 8, fontSize: 15 }}>
+            ✍️ Content
+          </Text>
+          <TextArea
+            size="large"
+            rows={6}
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            placeholder="Share your thoughts, ideas, or questions..."
+            style={{
+              marginBottom: 20,
+              borderRadius: 8,
+              fontSize: 14,
+              lineHeight: 1.6
+            }}
+          />
+        </motion.div>
+
+        {/* Image URL Input */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Text strong style={{ display: 'block', marginBottom: 8, fontSize: 15 }}>
+            🖼️ Cover Image (Optional)
+          </Text>
+          <Input
+            size="large"
+            placeholder="Paste image URL here..."
+            value={editImageUrl}
+            onChange={(e) => setEditImageUrl(e.target.value)}
+            prefix={<PictureOutlined style={{ color: '#8c8c8c', fontSize: 16 }} />}
+            suffix={
+              editImageUrl && (
+                <CloseCircleOutlined
+                  style={{ color: '#ff4d4f', cursor: 'pointer' }}
+                  onClick={() => setEditImageUrl('')}
+                />
+              )
+            }
+            style={{
+              marginBottom: 16,
+              borderRadius: 8
+            }}
+          />
+
+          {/* Live Image Preview */}
+          <AnimatePresence>
+            {editImageUrl && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{ marginBottom: 20 }}
+              >
+                <div
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                    border: '2px solid #f0f0f0'
+                  }}
+                >
+                  <img
+                    src={editImageUrl}
+                    alt="Preview"
+                    style={{
+                      width: '100%',
+                      maxHeight: 280,
+                      objectFit: 'cover',
+                      display: 'block'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      background: 'rgba(0, 0, 0, 0.6)',
+                      padding: '4px 8px',
+                      borderRadius: 6,
+                      backdropFilter: 'blur(4px)'
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 12, fontWeight: 500 }}>
+                      Preview
+                    </Text>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Tags Selection */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.25 }}
+          style={{
+            background: '#fafafa',
+            padding: 16,
+            borderRadius: 12,
+            marginBottom: 24
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <TagsOutlined style={{ fontSize: 18, color: '#1890ff' }} />
+            <Text strong style={{ fontSize: 15 }}>
+              Select Tags
+            </Text>
+            <Tag color="blue" style={{ marginLeft: 'auto' }}>
+              {editTags.length} selected
+            </Tag>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {availableTags.map((tag) => {
+              const isSelected = editTags.includes(tag);
+              return (
+                <motion.div
+                  key={tag}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Tag
+                    color={isSelected ? 'blue' : 'default'}
+                    onClick={() => toggleEditTag(tag)}
+                    style={{
+                      cursor: 'pointer',
+                      padding: '6px 12px',
+                      fontSize: 13,
+                      borderRadius: 6,
+                      border: isSelected ? '2px solid #1890ff' : '2px solid #d9d9d9',
+                      fontWeight: isSelected ? 600 : 400,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {isSelected && <CheckCircleOutlined style={{ marginRight: 4 }} />}
+                    #{tag}
+                  </Tag>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Footer Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingTop: 16,
+            borderTop: '1px solid #f0f0f0'
+          }}
+        >
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            💡 Tip: Add relevant tags to reach more people
+          </Text>
+
+          <Space size={12}>
+            <Button
+              size="large"
+              onClick={() => setEditModalVisible(false)}
+              style={{
+                borderRadius: 8,
+                fontWeight: 500
+              }}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="primary"
+              size="large"
+              loading={updating}
+              icon={<EditOutlined />}
+              onClick={handleUpdate}
+              style={{
+                borderRadius: 8,
+                fontWeight: 600,
+                boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
+                background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)'
+              }}
+            >
+              {updating ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </Space>
+        </motion.div>
+      </motion.div>
+    </Modal>
     </motion.div>
   );
 };

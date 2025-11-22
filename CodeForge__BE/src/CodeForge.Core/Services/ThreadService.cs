@@ -101,62 +101,84 @@ namespace CodeForge.Core.Services
             return await _repo.DeleteAsync(id);
         }
         public async Task<int> IncrementLikeAsync(Guid threadId)
-{
-    // 1. Cập nhật trực tiếp trong DB
-    var updateSql = @"
-        UPDATE DiscussionThreads 
-        SET Likes = Likes + 1 
-        WHERE ThreadID = @ThreadID AND IsDeleted = 0;
-    ";
+        {
+            // 1. Cập nhật trực tiếp trong DB
+            var updateSql = @"
+                UPDATE DiscussionThreads 
+                SET Likes = Likes + 1 
+                WHERE ThreadID = @ThreadID AND IsDeleted = 0;
+            ";
 
-    var parameter = new SqlParameter("@ThreadID", System.Data.SqlDbType.UniqueIdentifier) 
-        { Value = threadId };
+            var parameter = new SqlParameter("@ThreadID", System.Data.SqlDbType.UniqueIdentifier) 
+                { Value = threadId };
 
-    await _context.Database.ExecuteSqlRawAsync(updateSql, parameter);
+            await _context.Database.ExecuteSqlRawAsync(updateSql, parameter);
 
-    // 2. Query lại để lấy giá trị Likes mới nhất từ DB
-    var newLikeCount = await _context.DiscussionThreads
-        .AsNoTracking()
-        .Where(t => t.ThreadID == threadId)
-        .Select(t => t.Likes)
-        .FirstOrDefaultAsync();
+            // 2. Query lại để lấy giá trị Likes mới nhất từ DB
+            var newLikeCount = await _context.DiscussionThreads
+                .AsNoTracking()
+                .Where(t => t.ThreadID == threadId)
+                .Select(t => t.Likes)
+                .FirstOrDefaultAsync();
 
-    return newLikeCount;
-}
+            return newLikeCount;
+        }
 
-        public async Task<int> DecrementLikeAsync(Guid threadId)
-{
-    // 1. Cập nhật trực tiếp trong DB (giảm, nhưng không âm)
-    var updateSql = @"
-        UPDATE DiscussionThreads 
-        SET Likes = CASE WHEN Likes > 0 THEN Likes - 1 ELSE 0 END 
-        WHERE ThreadID = @ThreadID AND IsDeleted = 0;
-    ";
+        public async Task<ThreadDto?> UpdateAsync(Guid id, UpdateThreadDto dto)
+        {
+            var now = DateTime.UtcNow;
 
-    var parameter = new SqlParameter("@ThreadID", System.Data.SqlDbType.UniqueIdentifier) 
-        { Value = threadId };
-    
-    await _context.Database.ExecuteSqlRawAsync(updateSql, parameter);
+            // Serialize tags nếu có
+            var tags = dto.Tags != null ? JsonSerializer.Serialize(dto.Tags) : null;
 
-    // 2. Query lại để lấy giá trị Likes mới nhất từ DB
-    var newLikeCount = await _context.DiscussionThreads
-        .AsNoTracking()
-        .Where(t => t.ThreadID == threadId)
-        .Select(t => t.Likes)
-        .FirstOrDefaultAsync();
+            // SQL Update
+            var sql = @"
+                UPDATE DiscussionThreads
+                SET
+                    Title = @Title,
+                    Content = @Content,
+                    ImageUrl = @ImageUrl,
+                    Tags = @Tags,
+                    UpdatedAt = @UpdatedAt
+                WHERE
+                    ThreadID = @ThreadID
+                    AND IsDeleted = 0;
+            ";
 
-    return newLikeCount;
-}
+            // Parameters
+            var parameters = new[]
+            {
+                new SqlParameter("@ThreadID", id),
+                new SqlParameter("@Title", dto.Title),
+                new SqlParameter("@Content", dto.Content),
+                new SqlParameter("@ImageUrl", (object?)dto.ImageUrl ?? DBNull.Value),
+                new SqlParameter("@Tags", (object?)tags ?? DBNull.Value),
+                new SqlParameter("@UpdatedAt", now)
+            };
 
+            // Execute update
+            await _context.Database.ExecuteSqlRawAsync(sql, parameters);
+
+            // Fetch lại entity để trả về DTO
+            var updatedThread = await _context.DiscussionThreads
+                .Include(t => t.User)
+                    .ThenInclude(u => u.Profile)
+                .Include(t => t.Comments)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.ThreadID == id);
+
+            // Map sang DTO
+            return _mapper.Map<ThreadDto>(updatedThread);
+        }
         public async Task<IEnumerable<ThreadDto>> GetByUserAsync(Guid userId)
-{
-    var threads = await _context.DiscussionThreads
-        .Where(t => t.UserID == userId && t.IsDeleted == false)
-        .OrderByDescending(t => t.CreatedAt)
-        .ToListAsync();
+        {
+            var threads = await _context.DiscussionThreads
+                .Where(t => t.UserID == userId && t.IsDeleted == false)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
 
-    return _mapper.Map<IEnumerable<ThreadDto>>(threads);
-}
+            return _mapper.Map<IEnumerable<ThreadDto>>(threads);
+        }
 
     }
 }

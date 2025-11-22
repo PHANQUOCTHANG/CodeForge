@@ -55,6 +55,20 @@ namespace CodeForge.Api.Helpers
             var years = (int)(timeSpan.TotalDays / 365);
             return years == 1 ? "1 year ago" : $"{years} years ago";
         }
+        public static string GetTimeAgoWithEditStatus(DateTime createdAt, DateTime? updatedAt)
+        {
+            // Nếu chưa có UpdatedAt → chỉ hiển thị thời gian tạo
+            if (updatedAt == null)
+                return "";
+
+            // Nếu UpdatedAt gần bằng CreatedAt → xem như chưa sửa
+            if (updatedAt.Value <= createdAt.AddSeconds(1))
+                return GetTimeAgo(createdAt);
+
+            // Nếu updatedAt mới hơn → đã chỉnh sửa
+            return $"{GetTimeAgo(updatedAt.Value)} (Edited)";
+        }
+
 
         /// <summary>
         /// Format ngày giờ dạng: "15/11/2024 14:30"

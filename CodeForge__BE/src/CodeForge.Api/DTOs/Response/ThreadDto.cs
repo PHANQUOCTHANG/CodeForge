@@ -11,7 +11,8 @@ namespace CodeForge.Api.DTOs.Response
         public string Content { get; set; }
         public string Title { get; set; }
 
-        public string TimeAgo { get; set; }          
+        public string TimeAgo { get; set; }
+        public string? TimeAgoUpdate {get; set; }          
         public string? ImageUrl { get; set; }
         
         public List<string> Tags { get; set; } = new();
