@@ -19,7 +19,7 @@ namespace CodeForge.Api.Controllers
             _authService = authService;
             _configuration = configuration;
         }
-        
+
         // ============================
         // LOGIN
         // ============================
@@ -55,7 +55,7 @@ namespace CodeForge.Api.Controllers
             return CreatedAtAction(nameof(Login), new { email = registerDto.Email },
                 ApiResponse<AuthDto>.Created(result, "Đăng ký thành công"));
         }
-       
+
         // ============================
         // REFRESH TOKEN
         // ============================
@@ -125,7 +125,7 @@ namespace CodeForge.Api.Controllers
 
         [HttpPost("register/admin/{secret}")] // {secret} ở đây là Route Parameter
         public async Task<IActionResult> RegisterForAdmin(
-            [FromBody] RegisterDto registerDto, 
+            [FromBody] RegisterDto registerDto,
             [FromRoute] string secret // <--- ĐỔI TỪ [FromQuery] SANG [FromRoute]
         )
         {
@@ -143,10 +143,10 @@ namespace CodeForge.Api.Controllers
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
             // 4. ⚡ CƯỠNG ÉP ROLE THÀNH ADMIN ⚡
-            registerDto.Role = "admin"; 
+            registerDto.Role = "admin";
 
             // 5. Gọi Service đăng ký
-            try 
+            try
             {
                 var result = await _authService.RegisterAsync(registerDto, ip);
 
@@ -162,6 +162,84 @@ namespace CodeForge.Api.Controllers
                 return BadRequest(ApiResponse<string>.Fail(ex.Message));
             }
         }
+        // ============================
+        // SEND OTP
+        // ============================
+        [HttpPost("send-otp")]
+        public async Task<IActionResult> SendOtp([FromBody] SendOtpDto sendOtpDto)
+        {
+            if (string.IsNullOrEmpty(sendOtpDto?.Email))
+                return BadRequest(ApiResponse<string>.Fail("Email là bắt buộc"));
+
+            try
+            {
+                await _authService.SendOtpAsync(sendOtpDto.Email);
+                return Ok(ApiResponse<string>.Success("OTP đã được gửi đến email của bạn"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<string>.Fail(ex.Message));
+            }
+        }
+
+        // ============================
+        // VERIFY OTP
+        // ============================
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto verifyOtpDto)
+        {
+            if (string.IsNullOrEmpty(verifyOtpDto?.Email) || string.IsNullOrEmpty(verifyOtpDto?.Otp))
+                return BadRequest(ApiResponse<string>.Fail("Email và OTP là bắt buộc"));
+
+            try
+            {
+                var resetToken = await _authService.VerifyOtpAsync(verifyOtpDto.Email, verifyOtpDto.Otp);
+
+                return Ok(ApiResponse<dynamic>.Success(new { resetToken = resetToken }, "OTP xác minh thành công"));
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Unauthorized(ApiResponse<string>.Fail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<string>.Fail(ex.Message));
+            }
+        }
+
+        // ============================
+        // RESET PASSWORD
+        // ============================
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            if (string.IsNullOrEmpty(resetPasswordDto?.Email) ||
+                string.IsNullOrEmpty(resetPasswordDto?.Otp) ||
+                string.IsNullOrEmpty(resetPasswordDto?.NewPassword) ||
+                string.IsNullOrEmpty(resetPasswordDto?.ConfirmPassword))
+                return BadRequest(ApiResponse<string>.Fail("Tất cả các trường là bắt buộc"));
+
+            if (resetPasswordDto.NewPassword != resetPasswordDto.ConfirmPassword)
+                return BadRequest(ApiResponse<string>.Fail("Mật khẩu xác nhận không khớp"));
+
+            if (resetPasswordDto.NewPassword.Length < 6)
+                return BadRequest(ApiResponse<string>.Fail("Mật khẩu phải có ít nhất 6 ký tự"));
+
+            try
+            {
+                await _authService.ResetPasswordAsync(resetPasswordDto.Email, resetPasswordDto.Otp, resetPasswordDto.NewPassword);
+                return Ok(ApiResponse<string>.Success("Mật khẩu đã được đặt lại thành công"));
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Unauthorized(ApiResponse<string>.Fail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<string>.Fail(ex.Message));
+            }
+        }
+
         // ============================
         // Helper: Set Refresh Cookie (Giữ nguyên)
         // ============================

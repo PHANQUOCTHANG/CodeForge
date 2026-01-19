@@ -48,6 +48,55 @@ namespace CodeForge.Infrastructure.Repositories
 
         public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
 
+        // ============================
+        // OTP METHODS
+        // ============================
+        public async Task<Otp?> GetLatestOtpByEmailAsync(string email)
+        {
+            return await _context.Otps
+                .Where(o => o.Email == email)
+                .OrderByDescending(o => o.CreatedAt)
+                .FirstOrDefaultAsync();
+        }
 
+        public async Task AddOtpAsync(Otp otp)
+        {
+            await _context.Otps.AddAsync(otp);
+        }
+
+        public async Task UpdateOtpAsync(Otp otp)
+        {
+            _context.Otps.Update(otp);
+        }
+
+        public async Task<User?> GetUserByEmailForUpdateAsync(string email)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public void UpdateUserPassword(User user)
+        {
+            _context.Users.Update(user);
+        }
+
+        // ============================
+        // RESET TOKEN METHODS
+        // ============================
+        public async Task AddResetTokenAsync(ResetToken resetToken)
+        {
+            await _context.ResetTokens.AddAsync(resetToken);
+        }
+
+        public async Task<ResetToken?> GetResetTokenAsync(string token)
+        {
+            return await _context.ResetTokens
+                .FirstOrDefaultAsync(rt => rt.Token == token);
+        }
+
+        public async Task UpdateResetTokenAsync(ResetToken resetToken)
+        {
+            _context.ResetTokens.Update(resetToken);
+        }
     }
 }

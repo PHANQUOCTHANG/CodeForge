@@ -12,6 +12,7 @@ import ProblemManagement from "@/pages/admin/problem/page-problem/PageProblem";
 import CreateCourseEditor from "@/pages/admin/courses-management/components/new-model/NewCourse";
 import EditCourseEditor from "@/pages/admin/courses-management/components/course-edit/CourseEditorEnhanced";
 import CategoryManagement from "@/pages/admin/categories-management/CategoryManagement";
+import ProtectedRoute from "@/common/components/common/ProtectedRoute";
 
 export const adminRouters: RouteObject = {
   path: "/admin",

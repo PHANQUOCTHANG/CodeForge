@@ -10,7 +10,8 @@ namespace CodeForge.Core.Interfaces.Services
         Task<AuthDto> LoginAsync(LoginDto request, string ipAddress);
         Task<AuthDto> RefreshTokenAsync(string refreshToken, string ipAddress);
         Task RevokeTokenAsync(string refreshToken, string ipAddress);
-
-
+        Task SendOtpAsync(string email);
+        Task<string> VerifyOtpAsync(string email, string otp);
+        Task ResetPasswordAsync(string email, string resetToken, string newPassword);
     }
 }

@@ -28,6 +28,7 @@ namespace CodeForge.Infrastructure
             //auth.
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             // problem .
             services.AddScoped<IProblemRepository, ProblemRepository>();

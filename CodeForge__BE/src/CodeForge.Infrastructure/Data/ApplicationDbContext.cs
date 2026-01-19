@@ -15,6 +15,8 @@ namespace CodeForge.Infrastructure.Data
         // =============================
         public DbSet<User> Users { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Otp> Otps { get; set; }
+        public DbSet<ResetToken> ResetTokens { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<CourseCategory> CourseCategory { get; set; }
         public DbSet<CourseReview> CourseReviews { get; set; }

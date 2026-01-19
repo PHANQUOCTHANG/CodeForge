@@ -5,11 +5,9 @@ using CodeForge.Core.Entities;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration; // Đảm bảo IConfiguration được dùng
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
-
-// Giả định bạn có namespace này cho các Custom Exceptions
 using CodeForge.Core.Exceptions;
 using AutoMapper;
 using CodeForge.Api.DTOs.Response;
@@ -23,12 +21,14 @@ namespace CodeForge.Core.Service
         private readonly IMapper _mapper;
 
         private readonly IConfiguration _config;
+        private readonly IEmailService _emailService;
 
-        public AuthService(IAuthRepository authRepository, IConfiguration config, IMapper mapper)
+        public AuthService(IAuthRepository authRepository, IConfiguration config, IMapper mapper, IEmailService emailService)
         {
             _authRepository = authRepository;
             _config = config;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         // --- REGISTER ---
@@ -150,6 +150,133 @@ namespace CodeForge.Core.Service
             existingToken.RevokedAt = DateTime.UtcNow;
             existingToken.RevokedByIp = ipAddress;
             await _authRepository.SaveChangesAsync();
+        }
+
+        // ============================
+        // SEND OTP
+        // ============================
+        public async Task SendOtpAsync(string email)
+        {
+            // Kiểm tra email tồn tại
+            var user = await _authRepository.GetUserByEmailAsync(email);
+            if (user == null)
+                throw new Exception("Email không tồn tại trong hệ thống");
+
+            // Sinh OTP 6 chữ số
+            var otpCode = GenerateOtpCode();
+
+            // Tạo object OTP
+            var otp = new Otp(email, otpCode);
+
+            // Lưu OTP vào database
+            await _authRepository.AddOtpAsync(otp);
+            await _authRepository.SaveChangesAsync();
+
+            // Gửi email
+            try
+            {
+                await _emailService.SendOtpEmailAsync(email, otpCode);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi gửi email: {ex.Message}");
+            }
+        }
+
+        // ============================
+        // VERIFY OTP
+        // ============================
+        public async Task<string> VerifyOtpAsync(string email, string otp)
+        {
+            // Lấy OTP gần nhất từ database
+            var latestOtp = await _authRepository.GetLatestOtpByEmailAsync(email);
+
+            if (latestOtp == null)
+                throw new Exception("OTP không tồn tại");
+
+            // Kiểm tra OTP đã được sử dụng chưa
+            if (latestOtp.IsUsed)
+                throw new Exception("OTP đã được sử dụng");
+
+            // Kiểm tra OTP có hợp lệ không (chưa hết hạn)
+            if (!latestOtp.IsValid())
+                throw new Exception("OTP đã hết hạn");
+
+            // Kiểm tra mã OTP có khớp không
+            if (latestOtp.Code != otp)
+                throw new UnauthorizedException("OTP không hợp lệ");
+
+            // Đánh dấu OTP là đã được sử dụng
+            latestOtp.IsUsed = true;
+            latestOtp.UsedAt = DateTime.UtcNow;
+            await _authRepository.UpdateOtpAsync(latestOtp);
+
+            // Tạo Reset Token
+            var resetToken = GenerateResetToken();
+            var resetTokenEntity = new ResetToken(email, resetToken);
+            await _authRepository.AddResetTokenAsync(resetTokenEntity);
+
+            await _authRepository.SaveChangesAsync();
+
+            return resetToken;
+        }
+
+        // ============================
+        // RESET PASSWORD
+        // ============================
+        public async Task ResetPasswordAsync(string email, string resetToken, string newPassword)
+        {
+            // 1. Kiểm tra Reset Token hợp lệ
+            var token = await _authRepository.GetResetTokenAsync(resetToken);
+            if (token == null)
+                throw new UnauthorizedException("Reset token không hợp lệ");
+
+            if (!token.IsValid())
+                throw new UnauthorizedException("Reset token đã hết hạn");
+
+            if (token.Email != email)
+                throw new UnauthorizedException("Email không khớp với reset token");
+
+            // 2. Lấy user
+            var user = await _authRepository.GetUserByEmailForUpdateAsync(email);
+            if (user == null)
+                throw new Exception("User không tồn tại");
+
+            // 3. Hash mật khẩu mới
+            var newPasswordHash = _hasher.HashPassword(null!, newPassword);
+
+            // 4. Cập nhật mật khẩu
+            user.PasswordHash = newPasswordHash;
+            _authRepository.UpdateUserPassword(user);
+
+            // 5. Đánh dấu Reset Token đã được sử dụng
+            token.IsUsed = true;
+            token.UsedAt = DateTime.UtcNow;
+            await _authRepository.UpdateResetTokenAsync(token);
+
+            // 6. Lưu thay đổi
+            await _authRepository.SaveChangesAsync();
+        }
+
+        // ============================
+        // Helper Methods
+        // ============================
+        private string GenerateOtpCode()
+        {
+            var random = new Random();
+            var otp = random.Next(100000, 999999).ToString();
+            return otp;
+        }
+
+        private string GenerateResetToken()
+        {
+            // Sinh token 32 ký tự ngẫu nhiên (base64)
+            var randomBytes = new byte[24];
+            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomBytes);
+            }
+            return Convert.ToBase64String(randomBytes);
         }
     }
 }

@@ -14,8 +14,7 @@ using CodeForge.Api.DTOs.Modules;
 using CodeForge.Api.DTOs.Request.CourseCategory;
 using CodeForge.Api.DTOs.Lessons;
 using CodeForge.Api.DTOs.Request.Language;
-using CodeForge.Application.DTOs.Request.CourseCategory;
-using CodeForge.Api.DTOs.Request; // Giả định DTOs Problem
+using CodeForge.Api.DTOs.Request;
 
 namespace CodeForge.Core.Mappings
 {
