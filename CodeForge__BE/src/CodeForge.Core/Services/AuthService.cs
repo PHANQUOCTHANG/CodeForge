@@ -226,7 +226,7 @@ namespace CodeForge.Core.Service
         // ============================
         public async Task ResetPasswordAsync(string email, string resetToken, string newPassword)
         {
-            // 1. Kiểm tra Reset Token hợp lệ
+            // 1. Kiểm tra reset token
             var token = await _authRepository.GetResetTokenAsync(resetToken);
             if (token == null)
                 throw new UnauthorizedException("Reset token không hợp lệ");
@@ -234,7 +234,7 @@ namespace CodeForge.Core.Service
             if (!token.IsValid())
                 throw new UnauthorizedException("Reset token đã hết hạn");
 
-            if (token.Email != email)
+            if (!string.Equals(token.Email, email, StringComparison.OrdinalIgnoreCase))
                 throw new UnauthorizedException("Email không khớp với reset token");
 
             // 2. Lấy user
@@ -242,21 +242,22 @@ namespace CodeForge.Core.Service
             if (user == null)
                 throw new Exception("User không tồn tại");
 
-            // 3. Hash mật khẩu mới
-            var newPasswordHash = _hasher.HashPassword(null!, newPassword);
+            // 3. Hash mật khẩu mới bằng BCrypt ✅
+            var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
 
             // 4. Cập nhật mật khẩu
             user.PasswordHash = newPasswordHash;
             _authRepository.UpdateUserPassword(user);
 
-            // 5. Đánh dấu Reset Token đã được sử dụng
+            // 5. Đánh dấu token đã dùng
             token.IsUsed = true;
             token.UsedAt = DateTime.UtcNow;
             await _authRepository.UpdateResetTokenAsync(token);
 
-            // 6. Lưu thay đổi
+            // 6. Lưu DB
             await _authRepository.SaveChangesAsync();
         }
+
 
         // ============================
         // Helper Methods
