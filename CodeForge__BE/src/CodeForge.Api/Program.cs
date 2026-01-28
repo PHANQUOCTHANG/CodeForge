@@ -38,6 +38,8 @@ namespace CodeForge
             // AutoMapper
             builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+            // Register in-memory cache so IMemoryCache can be injected
+            builder.Services.AddMemoryCache();
 
             // Register DI
             builder.Services.AddInfrastructure();

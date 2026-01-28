@@ -1,18 +1,21 @@
+using AutoMapper;
 using CodeForge.Api.DTOs.Auth;
 using CodeForge.Api.DTOs.Request.Auth;
+using CodeForge.Api.DTOs.Response;
 using CodeForge.Api.Helpers;
 using CodeForge.Core.Entities;
+// Giả định bạn có namespace này cho các Custom Exceptions
+using CodeForge.Core.Exceptions;
 using CodeForge.Core.Interfaces.Repositories;
 using CodeForge.Core.Interfaces.Services;
+using CodeForge.src.CodeForge.Api.DTOs.Request.Auth;
+using CodeForge.src.CodeForge.Api.DTOs.Response.Auth;
+using CodeForge.src.CodeForge.Api.Helpers;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration; // Đảm bảo IConfiguration được dùng
 using System;
 using System.Threading.Tasks;
-
-// Giả định bạn có namespace này cho các Custom Exceptions
-using CodeForge.Core.Exceptions;
-using AutoMapper;
-using CodeForge.Api.DTOs.Response;
 
 namespace CodeForge.Core.Service
 {
@@ -21,14 +24,16 @@ namespace CodeForge.Core.Service
         private readonly IAuthRepository _authRepository;
         private readonly PasswordHasher<User> _hasher = new();
         private readonly IMapper _mapper;
-
         private readonly IConfiguration _config;
-
-        public AuthService(IAuthRepository authRepository, IConfiguration config, IMapper mapper)
+        private readonly IMemoryCache _cache;
+        private readonly ILogger<AuthService> _logger;
+        public AuthService(IAuthRepository authRepository, IConfiguration config, IMapper mapper, IMemoryCache cache, ILogger<AuthService> logger)
         {
             _authRepository = authRepository;
             _config = config;
             _mapper = mapper;
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _logger = logger;
         }
 
         // --- REGISTER ---
@@ -149,6 +154,119 @@ namespace CodeForge.Core.Service
             existingToken.RevokedAt = DateTime.UtcNow;
             existingToken.RevokedByIp = ipAddress;
             await _authRepository.SaveChangesAsync();
+        }
+        private record PasswordResetEntry(string Email, string OtpHash, DateTime ExpiresAt, DateTime CreatedAt, int Attempts, bool Used);
+
+        private static string CacheKeyForEmail(string email) => $"pwreset:{email.Trim().ToLowerInvariant()}";
+        // Helper: set password-reset entry into cache with relative expiration to avoid DateTime timezone / precision issues
+        private void SetPasswordResetCache(string key, PasswordResetEntry entry)
+        {
+            var remaining = entry.ExpiresAt - DateTime.UtcNow;
+            var relative = remaining > TimeSpan.Zero ? remaining : TimeSpan.FromMinutes(1);
+            var options = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = relative
+            };
+            _cache.Set(key, entry, options);
+        }
+
+        public async Task<(bool Sent, string? OtpForDev)> SendForgotPasswordOtpAsync(string email)
+        {
+            email = email.Trim().ToLower(); // ✅ FIX
+
+            var user = await _authRepository.GetUserByEmailAsync(email);
+            if (user == null)
+                return (false, null); // hoặc throw BadRequestException
+
+            var otp = OtpGenerator.GenerateNumericOtp(6);
+
+            var entry = new PasswordResetEntry(
+                Email: email,
+                OtpHash: otp.Sha256(),
+                ExpiresAt: DateTime.UtcNow.AddMinutes(10),
+                CreatedAt: DateTime.UtcNow,
+                Attempts: 0,
+                Used: false
+            );
+
+            var key = CacheKeyForEmail(email);
+            SetPasswordResetCache(key, entry);
+
+            Console.WriteLine($"[PASSWORD RESET OTP] Email={email}, OTP={otp}");
+
+            var returnInDev = string.Equals(
+                _config["App:ReturnOtpForDev"], "true", StringComparison.OrdinalIgnoreCase
+            );
+
+            return (true, returnInDev ? otp : null);
+        }
+        public async Task VerifyForgotPasswordOtpAsync(string email, string otp)
+        {
+            email = email.Trim().ToLower();
+            var key = CacheKeyForEmail(email);
+
+            if (!_cache.TryGetValue<PasswordResetEntry>(key, out var existing))
+                throw new UnauthorizedException("Invalid or expired OTP");
+
+            if (existing.Used || existing.ExpiresAt < DateTime.UtcNow)
+                throw new UnauthorizedException("Invalid or expired OTP");
+
+            if (existing.Attempts >= 5)
+                throw new UnauthorizedException("OTP attempts exceeded");
+
+            if (existing.OtpHash != otp.Sha256())
+            {
+                var updated = existing with { Attempts = existing.Attempts + 1 };
+                SetPasswordResetCache(key, updated);
+                throw new UnauthorizedException("Invalid OTP");
+            }
+
+            // ✅ CHỈ VERIFY – KHÔNG ĐÁNH DẤU USED
+            _logger.LogInformation(
+                "VERIFY_OTP | SUCCESS | Email={Email}",
+                email
+            );
+        }
+        public async Task<ResetPasswordResultDto> ResetPasswordAsync(
+    ResetPasswordDto request)
+        {
+            var email = request.Email.Trim().ToLower();
+            var otp = request.Otp.Trim();
+            var key = CacheKeyForEmail(email);
+
+            if (!_cache.TryGetValue<PasswordResetEntry>(key, out var existing))
+                throw new BadRequestException("Invalid or expired OTP");
+
+            if (existing.Used)
+                throw new BadRequestException("OTP already used");
+
+            if (existing.ExpiresAt < DateTime.UtcNow)
+                throw new BadRequestException("OTP expired");
+
+            if (existing.OtpHash != otp.Sha256())
+                throw new BadRequestException("Invalid OTP");
+
+            var user = await _authRepository.GetTrackedUserByEmailAsync(email)
+                ?? throw new BadRequestException("Invalid email");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(
+                request.NewPassword,
+                workFactor: 12
+            );
+
+            SetPasswordResetCache(key, existing with { Used = true });
+            await _authRepository.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "RESET_PW | SUCCESS | Email={Email} | UserId={UserId}",
+                email,
+                user.UserId
+            );
+
+            return new ResetPasswordResultDto(
+                Success: true,
+                Message: "Password reset successfully. Please login again."
+            );
         }
     }
 }

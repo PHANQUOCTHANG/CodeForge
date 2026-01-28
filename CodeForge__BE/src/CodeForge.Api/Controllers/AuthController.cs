@@ -3,6 +3,8 @@ using CodeForge.Api.DTOs.Auth;
 using CodeForge.Api.DTOs.Request.Auth;
 using CodeForge.Core.Exceptions;
 using CodeForge.Core.Interfaces.Services;
+using CodeForge.src.CodeForge.Api.DTOs.Request.Auth;
+using CodeForge.src.CodeForge.Api.DTOs.Response.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -119,7 +121,31 @@ namespace CodeForge.Api.Controllers
             // ✅ Trả về 200 OK
             return Ok(ApiResponse<string>.Success("Đăng xuất thành công"));
         }
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            var (sent, otpForDev) = await _authService.SendForgotPasswordOtpAsync(dto.Email);
 
+            // In production we never return OTP. In development mode the service may return OTP.
+            if (!string.IsNullOrEmpty(otpForDev))
+                return Ok(ApiResponse<string>.Success(otpForDev, "OTP generated (dev)"));
+
+            return Ok(ApiResponse<string>.Success("If the account exists, an OTP has been sent"));
+        }
+
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto dto)
+        {
+            await _authService.VerifyForgotPasswordOtpAsync(dto.Email, dto.Otp);
+            return Ok(ApiResponse<string>.Success("OTP verified"));
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var result = await _authService.ResetPasswordAsync(dto);
+            return Ok(ApiResponse<ResetPasswordResultDto>.Success(result));
+        }
         // ============================
         // Helper: Set Refresh Cookie (Giữ nguyên)
         // ============================

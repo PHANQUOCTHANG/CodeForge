@@ -43,13 +43,13 @@ namespace CodeForge.Api.Middleware
                 case UnauthorizedException unauthorizedEx:
                     statusCode = StatusCodes.Status401Unauthorized;
                     message = unauthorizedEx.Message;
-                    _logger.LogWarning(exception, "Lỗi 401 Unauthorized: {Message}", message);
+                    _logger.LogInformation("401 Unauthorized: {Message}", message);
                     break;
 
                 case ForbiddenException forbiddenEx:
                     statusCode = StatusCodes.Status403Forbidden;
                     message = forbiddenEx.Message;
-                    _logger.LogWarning(exception, "Lỗi 403 Forbidden: {Message}", message);
+                    _logger.LogInformation("403 Forbidden: {Message}", message);
                     break;
 
                 case NotFoundException notFoundEx:
@@ -61,13 +61,13 @@ namespace CodeForge.Api.Middleware
                 case ConflictException conflictEx:
                     statusCode = StatusCodes.Status409Conflict;
                     message = conflictEx.Message;
-                    _logger.LogWarning(exception, "Lỗi 409 Conflict: {Message}", message);
+                    _logger.LogInformation("409 Conflict: {Message}", message);
                     break;
 
                 case BadRequestException badRequestEx:
                     statusCode = StatusCodes.Status400BadRequest;
                     message = badRequestEx.Message;
-                    _logger.LogWarning(exception, "Lỗi 400 Bad Request: {Message}", message);
+                    _logger.LogInformation("400 BadRequest: {Message}", message);
                     break;
 
                 // 2. ✅ Bắt lớp CHA (ApplicationException) SAU CÙNG
