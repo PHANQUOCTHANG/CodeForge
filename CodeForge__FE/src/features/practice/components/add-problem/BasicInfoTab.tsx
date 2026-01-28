@@ -9,7 +9,6 @@ const BasicInfoTab = ({
   difficultyOptions,
   lessons,
 }) => {
- 
   return (
     <>
       {/* Basic Info Tab */}
@@ -86,7 +85,7 @@ const BasicInfoTab = ({
               </div> */}
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ display: "none" }}>
               <label className="form-label">
                 Lesson <span className="form-label--required">*</span>
               </label>
@@ -98,6 +97,7 @@ const BasicInfoTab = ({
                 className={`form-select ${
                   errors.lessonId ? "form-select--error" : ""
                 }`}
+                style={{ display: "none" }}
               >
                 <option value="">-- Chọn Lesson --</option>
                 {lessons.map((lesson) => (

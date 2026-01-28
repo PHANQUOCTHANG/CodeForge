@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle2, Copy, Download } from "lucide-react";
+import { CheckCircle2, Copy, Download, X } from "lucide-react";
 import type { Variable, ProblemTestCase } from "../../types/problem";
 import { useNavigate } from "react-router-dom";
 
@@ -58,11 +58,8 @@ const FormResultModal: React.FC<FormResultModalProps> = ({
                 <CheckCircle2 size={24} />
                 <h2>Kết Quả Đã Submit</h2>
               </div>
-              <button
-                onClick={() => setShowResultModal(false)}
-                className="modal__close"
-              >
-                ×
+              <button onClick={() => handleClose()} className="modal__close">
+                <X />
               </button>
             </div>
 
@@ -248,7 +245,10 @@ const FormResultModal: React.FC<FormResultModalProps> = ({
               <button onClick={handleClose} className="btn btn--secondary">
                 Đóng
               </button>
-              <button onClick={() => navigate("/admin/problems/create")} className="btn btn--primary">
+              <button
+                onClick={() => navigate("/admin/problems/create")}
+                className="btn btn--primary"
+              >
                 Tạo Bài Mới
               </button>
             </div>

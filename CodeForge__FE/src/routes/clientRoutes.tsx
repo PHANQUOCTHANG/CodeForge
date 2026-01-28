@@ -17,7 +17,6 @@ const ClientRouters = () => {
         { index: true, element: <HomePage /> },
         { path: "courses", element: <HomePage /> },
         { path: "practice", element: <PracticePage /> },
-        { path: "contact", element: <HomePage /> },
         { path: "community", element: <CommunityPage /> },
       ],
     },

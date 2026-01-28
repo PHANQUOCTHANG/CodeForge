@@ -271,7 +271,7 @@ const CoursesManagement = () => {
           onClick={() => navigate("/admin/courses/new")}
           className="btn-create"
         >
-          + Thêm khóa học
+          Thêm khóa học
         </Button>
       </div>
 

@@ -1167,3 +1167,24 @@
     }
   }
 }
+.course-hero__description {
+  // ... các style cũ
+
+  // Style cho nội dung HTML bên trong
+  p {
+    color: white !important;
+    margin-bottom: 1rem;
+  }
+  ul,
+  ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  h1,
+  h2,
+  h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+}

@@ -79,6 +79,7 @@ export const useCreateUser = () => {
     onSuccess: () => {
       // Invalidate users list để refetch
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "stats"] });
       queryClient.invalidateQueries({ queryKey: ["allUsers"] });
     },
   });
@@ -101,6 +102,7 @@ export const useUpdateUser = () => {
     onSuccess: (data, variables) => {
       // Update single user cache
       queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "stats"] });
       // Invalidate users list
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
@@ -121,6 +123,7 @@ export const useDeleteUser = () => {
       // Invalidate users list để refetch
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["allUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "stats"] });
     },
   });
 };

@@ -1,50 +1,45 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import authApi from "@/features/auth/services/authApi";
-import { setGlobalAccessToken } from "@/api/axios";
-import type { PayloadAction } from "@reduxjs/toolkit";
-
 import type { UserProfile, AuthState } from "@/features/auth/types";
 
-// ========================
-// 3️⃣ Redux State
-// ========================
-
-//initial starter value
+// =================================================================
+// 1. Initial State
+// =================================================================
 const initialState: AuthState<UserProfile> = {
-  token: null,
-  user: null,
-  isAuthChecking: true, // 🔥 Cần có khi F5 (App đang kiểm tra refresh token)
+  token: null, // Access Token (Lưu trong RAM)
+  user: null, // Thông tin User
+  isAuthChecking: true, // Cờ quan trọng để chặn render App khi F5
 };
-// ========================
-// 4️⃣ Async thunk: refreshToken
-// ========================
-// Tự động gọi lại khi app F5 (refreshToken cookie còn hợp lệ)
-export const refreshToken = createAsyncThunk(
-  "auth/refreshToken",
+
+// =================================================================
+// 2. Async Thunk: Init Auth (Chạy khi F5 App)
+// =================================================================
+// Nhiệm vụ: Gọi API lấy Access Token mới bằng HttpOnly Cookie
+export const initAuth = createAsyncThunk(
+  "auth/initAuth",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await authApi.refreshAuth(); // Gọi tới /auth/refresh-token
+      // Gọi API refresh token (Cookie tự động gửi đi)
+      const response = await authApi.refreshAuth();
       const { accessToken, userInfo } = response.data;
 
-      // Lưu token vào axios global
-      setGlobalAccessToken(accessToken);
-
+      // Trả về data để extraReducers cập nhật State
       return { accessToken, user: userInfo };
-    } catch (error: unknown) {
-      console.error("❌ Refresh token failed:", error);
-      return rejectWithValue(error || "Refresh failed");
+    } catch (error: any) {
+      // Nếu lỗi (Cookie hết hạn/không có) -> Trả về lỗi
+      return rejectWithValue(error || "Session expired");
     }
   }
 );
 
-// ========================
-// 5️⃣ Slice chính
-// ========================
+// =================================================================
+// 3. Slice Logic
+// =================================================================
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    // 🟢 Đăng nhập thủ công
+    // 🟢 LOGIN: Khi người dùng đăng nhập thủ công thành công
     login: (
       state,
       action: PayloadAction<{ accessToken: string; userInfor: UserProfile }>
@@ -54,55 +49,47 @@ const authSlice = createSlice({
       state.isAuthChecking = false;
     },
 
-    // 🟡 Refresh thành công (được interceptor axios gọi)
+    // 🟡 REFRESH SUCCESS: Được gọi bởi Axios Interceptor
+    // (Lưu ý: Axios dispatch action dạng chuỗi "auth/refreshSuccess")
     refreshSuccess: (state, action: PayloadAction<{ accessToken: string }>) => {
       state.token = action.payload.accessToken;
+      // Giữ nguyên user, chỉ đổi token
     },
 
-    // 🔴 Đăng xuất
+    // 🔴 LOGOUT: Xóa sạch thông tin
     logout: (state) => {
       state.token = null;
       state.user = null;
       state.isAuthChecking = false;
     },
 
-    // ⚪ Dùng sau khi check refresh xong (bất kể thành công/thất bại)
+    // ⚪ CHECK FINISHED: Dùng khi muốn tắt loading thủ công (ít dùng)
     authCheckFinished: (state) => {
       state.isAuthChecking = false;
     },
   },
 
-  // ========================
-  // 6️⃣ Xử lý Async (extraReducers)
-  // ========================
+  // =================================================================
+  // 4. Xử lý kết quả của initAuth (Khi F5)
+  // =================================================================
   extraReducers: (builder) => {
-    builder.addCase(refreshToken.pending, (state) => {
-      state.isAuthChecking = true;
-    });
-
-    builder.addCase(
-      refreshToken.fulfilled,
-      (
-        state,
-        action: PayloadAction<{ accessToken: string; user: UserProfile }>
-      ) => {
+    builder
+      .addCase(initAuth.pending, (state) => {
+        state.isAuthChecking = true;
+      })
+      .addCase(initAuth.fulfilled, (state, action) => {
         state.token = action.payload.accessToken;
         state.user = action.payload.user;
-        state.isAuthChecking = false;
-      }
-    );
-
-    builder.addCase(refreshToken.rejected, (state) => {
-      state.isAuthChecking = false;
-      state.user = null;
-      state.token = null;
-    });
+        state.isAuthChecking = false; // ✅ Đã xác thực xong -> Vào App
+      })
+      .addCase(initAuth.rejected, (state) => {
+        state.token = null;
+        state.user = null;
+        state.isAuthChecking = false; // ❌ Xác thực thất bại -> Về Login
+      });
   },
 });
 
-// ========================
-// 7️⃣ Export action & reducer
-// ========================
 export const { login, logout, refreshSuccess, authCheckFinished } =
   authSlice.actions;
 export default authSlice.reducer;

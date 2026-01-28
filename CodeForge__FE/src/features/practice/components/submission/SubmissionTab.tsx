@@ -37,7 +37,7 @@ const SubmissionsTab: React.FC<SubmissionsTabProps> = ({
           problemId,
           userId
         );
-        setSubmissions(response.data.data);
+        setSubmissions(response);
       } catch (error) {
         console.error("Failed to fetch submissions:", error);
       } finally {

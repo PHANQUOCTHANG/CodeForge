@@ -90,11 +90,11 @@ const CategoryManagement: React.FC = () => {
             ...values,
           } as UpdateCategoryDto,
         });
-        message.success("Category updated successfully");
+        message.success("Cập nhật danh mục thành công");
       } else {
         // Create
         await createMutation.mutateAsync(values as CreateCategoryDto);
-        message.success("Category created successfully");
+        message.success("Tạo danh mục thành công");
       }
 
       setIsModalVisible(false);
@@ -109,9 +109,9 @@ const CategoryManagement: React.FC = () => {
   const handleDelete = async (categoryId: string) => {
     try {
       await deleteMutation.mutateAsync(categoryId);
-      message.success("Category deleted successfully");
+      message.success("Xóa danh mục thành công");
     } catch (err) {
-      message.error("Failed to delete category");
+      message.error("Xóa danh mục thất bại");
       console.error(err);
     }
   };
@@ -119,14 +119,14 @@ const CategoryManagement: React.FC = () => {
   // 📊 Table columns
   const columns: ColumnsType<CourseCategory> = [
     {
-      title: "Name",
+      title: "Tên danh mục",
       dataIndex: "name",
       key: "name",
       width: "30%",
       render: (text: string) => <span className="font-medium">{text}</span>,
     },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
       key: "description",
       width: "40%",
@@ -137,7 +137,7 @@ const CategoryManagement: React.FC = () => {
       ),
     },
     {
-      title: "Icon",
+      title: "Biểu tượng",
       dataIndex: "icon",
       key: "icon",
       width: "10%",
@@ -149,11 +149,11 @@ const CategoryManagement: React.FC = () => {
             style={{ width: "24px", height: "24px" }}
           />
         ) : (
-          <Tag>No Icon</Tag>
+          <Tag>Không có icon</Tag>
         ),
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       width: "20%",
       align: "center" as const,
@@ -165,14 +165,14 @@ const CategoryManagement: React.FC = () => {
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
           >
-            Edit
+            Sửa
           </Button>
           <Popconfirm
-            title="Delete Category"
-            description="Are you sure you want to delete this category?"
+            title="Xóa danh mục"
+            description="Bạn có chắc chắn muốn xóa danh mục này không?"
             onConfirm={() => handleDelete(record.categoryId)}
-            okText="Yes"
-            cancelText="No"
+            okText="Có"
+            cancelText="Không"
           >
             <Button
               type="primary"
@@ -180,7 +180,7 @@ const CategoryManagement: React.FC = () => {
               size="small"
               icon={<DeleteOutlined />}
             >
-              Delete
+              Xóa
             </Button>
           </Popconfirm>
         </Space>
@@ -198,9 +198,9 @@ const CategoryManagement: React.FC = () => {
       {/* Header */}
       <div className="category-management__header">
         <div>
-          <h1 className="category-management__title">Category Management</h1>
+          <h1 className="category-management__title">Quản Lý Danh Mục</h1>
           <p className="category-management__subtitle">
-            Manage all course categories
+            Quản lý tất cả danh mục khóa học
           </p>
         </div>
         <Button
@@ -210,14 +210,14 @@ const CategoryManagement: React.FC = () => {
           onClick={handleOpenCreate}
           disabled={isLoading}
         >
-          Add New Category
+          Thêm Danh Mục Mới
         </Button>
       </div>
 
       {/* Filters */}
       <div className="category-management__filters">
         <Input
-          placeholder="Search categories..."
+          placeholder="Tìm kiếm danh mục..."
           prefix="🔍"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -229,7 +229,7 @@ const CategoryManagement: React.FC = () => {
           onClick={() => refetch()}
           loading={isLoading}
         >
-          Refresh
+          Làm mới
         </Button>
       </div>
 
@@ -237,7 +237,7 @@ const CategoryManagement: React.FC = () => {
       <Spin spinning={isLoading || isLoading_mutations}>
         <div className="category-management__table">
           {filteredCategories.length === 0 && !isLoading ? (
-            <Empty description="No categories found" />
+            <Empty description="Không tìm thấy danh mục nào" />
           ) : (
             <Table
               columns={columns}
@@ -255,7 +255,7 @@ const CategoryManagement: React.FC = () => {
 
       {/* Modal */}
       <Modal
-        title={editingCategory ? "Edit Category" : "Add New Category"}
+        title={editingCategory ? "Chỉnh Sửa Danh Mục" : "Thêm Danh Mục Mới"}
         open={isModalVisible}
         onOk={handleSave}
         onCancel={() => {
@@ -263,49 +263,50 @@ const CategoryManagement: React.FC = () => {
           form.resetFields();
           setEditingCategory(null);
         }}
-        okText={editingCategory ? "Update" : "Create"}
+        okText={editingCategory ? "Cập nhật" : "Tạo mới"}
+        cancelText="Hủy"
         confirmLoading={isLoading_mutations}
       >
         <Form form={form} layout="vertical" className="category-form">
           <Form.Item
-            label="Category Name *"
+            label="Tên Danh Mục *"
             name="name"
             rules={[
-              { required: true, message: "Please enter category name" },
-              { min: 3, message: "Name must be at least 3 characters" },
-              { max: 100, message: "Name must not exceed 100 characters" },
+              { required: true, message: "Vui lòng nhập tên danh mục" },
+              { min: 3, message: "Tên phải có ít nhất 3 ký tự" },
+              { max: 100, message: "Tên không được vượt quá 100 ký tự" },
             ]}
           >
-            <Input placeholder="e.g., Web Development" />
+            <Input placeholder="Ví dụ: Lập trình Web" />
           </Form.Item>
 
           <Form.Item
-            label="Description"
+            label="Mô tả"
             name="description"
             rules={[
               {
                 max: 500,
-                message: "Description must not exceed 500 characters",
+                message: "Mô tả không được vượt quá 500 ký tự",
               },
             ]}
           >
             <Input.TextArea
               rows={3}
-              placeholder="Optional description for this category"
+              placeholder="Mô tả tùy chọn cho danh mục này"
             />
           </Form.Item>
 
           <Form.Item
-            label="Icon URL"
+            label="URL Biểu tượng (Icon)"
             name="icon"
             rules={[
               {
                 type: "url",
-                message: "Please enter a valid URL",
+                message: "Vui lòng nhập một URL hợp lệ",
               },
             ]}
           >
-            <Input placeholder="e.g., https://example.com/icon.png" />
+            <Input placeholder="Ví dụ: https://example.com/icon.png" />
           </Form.Item>
         </Form>
       </Modal>

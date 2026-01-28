@@ -129,7 +129,7 @@ export const UserList: React.FC = () => {
         <div className="user-list__title-section">
           <h1 className="user-list__title">Quản lý người dùng</h1>
           <p className="user-list__subtitle">
-            Tổng cộng: <strong>{total}</strong> người dùng
+            Tổng cộng: <strong>{users.length}</strong> người dùng
           </p>
         </div>
         {!showForm && (

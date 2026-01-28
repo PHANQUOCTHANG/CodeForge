@@ -30,27 +30,14 @@ type LessonTypeInfo = {
 
 export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
   const navigate = useNavigate();
-  // Map các loại lesson type với icon và label tương ứng
+
   const lessonTypeMap: Record<string, LessonTypeInfo> = {
-    video: {
-      icon: <Video size={18} />,
-      label: "Bài giảng video",
-    },
-    text: {
-      icon: <FileText size={18} />,
-      label: "Bài đọc",
-    },
-    coding: {
-      icon: <Code size={18} />,
-      label: "Bài tập lập trình",
-    },
-    quiz: {
-      icon: <HelpCircle size={18} />,
-      label: "Bài kiểm tra",
-    },
+    video: { icon: <Video size={18} />, label: "Bài giảng video" },
+    text: { icon: <FileText size={18} />, label: "Bài đọc" },
+    coding: { icon: <Code size={18} />, label: "Bài tập lập trình" },
+    quiz: { icon: <HelpCircle size={18} />, label: "Bài kiểm tra" },
   };
 
-  // Hàm lấy set các lesson type
   const getLessonTypes = (): Set<string> => {
     const types = new Set<string>();
     course.modules.forEach((module) => {
@@ -63,7 +50,6 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
     return types;
   };
 
-  // Đếm số lượng mỗi loại lesson
   const getLessonTypeCounts = (): Record<string, number> => {
     const counts: Record<string, number> = {};
     course.modules.forEach((module) => {
@@ -79,7 +65,6 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
   const lessonTypes = getLessonTypes();
   const lessonCounts = getLessonTypeCounts();
 
-  // Find first uncompleted lesson
   const findFirstUncompletedLesson = () => {
     for (const module of course.modules) {
       for (const lesson of module.lessons) {
@@ -91,7 +76,6 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
         }
       }
     }
-    // If all completed, return first lesson
     return course.modules[0]?.lessons[0]
       ? {
           moduleId: course.modules[0].moduleId,
@@ -100,7 +84,6 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
       : null;
   };
 
-  // Handle continue learning
   const handleContinueLearning = () => {
     const nextLesson = findFirstUncompletedLesson();
     if (nextLesson) {
@@ -112,60 +95,55 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
 
   return (
     <section className="course-hero">
-      {" "}
       <div className="course-hero__container">
-        {" "}
         <div className="course-hero__content">
-          {" "}
-          <h1 className="course-hero__title">{course.title}</h1>{" "}
-          <p className="course-hero__description"> {course.description} </p>{" "}
+          <h1 className="course-hero__title">{course.title}</h1>
+
+          {/* 👇 ĐÃ SỬA PHẦN NÀY 👇 */}
+          {/* Đổi từ <p> sang <div> và dùng dangerouslySetInnerHTML */}
+          <div
+            className="course-hero__description"
+            dangerouslySetInnerHTML={{ __html: course.description }}
+          />
+          {/* 👆 HẾT PHẦN SỬA 👆 */}
+
           <div className="course-hero__meta">
-            {" "}
             <div className="course-hero__rating">
-              {" "}
-              <span className="rating-value">{course.rating}</span>{" "}
-              <Rate disabled defaultValue={course.rating} />{" "}
+              <span className="rating-value">{course.rating}</span>
+              <Rate disabled defaultValue={course.rating} />
               <span className="rating-count">
-                {" "}
-                ({course.totalRatings} đánh giá){" "}
-              </span>{" "}
-            </div>{" "}
+                ({course.totalRatings} đánh giá)
+              </span>
+            </div>
             <div className="course-hero__students">
-              {" "}
-              <Users size={18} />{" "}
-              <span> {course.totalStudents.toLocaleString()} học viên </span>{" "}
-            </div>{" "}
+              <Users size={18} />
+              <span> {course.totalStudents.toLocaleString()} học viên </span>
+            </div>
             <div className="course-hero__level">
-              {" "}
-              <Award size={18} />{" "}
+              <Award size={18} />
               <span>
-                {" "}
                 {course.level === "beginner"
                   ? "Cơ bản"
                   : course.level === "intermediate"
                   ? "Trung cấp"
-                  : "Nâng cao"}{" "}
-              </span>{" "}
-            </div>{" "}
+                  : "Nâng cao"}
+              </span>
+            </div>
             <div className="course-hero__duration">
-              {" "}
-              <Clock size={18} /> <span>{formatDuration(course.duration)}</span>{" "}
-            </div>{" "}
-          </div>{" "}
+              <Clock size={18} /> <span>{formatDuration(course.duration)}</span>
+            </div>
+          </div>
           <div className="course-hero__instructor">
-            {" "}
-            <img alt={course.author} />{" "}
+            <img alt={course.author} />
             <div>
-              {" "}
-              <span className="instructor-label">Giảng viên</span>{" "}
-              <span className="instructor-name">{course.author}</span>{" "}
-            </div>{" "}
-          </div>{" "}
-        </div>{" "}
+              <span className="instructor-label">Giảng viên</span>
+              <span className="instructor-name">{course.author}</span>
+            </div>
+          </div>
+        </div>
         <div className="course-hero__thumbnail">
-          {" "}
-          <img src={course.thumbnail} alt={course.title} />{" "}
-        </div>{" "}
+          <img src={course.thumbnail} alt={course.title} />
+        </div>
         <div className="course-card">
           {course.isEnrolled ? (
             <div className="course-card__price">Đã đăng ký</div>
@@ -224,9 +202,8 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
             </div>
           )}
           <div className="course-card__includes">
-            <h4>Khóa học bao gồm:</h4>{" "}
+            <h4>Khóa học bao gồm:</h4>
             <ul>
-              {/* Hiển thị các loại bài học có trong khóa học */}
               {Array.from(lessonTypes).map((type) => (
                 <li key={type}>
                   {lessonTypeMap[type]?.icon || <BookOpen size={18} />}
@@ -236,8 +213,6 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
                   </span>
                 </li>
               ))}
-
-              {/* Các thông tin bổ sung */}
               <li>
                 <Clock size={18} />
                 <span>{formatDuration(course.duration)} tổng thời lượng</span>
@@ -251,8 +226,8 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
                 <span>Truy cập trọn đời</span>
               </li>
             </ul>
-          </div>{" "}
-        </div>{" "}
+          </div>
+        </div>
         {course.isEnrolled && (
           <div className="course-hero__progress">
             <Progress
@@ -264,7 +239,7 @@ export const CourseHero: React.FC<Props> = ({ course, finalPrice }) => {
             />
           </div>
         )}
-      </div>{" "}
+      </div>
     </section>
   );
 };

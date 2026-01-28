@@ -21,7 +21,6 @@ const navItems = [
   { label: "Trang chủ", key: "home", icon: Home, path: "/" },
   { label: "Khóa học", key: "courses", icon: BookText, path: "/courses" },
   { label: "Luyện tập", key: "practice", icon: NotebookPen, path: "/practice" },
-  { label: "Liên hệ", key: "contact", icon: Home, path: "/contact" },
   { label: "Cộng đồng", key: "community", icon: Home, path: "/community" },
   { label: "Đăng nhập", key: "login", icon: LogIn, path: "/login" },
   { label: "Đăng ký", key: "register", icon: UserRoundPen, path: "/register" },

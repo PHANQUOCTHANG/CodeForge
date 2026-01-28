@@ -7,8 +7,8 @@ export interface UserDto {
   email: string;
   fullName: string;
   avatar?: string;
-  role: "Admin" | "Instructor" | "Student";
-  status: "Active" | "Inactive" | "Suspended";
+  role: "admin" | "teacher" | "student";
+  status: "active" | "inactive" | "suspended";
   enrolledCourses?: number;
   createdAt: string;
   updatedAt: string;
@@ -20,7 +20,7 @@ export interface CreateUserDto {
   email: string;
   password: string;
   fullName: string;
-  role: "Admin" | "Instructor" | "Student";
+  role: "admin" | "teacher" | "student";
   status: "Active" | "Inactive";
   avatar?: string;
 }
@@ -30,7 +30,7 @@ export interface UpdateUserDto {
   username?: string;
   email?: string;
   fullName?: string;
-  role?: "Admin" | "Instructor" | "Student";
+  role?: "admin" | "teacher" | "student";
   status?: "Active" | "Inactive" | "Suspended";
   avatar?: string;
 }

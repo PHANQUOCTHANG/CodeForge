@@ -200,6 +200,7 @@ const practiceService = {
   ) => {
     try {
       const res = await api.get(`submissions/${problemId}/${userId}`);
+      console.log(res.data);
       return res.data.data;
     } catch (error: any) {
       console.error(

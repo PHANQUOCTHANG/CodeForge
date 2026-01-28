@@ -246,6 +246,11 @@ const CreateCourseEditor = ({ courseId }: { courseId?: string }) => {
                   <Select.Option value="Python">Python</Select.Option>
                   <Select.Option value="JavaScript">JavaScript</Select.Option>
                   <Select.Option value="Java">Java</Select.Option>
+                  <Select.Option value="C++">C++</Select.Option>
+                  <Select.Option value="Ruby">Ruby</Select.Option>
+                  <Select.Option value="Go">Go</Select.Option>
+                  <Select.Option value="C#">C#</Select.Option>
+                  <Select.Option value="PHP">PHP</Select.Option>
                 </Select>
               </Form.Item>
             </Col>

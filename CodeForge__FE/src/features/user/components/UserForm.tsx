@@ -35,7 +35,7 @@ export const UserForm: React.FC<UserFormProps> = ({
     email: "",
     fullName: "",
     password: "",
-    role: "user",
+    role: "student",
     status: "active",
   });
 

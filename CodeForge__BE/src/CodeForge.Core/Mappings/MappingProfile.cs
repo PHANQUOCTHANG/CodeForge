@@ -14,7 +14,7 @@ using CodeForge.Api.DTOs.Modules;
 using CodeForge.Api.DTOs.Request.CourseCategory;
 using CodeForge.Api.DTOs.Lessons;
 using CodeForge.Api.DTOs.Request.Language;
-using CodeForge.Application.DTOs.Request.CourseCategory;
+
 using CodeForge.Api.DTOs.Request; // Giả định DTOs Problem
 
 namespace CodeForge.Core.Mappings
@@ -31,14 +31,14 @@ namespace CodeForge.Core.Mappings
             CreateMap<User, UserSummaryDto>();
             // Map Entity -> DTO
             CreateMap<User, UserDto>()
-                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Profile.FullName))
-                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Profile.Avatar));
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Profile!.FullName))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Profile!.Avatar));
             // User DTO đầy đủ (Có thể chứa Role, Status, v.v., KHÔNG chứa PasswordHash)
             // MappingProfile.cs
             CreateMap<User, UserDto>()
                 // Lấy FullName từ Profile nhét vào UserDto
-                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Profile.FullName))
-                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Profile.Avatar));
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Profile!.FullName))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Profile!.Avatar));
             CreateMap<RegisterDto, User>();
             CreateMap<CreateUserDto, User>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "active")); // Mặc định active

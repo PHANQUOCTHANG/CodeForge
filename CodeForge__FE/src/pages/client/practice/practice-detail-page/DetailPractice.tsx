@@ -40,13 +40,12 @@ const UI_CONFIG = {
   DEFAULT_LANGUAGE: "cpp" as const,
 } as const;
 
-
 // Hardcoded userId (should be moved to context/state management)
 
 const DetailPractice: React.FC = () => {
   const navigate = useNavigate();
   const { slug } = useParams() || "";
-  const {user} = useAppSelector(s => s.auth) ; 
+  const { user } = useAppSelector((s) => s.auth);
   const DUMMY_USER_ID = user?.userId;
   // Core Data State
   const [problem, setProblem] = useState<CodingProblem | null>(null);
@@ -639,7 +638,7 @@ const DetailPractice: React.FC = () => {
             {activeTab == "submissions" && (
               <SubmissionsTab
                 problemId={problem.problemId}
-                userId="A0C392F8-ACEA-46AF-8815-316BFDFAB064"
+                userId={DUMMY_USER_ID!}
               ></SubmissionsTab>
             )}
           </div>

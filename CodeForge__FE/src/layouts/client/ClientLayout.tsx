@@ -10,11 +10,7 @@ const ClientLayout = () => {
       <div style={{ minHeight: "100vh" }}>
         <Header />
         <main>
-          <Suspense
-            fallback={<Spin spinning fullscreen tip="Đang tải ứng dụng..." />}
-          >
-            <Outlet />
-          </Suspense>
+          <Outlet />
         </main>
         <Footer />
       </div>
