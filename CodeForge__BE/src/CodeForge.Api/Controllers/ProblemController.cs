@@ -76,7 +76,6 @@ namespace CodeForge.Api.Controllers
 
         // --- RUN CODE (POST /api/problem/run-problem) ---
         [HttpPost("run-problem")]
-        [Authorize]
         public async Task<IActionResult> RunProblemAsync([FromBody] RunProblemDto runProblemDto)
         {
             if (runProblemDto == null)
@@ -100,7 +99,6 @@ namespace CodeForge.Api.Controllers
         }
 
         [HttpPost("submit")]
-        [Authorize]
         public async Task<IActionResult> SubmitProblemAsync([FromBody] RunProblemDto runProblemDto)
         {
             Console.WriteLine("Debug ok");
