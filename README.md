@@ -1,289 +1,444 @@
---clone project
-git clone https://github.com/PHANQUOCTHANG/CodeForge
+# 🚀 CodeForge
 
---cài đặt docker
-🐳 Cài đặt Docker Desktop trên Windows
-1️⃣ Yêu cầu hệ thống
+**CodeForge** is a modern **online programming learning platform** that allows users to learn coding through structured courses, solve coding challenges, and track their learning progress.  
 
-Windows 10 Pro/Enterprise/Education (bản 1903 trở lên) hoặc Windows 11.
+The platform integrates an **online code execution environment**, **course management system**, and **secure payment gateway** for a complete e-learning experience.
 
-Bật WSL 2 (Windows Subsystem for Linux 2).
+---
 
-CPU hỗ trợ ảo hóa (Intel VT-x hoặc AMD-V).
+# 📌 Features
 
-2️⃣ Tải Docker Desktop
+### 👤 User Management
+- User registration and login
+- JWT authentication with refresh tokens
+- Password reset via email
+- User roles: **Student, Instructor, Admin**
+- Profile management
 
-Vào trang chính thức: 👉 Docker Desktop Download
+### 📚 Course Management
+- Create, update, delete courses
+- Course categorization
+- Free and paid courses
+- Course reviews and ratings
+- Student enrollment tracking
 
-Chọn bản Windows và tải về file .exe.
+### 📖 Lesson System
+Courses are structured into **Modules → Lessons**.
 
-3️⃣ Cài đặt
+Supported lesson types:
+- 🎬 **Video Lessons**
+- 📝 **Text Lessons**
+- ❓ **Quiz Lessons**
+- 💻 **Coding Exercises**
 
-Chạy file .exe vừa tải.
+### 💻 Integrated Coding Environment
+- **Monaco Editor** (same editor used in VS Code)
+- **Judge0 API** for secure code execution
+- Multiple programming languages supported:
+  - C++
+  - Python
+  - Java
+  - JavaScript
+  - Go
+  - Ruby
+  - PHP
+- Automated test case validation
+- Real-time execution results
+- Submission history
 
-Khi được hỏi chọn backend, để mặc định WSL 2.
+### 💳 Online Payments
+- VNPay payment gateway integration
+- Automatic enrollment after successful payment
+- Payment history and invoice support
+- Secure webhook verification
 
-Chờ cài đặt hoàn tất → Restart máy.
+### 📊 Dashboards & Analytics
+**Student Dashboard**
+- Enrolled courses
+- Learning progress tracking
+- Completed lessons
+- Coding submissions
 
-4️⃣ Kiểm tra cài đặt
+**Instructor Dashboard**
+- Course management
+- Student statistics
+- Engagement analytics
 
-Mở PowerShell / CMD / Git Bash và gõ:
+**Admin Dashboard**
+- User management
+- Course management
+- Revenue analytics
+- System overview
 
+### 🖼 File & Media Management
+- Course image uploads
+- Cloudinary integration
+- Automatic image optimization
+
+### 📧 Email Notifications
+- Registration confirmation
+- Password reset emails
+- Enrollment confirmation
+- Payment notifications
+
+---
+
+# 🏗 System Architecture
+
+```
+Frontend (React + Vite)
+│
+├── Pages
+├── Feature Modules
+├── Redux Store
+└── API Clients
+        │
+        ▼
+Backend (ASP.NET Core)
+│
+├── Controllers
+├── Services
+├── Repositories
+└── Middleware
+        │
+        ▼
+Database (SQL Server)
+```
+
+External Services:
+
+- Judge0 → Code Execution  
+- VNPay → Payments  
+- Cloudinary → Media Storage  
+- SMTP → Email Services  
+
+---
+
+# 🛠 Tech Stack
+
+## Backend
+- **ASP.NET Core 8**
+- **Entity Framework Core**
+- **SQL Server 2022**
+- **JWT Authentication**
+- **RESTful API**
+- **Swagger / OpenAPI**
+
+## Frontend
+- **React 18**
+- **TypeScript**
+- **Vite**
+- **Redux Toolkit**
+- **React Query**
+- **Ant Design**
+- **Monaco Editor**
+- **SCSS**
+
+## DevOps
+- Docker
+- Docker Compose
+- Nginx
+
+---
+
+# 💾 Database Overview
+
+Core entities:
+
+```
+Users
+Profiles
+Courses
+Modules
+Lessons
+Enrollments
+Problems
+TestCases
+Submissions
+Payments
+Reviews
+```
+
+Relationships:
+
+```
+Users
+ ├── Profiles
+ ├── Enrollments
+ └── Submissions
+
+Courses
+ ├── Modules
+ │    └── Lessons
+ └── Enrollments
+
+Problems
+ ├── TestCases
+ └── Submissions
+```
+
+---
+
+# ⚙️ Installation
+
+## 1. Clone Repository
+
+```bash
+git clone https://github.com/PHANQUOCTHANG/CodeForge.git
+cd CodeForge
+```
+
+## 2. Install Docker
+
+Verify installation:
+
+```bash
 docker --version
-
-👉 Nếu ra version thì OK.
-
-Thử chạy container mẫu:
-
 docker run hello-world
+```
 
-👉 Nếu hiện thông báo "Hello from Docker!" thì đã cài thành công.
+## 3. Create `.env`
 
-5️⃣ Cấu hình (tùy chọn)
+```env
+SA_PASSWORD=YourStrongPassword123
 
-Mở Docker Desktop → Settings.
+JWT_SECRET=your-secret-key
+JWT_ISSUER=CodeForge
+JWT_AUDIENCE=CodeForgeApp
 
-Vào Resources chỉnh CPU/RAM nếu cần.
+FRONTEND_URL=http://localhost:3000
+```
 
-Vào General bật Start Docker Desktop when you log in để tự chạy khi mở máy.
+## 4. Run Application
 
----Khi đã cài docker thành công mở terminal trỏ vào folder lớn vd PS C:\Users\tranv\OneDrive\Documents\BTL\WebProgramming\CodeForge> có đuôi CodeForge
+Development mode:
 
-->> gõ: docker compose up --build -d (chờ nó tải các gói)
-👉 Truy cập ứng dụng
-
-Frontend (React/Vite): http://localhost:3000
-
-Backend (ASP.NET Core API): http://localhost:5000
-
-Database (SQL Server): localhost,1433
-
-User: sa
-
-Password: giá trị trong .env -> SA_PASSWORD
-
-Chạy SSMS của SQL sever rồi đăng nhập vào
-
-🚀 2️⃣ Chạy ở môi trường DEV (khi bạn đang code)
-🔹 Câu lệnh
+```bash
 docker-compose -f docker-compose.dev.yml up --build
+```
+
+Access services:
+
+Frontend
+
+```
+http://localhost:3000
+```
+
+Backend API
+
+```
+http://localhost:5000/api
+```
+
+Swagger API Docs
+
+```
+http://localhost:5000/swagger
+```
+
+---
 
-🔹 Giải thích:
+# 📁 Project Structure
+
+## Backend
+
+```
+CodeForge_BE/
+│
+├── Api
+│   ├── Controllers
+│   ├── DTOs
+│   └── Middleware
+│
+├── Core
+│   ├── Entities
+│   ├── Services
+│   └── Interfaces
+│
+└── Infrastructure
+    ├── Data
+    └── Repositories
+```
+
+## Frontend
 
--f docker-compose.dev.yml → chỉ định file compose dev.
+```
+CodeForge_FE/src
+│
+├── api
+├── app
+├── features
+│   ├── auth
+│   ├── course
+│   ├── dashboard
+│   └── practice
+│
+├── pages
+├── layouts
+└── styles
+```
 
---build → build lại image nếu code hoặc Dockerfile thay đổi.
+---
 
-Không thêm -d để bạn xem log realtime (nếu cần chạy nền thì thêm -d).
+# 🔌 API Endpoints
 
-🔹 Môi trường dev hoạt động thế nào:
+### Authentication
 
-Frontend (frontend)
+```
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/refresh-token
+POST /api/auth/forgot-password
+POST /api/auth/reset-password
+```
 
-Mount code local (./CodeForge\_\_FE:/app) → mọi thay đổi lưu trực tiếp vào container.
+### Courses
 
-Có hot reload nhờ Vite (port 5173).
+```
+GET    /api/courses
+GET    /api/courses/{id}
+POST   /api/courses
+PUT    /api/courses/{id}
+DELETE /api/courses/{id}
+```
 
-Chạy npm run dev.
+### Learning
 
-Backend (backend)
+```
+POST /api/enrollments
+GET  /api/lessons/{id}
+POST /api/submissions
+GET  /api/submissions/user/{id}
+```
 
-Mount code local (./CodeForge\_\_BE:/app).
+### Payments
 
-Chạy bằng dotnet watch run → hot reload khi bạn chỉnh code.
+```
+POST /api/payments
+POST /api/payments/webhook
+GET  /api/payments/user/{id}
+```
 
-Mọi package thêm (npm install, dotnet add package) sẽ ghi vào code local.
+Full API documentation available at:
 
-Database (db)
+```
+http://localhost:5000/swagger
+```
 
-Container chạy SQL Server.
+---
 
-Dữ liệu lưu vào volume (sql_data_dev), không bị mất khi container restart.
+# 🔄 Workflow
 
-| Tác vụ                       | Lệnh                                                                                              |
-| ---------------------------- | ------------------------------------------------------------------------------------------------- |
-| Chạy container (dev mode)    | `docker-compose -f docker-compose.dev.yml up --build`                                             |
-| Dừng toàn bộ                 | `docker-compose -f docker-compose.dev.yml down`                                                   |
-| Dừng & xóa volume (reset DB) | `docker-compose -f docker-compose.dev.yml down -v`                                                |
-| Xem log của 1 service        | `docker-compose -f docker-compose.dev.yml logs -f backend`                                        |
-| Mở shell trong container     | `docker-compose -f docker-compose.dev.yml exec frontend sh`                                       |
-| Thêm package Node.js         | `docker-compose -f docker-compose.dev.yml exec frontend npm install axios`                        |
-| Thêm package .NET            | `docker-compose -f docker-compose.dev.yml exec backend dotnet add package Swashbuckle.AspNetCore` |
+## Authentication
 
-🌐 4️⃣ Chạy ở môi trường PROD (khi deploy)
-🔹 Câu lệnh
-docker-compose -f docker-compose.prod.yml up --build -d
+```
+Login → Validate Credentials → Generate JWT → Return Token
+```
 
-🔹 Giải thích:
+## Course Enrollment
 
--f docker-compose.prod.yml → file cấu hình production.
+```
+Browse Courses
+→ Select Course
+→ Payment (if required)
+→ Enrollment
+→ Start Learning
+```
 
---build → build image production.
+## Coding Submission
 
--d → chạy ở chế độ detached (background).
+```
+Write Code
+→ Submit
+→ Judge0 Execution
+→ Validate Test Cases
+→ Save Submission
+```
 
-🔹 Môi trường prod hoạt động thế nào:
+---
 
-Frontend build xong thành static HTML/JS/CSS → serve bằng nginx.
+# 👨‍💻 Development
 
-Backend build .dll và chạy ASP.NET trên base image aspnet:8.0.
+Run development environment:
 
-DB dùng volume riêng sql_data (không trùng với dev volume).   
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
 
-Không mount code local → code trong container là build version (an toàn, nhanh, gọn).
+Install frontend dependency:
 
-🧹 5️⃣ Reset môi trường (nếu cần dọn sạch)
+```bash
+npm install axios
+```
 
-Khi bạn thấy Docker hơi lộn xộn, có thể dọn toàn bộ bằng:
+Install backend dependency:
 
-docker-compose -f docker-compose.dev.yml down -v --remove-orphans
-docker-compose -f docker-compose.prod.yml down -v --remove-orphans
-docker system prune -af
-docker volume prune -f
+```bash
+dotnet add package Newtonsoft.Json
+```
 
-Quy trình làm việc chuẩn cho team
-| Bước | Người dev cần làm | Ghi chú |
-| ---- | --------------------------------------------- | ----------------------------------------- |
-| 1️⃣ | Pull code mới từ Git | đảm bảo sync với team |
-| 2️⃣ | Chạy `docker-compose.dev.yml` | backend + frontend auto hot reload |
-| 3️⃣ | Dev bình thường | chỉnh code, save → reload tự động |
-| 4️⃣ | Thêm package (npm/dotnet) trong container | để đảm bảo dependency đồng nhất |
-| 5️⃣ | Commit & push | code + package.json + csproj luôn đồng bộ |
-| 6️⃣ | Build & deploy bằng `docker-compose.prod.yml` | tạo image production để đưa lên server |
+---
 
-⚙️ I. Khi bạn đang ở môi trường DEV (hot reload đang bật)
+# 📏 Code Standards
 
-Giả sử bạn đang chạy bằng lệnh:
+### Naming Conventions
 
-docker-compose -f docker-compose.dev.yml up --build
+| Type | Convention |
+|-----|------------|
+Folders | lowercase-with-dash |
+Components | PascalCase |
+Services / Hooks | camelCase |
+Constants | UPPER_SNAKE_CASE |
 
-🧠 1️⃣ Trường hợp bạn chỉ sửa code (JS/TS hoặc C#):
+Example:
 
-➡ Không cần làm gì cả
+```
+CourseCard.tsx
+useCourse.ts
+courseService.ts
+```
 
-Frontend (Vite) → tự động reload trình duyệt.
+---
 
-Backend (.NET Watch) → tự build lại và restart server.
+# 🤝 Contributing
 
-✅ Chỉ cần save file là thấy thay đổi ngay.
+1. Fork the repository
+2. Create a feature branch
 
-🔁 2️⃣ Trường hợp bạn thay đổi dependency:
+```bash
+git checkout -b feature/new-feature
+```
 
-Ví dụ:
+3. Commit changes
 
-Thêm package npm (axios, react-router-dom, v.v.)
+```bash
+git commit -m "feat: add new feature"
+```
 
-Thêm NuGet package (Swashbuckle, EntityFramework, v.v.)
+4. Push branch
 
-🔹 Frontend:
-docker-compose -f docker-compose.dev.yml exec frontend npm install axios
+```bash
+git push origin feature/new-feature
+```
 
-→ Tự động ghi vào package.json trong local.
-→ Không cần rebuild container.
+5. Open a Pull Request
 
-🔹 Backend:
-docker-compose -f docker-compose.dev.yml exec backend dotnet add package Swashbuckle.AspNetCore
+---
 
-→ Ghi vào .csproj
-→ Sau đó container tự rebuild code nhờ dotnet watch.
+# 📄 License
 
-♻️ 3️⃣ Trường hợp bạn sửa Dockerfile hoặc docker-compose.dev.yml
+Educational project.
 
-Ví dụ: đổi port, thêm volume, thêm ENV mới,...
+---
 
-👉 Lúc này cần rebuild lại container:
+# 👨‍💻 Author
 
-docker-compose -f docker-compose.dev.yml down
-docker-compose -f docker-compose.dev.yml up --build
+**Phan Quoc Thang**
 
-⚠️ Nếu có thay đổi database, muốn xóa data test:
+GitHub  
+https://github.com/PHANQUOCTHANG
 
-docker-compose -f docker-compose.dev.yml down -v
+---
 
-🌐 II. Khi bạn ở môi trường PRODUCTION
-
-Chạy lệnh build & deploy như sau:
-
-docker-compose -f docker-compose.prod.yml up --build -d
-
-🔁 Khi bạn sửa code xong (FE hoặc BE):
-
-Vì production không mount code local, nên bạn phải rebuild image:
-
-docker-compose -f docker-compose.prod.yml up --build -d
-
-Docker sẽ:
-
-Build lại image backend (chạy dotnet publish)
-
-Build lại image frontend (chạy npm run build)
-
-Restart container mới (BE, FE, DB vẫn giữ nguyên data volume)
-docker-compose -f docker-compose.dev.yml up --build
-🧹 Nếu muốn dọn sạch trước khi build lại
-docker-compose -f docker-compose.prod.yml down -v --remove-orphans
-docker-compose -f docker-compose.prod.yml up --build -d
-
-| Mục đích                    | Lệnh                                                         |
-| --------------------------- | ------------------------------------------------------------ |
-| 🟢 Chạy dev mode            | ``                                                           |
-| 🔵 Dừng dev mode            | `docker-compose -f docker-compose.dev.yml down`              |
-| 🟠 Xóa toàn bộ (bao gồm DB) | `docker-compose -f docker-compose.dev.yml down -v`           |
-| 🔵 Mở shell FE              | `docker-compose -f docker-compose.dev.yml exec frontend sh`  |
-| 🔵 Mở shell BE              | `docker-compose -f docker-compose.dev.yml exec backend bash` |
-| 🟣 Chạy production          | `docker-compose -f docker-compose.prod.yml up --build -d`    |
-| 🔴 Dừng production          | `docker-compose -f docker-compose.prod.yml down`             |
-
-💡 IV. Mẹo thực tế cho teamwork
-
-Mỗi dev chỉ cần:
-
-Pull code về
-
-Chạy docker-compose -f docker-compose.dev.yml up --build
-
-Code & Save → Tự reload.
-
-Khi commit:
-
-Bao gồm package.json, .csproj, .env
-
-Không commit file build (dist/, bin/, obj/)
-
-✅ Bước 2 — Yêu cầu dev khác đồng bộ lại node_modules
-
-Khi họ pull code mới, họ phải xóa node_modules cũ để tránh còn lib cũ.
-
-Trong dự án Docker (hoặc local), các dev khác chạy:
-
-docker-compose -f docker-compose.dev.yml down -v
-
-và trong thư mục CodeForge\_\_FE:
-
-Remove-Item -Recurse -Force node_modules, package-lock.json
-
-(hoặc Linux: rm -rf node_modules package-lock.json)
-
-Sau đó:
-
-docker-compose -f docker-compose.dev.yml up --build
-
-👉 Docker sẽ rebuild image frontend, cài lại dependency mới không còn Tailwind nữa.
-
-💬 Ghi nhớ cho team:
-
-Khi bạn hoặc ai đó cài mới package trên Windows:
-
-Chạy npm install --include=optional --ignore-scripts
-
-Commit cả package-lock.json
-
-Các dev khác chỉ cần npm ci hoặc docker-compose up --build → sẽ ổn định cho mọi hệ điều hành.
-
-# Tóm gọn quy tắc vàng
-
-📁 folder: lowercase-with-dash => Tránh lỗi import trên Linux/Mac
-📄 component/page/layout: PascalCase =>Vì React component là class/JSX element
-⚙️ service/hook/store: camelCase =>Thể hiện vai trò “logic function”
-🧠 type/constant: PascalCase or descriptive =>Rõ ràng, dễ tìm
-🔁 index.ts: chỉ để export
+⭐ If you find this project useful, consider giving it a **star on GitHub**.
