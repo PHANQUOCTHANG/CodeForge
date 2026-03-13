@@ -432,13 +432,3 @@ Educational project.
 
 ---
 
-# 👨‍💻 Author
-
-**Phan Quoc Thang**
-
-GitHub  
-https://github.com/PHANQUOCTHANG
-
----
-
-⭐ If you find this project useful, consider giving it a **star on GitHub**.
